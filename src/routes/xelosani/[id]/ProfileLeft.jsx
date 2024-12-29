@@ -22,7 +22,7 @@ export const ProfileLeft = (props) => {
       method: "POST",
       body: JSON.stringify({
         role: "xelosani",
-        profId: props.profileId
+        profId: props.user().profId || props.url_prof_id
       }),
       headers: {
         'Content-Type': "application/json",
@@ -44,7 +44,7 @@ export const ProfileLeft = (props) => {
 
     try {
       const response = await fetch(
-        `http://localhost:5555/profile_picture/${props.profileId}`,
+        `http://localhost:5555/profile_picture/${props.user().profId}`,
         {
           method: "POST",
           body: formData,
@@ -332,13 +332,8 @@ export const ProfileLeft = (props) => {
                 </div>
               </Match>
               <Match when={props.user().privacy.birthDate === "დამალვა"}>
-              <div class="flex items-center">
-              <div class="flex items-end gap-x-2">
-                    <img loading="lazy" src={cake} />
-                    <p class="text-gr text-xs font-[thin-font] font-bold">
-                      {props.user().displayBirthDate}
-                    </p>
-                  </div>
+              <div class="flex gap-x-2 items-center">
+                <img loading="lazy" src={cake} />
                 <p class="text-gr text-xs text-center font-[thin-font] font-bold">
                   ასაკი დამალულია
                 </p>

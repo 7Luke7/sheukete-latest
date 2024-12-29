@@ -1,3 +1,4 @@
+"use server"
 import { json } from "@solidjs/router"
 import { send_email } from "../mailer";
 import { memcached_server_request } from "../ext_requests/memcached_server_request";

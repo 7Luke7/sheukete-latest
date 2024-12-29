@@ -50,7 +50,6 @@ export const modify_user_schedule = async (formData) => {
             },
           ];
       
-
         const data = await postgresql_server_request("PUT", `xelosani/modify_xelosani_schedule`, {
             body: JSON.stringify({
                 schedule,

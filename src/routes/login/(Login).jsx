@@ -1,4 +1,4 @@
-import { createSignal, onMount } from 'solid-js';
+import { createSignal } from 'solid-js';
 import { A, useNavigate } from '@solidjs/router';
 import { SmallFooter } from '~/Components/SmallFooter';
 import { EmailPassword } from '~/Components/EmailPassword';

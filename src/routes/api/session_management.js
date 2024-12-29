@@ -22,6 +22,7 @@ export const verify_user = async (event) => {
             }
         )
 
+
         if (!user) {
             throw new Error(401)
         }

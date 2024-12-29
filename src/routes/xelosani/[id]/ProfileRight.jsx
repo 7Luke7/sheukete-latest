@@ -7,6 +7,7 @@ import pen from "../../../svg-images/pen.svg";
 export const ProfileRight = (props) => {
   return (
     <div class="flex flex-1 flex-col border-r px-3">
+      <Show when={props.user()}>
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-x-1">
           <h2 class="font-[bolder-font] font-bold text-gray-900 text-lg">
@@ -31,7 +32,7 @@ export const ProfileRight = (props) => {
         <h2 class="font-[bolder-font] font-bold text-gray-900 text-lg">
           ხელობა/სპეციალობა
         </h2>
-        <Show when={props.user().status === 200 && props.user().skills.length}>
+        <Show when={props.user().status === 200 && props.user().skills?.length}>
           <button onClick={() => startTransition(() => props.setModal("სპეციალობა"))}>
             <img loading="lazy" id="locationButton" src={pen} />
           </button>
@@ -39,7 +40,7 @@ export const ProfileRight = (props) => {
       </div>
       <div class="mt-2">
         <section class="w-full flex">
-          <SkillCarousel skills={props.user().skills}></SkillCarousel>
+          <SkillCarousel skills={props.user()?.skills}></SkillCarousel>
         </section>
       </div>
       
@@ -75,6 +76,7 @@ export const ProfileRight = (props) => {
           </Switch>
         </Suspense>
       </div>
+      </Show>
     </div>
   );
 };

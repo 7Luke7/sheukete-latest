@@ -29,6 +29,22 @@ export const navigateToStep = async () => {
   try {
     const event = getRequestEvent();
     const redis_user = await verify_user(event);
+
+    const file_response = await fileserver_request("POST", "profile_image_no_id", {
+      body: JSON.stringify({
+        role: redis_user.role,
+        profId: redis_user.profId
+      }),
+      headers: {
+        'Content-Type': "application/json"
+      }
+    })
+
+
+    // შეამოწმე თუ რატომ მოდის profId როცა ფოტო არ არსებობს.
+    if (!file_response.url) {
+      return `${BASE_URL}/photo`;
+    }
     const user = await postgresql_server_request("GET", `xelosani/get_step_data/${redis_user.profId}`, {
       headers: {
         "Content-Type": "application/json",
@@ -60,8 +76,6 @@ export const navigateToStep = async () => {
       return `${BASE_URL}/skills`;
     }
   } catch (error) {
-    if (error.name === "NotFound") {
-      return `${BASE_URL}/photo`;
-    }
+    console.log(error)
   }
 };

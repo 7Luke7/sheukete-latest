@@ -13,6 +13,7 @@ export const LoginUser = async (formData) => {
     const phoneEmail = formData.get("phoneEmail");
     const password = formData.get("password");
 
+    console.log(phoneEmail, password)
     try {
         if (!phoneEmail.length) {
             throw new CustomError("phoneEmail", "მეილი ან ტელეფონის ნომერი არასწორია.")
@@ -23,6 +24,7 @@ export const LoginUser = async (formData) => {
 
         let user = null;
 
+        console.log(phoneEmail, password)
         if (emailRegex.test(phoneEmail)) {
             const data = await postgresql_server_request(
                 "POST",
@@ -68,6 +70,7 @@ export const LoginUser = async (formData) => {
             throw new CustomError("password", "პაროლი არასწორია.")
         }
 
+        console.log(user.prof_id, user.id, user.role)
         const sessionId = await memcached_server_request(
             "POST",
             "session",

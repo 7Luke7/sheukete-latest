@@ -1,15 +1,15 @@
+// app.config.js
 import { defineConfig } from "@solidjs/start/config";
-
-export default defineConfig({
+var app_config_default = defineConfig({
   vite({ router }) {
     if (router === "server") {
-     
     } else if (router === "client") {
-      // Client-specific settings
     } else if (router === "server-function") {
-      // Server function-specific settings
     }
     return { plugins: [] };
   },
-  ssr: true
-})
+  ssr: \u10E4\u10D0\u10DA\u10E1\u10D4
+});
+export {
+  app_config_default as default
+};

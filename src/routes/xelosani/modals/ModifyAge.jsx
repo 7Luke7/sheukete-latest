@@ -5,7 +5,7 @@ import dropdownSVG from "../../../svg-images/svgexport-8.svg";
 import closeIcon from "../../../svg-images/svgexport-12.svg";
 import { modify_user_date } from "~/routes/api/xelosani/modify/date";
 
-const ModifyAge = (props) => {
+export const ModifyAge = (props) => {
   const [currentDate, setCurrentDate] = createSignal(new Date(props.date));
   const [showYearDropdown, setShowYearDropdown] = createSignal(false);
   const [weeks, setWeeks] = createSignal();
@@ -252,5 +252,3 @@ const ModifyAge = (props) => {
     </div>
   );
 };
-
-export default ModifyAge

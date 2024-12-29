@@ -2,7 +2,7 @@ import confetti from "canvas-confetti"
 import { onCleanup, onMount } from 'solid-js';
 import { setup_done } from "~/routes/api/user";
 
-const FireworkConfetti = () => {
+export const FireworkConfetti = () => {
 
   const randomInRange = (min, max) => {
     return Math.random() * (max - min) + min
@@ -36,5 +36,3 @@ const FireworkConfetti = () => {
     return <div class="fixed">
     </div>
 }
-
-export default FireworkConfetti

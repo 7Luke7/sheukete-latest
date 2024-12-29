@@ -2,7 +2,7 @@ import { batch, createSignal } from "solid-js"
 import closeIcon from "../../../svg-images/svgexport-12.svg";
 import { modify_about } from "~/routes/api/xelosani/modify/about";
 
-const ModifyAbout = (props) => {
+export const ModifyAbout = (props) => {
     const [input, setInput] = createSignal(props.about)
 
     const modify_about_handler = async (e) => {
@@ -46,7 +46,7 @@ const ModifyAbout = (props) => {
                     maxlength="600" id="with-avatar-focused" placeholder="აღწერეთ თქვენი უნარები, გამოცდილებები..." rows="5" cols="50"></textarea>
                 <p class="flex w-full items-center justify-between text-xs">
                     <span class="font-[thin-font] text-gray-700 font-bold">თქვენს შესახებ</span>
-                    <span id="with-avatar-focused-character-count" class="text-slate-500 transition-colors duration-300 ease-in-out">{input().trim().length}/600</span>
+                    <span id="with-avatar-focused-character-count" class="text-slate-500 transition-colors duration-300 ease-in-out">{input().trim()?.length}/600</span>
                 </p>
                 <button type="submit" className="py-2 mt-3 w-full px-3 rounded-md text-sm font-[thin-font] font-bold bg-dark-green text-white transition-all duration-500 hover:bg-dark-green-hover">
                     დადასტურება
@@ -54,5 +54,3 @@ const ModifyAbout = (props) => {
             </form>
     </div>
 }
-
-export default ModifyAbout

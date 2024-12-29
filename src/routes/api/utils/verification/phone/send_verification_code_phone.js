@@ -1,3 +1,4 @@
+// "use server"
 // import { redisClient } from "~/entry-server"
 // import { json } from "@solidjs/router"
 // import { Damkveti, Xelosani } from "../../models/User";

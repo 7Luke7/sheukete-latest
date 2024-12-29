@@ -21,10 +21,10 @@ import { WorkDropdown } from "./header-comps/WorkDropdown";
 import defaultProfileSVG from "../default_profile.png";
 import logoutSVG from "../svg-images/box-arrow-right.svg";
 import { logout_user } from "~/routes/api/user";
-import { header } from "~/routes/api/header";
+import {header} from "~/routes/api/header"
 
 export const Header = () => {
-  const user = createAsync(header);
+  const user = createAsync(() => header());
   const [chosenQuery, setChosenQuery] = createSignal("ხელოსანი");
   const [value, setValue] = createSignal("");
   const [display, setDisplay] = createSignal(null);
@@ -41,26 +41,33 @@ export const Header = () => {
       alert("მოძებნა ვერ მოხერხდება ცადეთ თავიდან");
     }
   };
-
+  
   onMount(async () => {
-    const response = await fetch(`http://localhost:5555/get_profile_image`, {
-      method: "POST",
-      body: JSON.stringify({
-        role: user().role,
-        profId: user().profId
-      }),
-      headers: {
-        'Content-Type': "application/json",
+    if (user() === 401) return setProfileImage(defaultProfileSVG);
+    try {
+      const response = await fetch(`http://localhost:5555/get_profile_image`, {
+        method: "POST",
+        body: JSON.stringify({
+          role: user()?.role,
+          profId: user()?.profId,
+        }),
+        headers: {
+          'Content-Type': "application/json",
+        },
+      });
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        setProfileImage(url);
+      } else {
+        console.error(`Failed to fetch profile image: ${response.status}`);
+        setProfileImage(defaultProfileSVG);
       }
-    })
-    if (response.status === 200 ){
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      setProfileImage(url)
-    } else {
-      setProfileImage(defaultProfileSVG)
+    } catch (error) {
+      console.error(`Error fetching profile image: ${error.message}`);
+      setProfileImage(defaultProfileSVG);
     }
-  })
+  });
 
   const handleBodyClick = (event) => {
     if (
@@ -176,7 +183,7 @@ export const Header = () => {
               <Match when={user() === 401}>
                 <A href="/login">შესვლა</A>
                 <A
-                  href="/choose"
+                  href="/register"
                   class="bg-dark-green hover:bg-dark-green-hover transition ease-in delay-20 text-white px-3 py-1 rounded-[16px]"
                 >
                   რეგისტრაცია

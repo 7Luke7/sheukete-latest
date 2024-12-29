@@ -5,7 +5,7 @@ import jobs from "../../../Components/header-comps/jobs_list.json";
 import { For, Show, batch, createSignal } from "solid-js";
 import { revalidate } from "@solidjs/router";
 
-const ModifySkill = (props) => {
+export const ModifySkill = (props) => {
   const [activeParentIndex, setActiveParentIndex] = createSignal(null);
   const [activeChildIndex, setActiveChildIndex] = createSignal(null);
   const [childChecked, setChildChecked] = createSignal(props.child)
@@ -227,7 +227,7 @@ const ModifySkill = (props) => {
                       <div class="flex items-center gap-x-2">
                         <input
                           type="checkbox"
-                          checked={mainChecked().includes(m)}
+                          checked={mainChecked()?.includes(m)}
                           onChange={(e) => handleMainChange(e.target.checked, m, jobs[0], Parentindex)}
                           name="rules-confirmation"
                           class="accent-dark-green-hover"
@@ -338,5 +338,3 @@ const ModifySkill = (props) => {
     </div>
   );
 };
-
-export default ModifySkill

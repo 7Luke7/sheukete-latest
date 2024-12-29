@@ -2,41 +2,22 @@ import { batch } from "solid-js";
 import closeIcon from "../../../svg-images/svgexport-12.svg";
 import { modify_user_schedule } from "~/routes/api/xelosani/modify/schedule";
 
-const ModifyWorkSchedule = (props) => {
+export const ModifyWorkSchedule = (props) => {
   const handle_user_schedule = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     try {
-      const formData = new FormData(e.target);
-      const parseTime = (time) => {
-        const [hours, minutes] = time.split(":").map(Number);
-        return new Date(0, 0, 0, hours, minutes);
-      };
-      for (let i = 0; i < 7; i++) {
-        if (parseTime(props.schedule[i].startTime).getTime()
-            ===
-            parseTime(formData.get(
-                `${props.schedule[i].day}-startTime`
-              )).getTime() &&
-              parseTime(props.schedule[i].endTime).getTime()
-              ===
-              parseTime(formData.get(
-                  `${props.schedule[i].day}-endTime`
-                )).getTime()
-        ) {
-          return props.setModal(null);
-        }
-      }
-      const response = await modify_user_schedule(formData);
-      if (response !== 200) throw new Error(response);
-      batch(() => {
-        props.setToast({
-          message: "განრიგი წარმატებით განახლდა.",
-          type: true,
+        const formData = new FormData(e.target)
+        const response = await modify_user_schedule(formData)
+        if (response !== 200) throw new Error(response)
+        batch(() => {
+            props.setToast({
+              message: "განრიგი წარმატებით განახლდა.",
+              type: true
+            })
+            props.setModal(null)
         });
-        props.setModal(null);
-      });
-    } catch (error) {
-      alert(error);
+    } catch(error) {
+        alert(error)
     }
   };
   return (
@@ -94,5 +75,3 @@ const ModifyWorkSchedule = (props) => {
     </div>
   );
 };
-
-export default ModifyWorkSchedule;

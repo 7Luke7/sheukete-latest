@@ -1,6 +1,6 @@
-"use server";
+"use server"
 import { getRequestEvent } from "solid-js/web";
-import { cache, json } from "@solidjs/router";
+import { json } from "@solidjs/router";
 import { verify_user } from "./session_management";
 import { CustomError } from "./utils/errors/custom_errors";
 import { HandleError } from "./utils/errors/handle_errors";
@@ -8,7 +8,7 @@ import { hide_email, hide_mobile_number } from "./utils/hide/mail";
 import { memcached_server_request } from "./utils/ext_requests/memcached_server_request";
 import { postgresql_server_request } from "./utils/ext_requests/posgresql_server_request";
 
-export const get_account = cache(async () => {
+export const get_account = async () => {
   try {
     const event = getRequestEvent();
     const session = await verify_user(event);
@@ -42,9 +42,9 @@ export const get_account = cache(async () => {
       return 401;
     }
   }
-}, "account");
+}
 
-export const get_xelosani = cache(async (prof_id) => {
+export const get_xelosani = async (prof_id) => {
   try {
     const event = getRequestEvent();
     const session = await verify_user(event);
@@ -91,6 +91,7 @@ export const get_xelosani = cache(async (prof_id) => {
     }
 
     return {
+      profId: session.profId,
       ...user,
       displayBirthDate,
       creationDateDisplayable,
@@ -136,15 +137,14 @@ export const get_xelosani = cache(async (prof_id) => {
         }
       }
   
-      return json({
+      return {
         ...user,
         displayBirthDate,
         creationDateDisplayable,
         status: 401,
-      }, {revalidate: "none"  });
-    }
-  }
-}, "xelosani")
+      }
+  }}
+}
 
 export const getTimeAgo = (createdAt) => {
   const now = new Date();
