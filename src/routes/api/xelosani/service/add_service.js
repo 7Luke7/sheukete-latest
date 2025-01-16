@@ -3,11 +3,11 @@ import { verify_user } from "../../session_management";
 import { CustomError } from "../../utils/errors/custom_errors";
 import crypto from "node:crypto";
 import { HandleError } from "../../utils/errors/handle_errors";
-import { compress_image } from "../../compress_images";
-import { add_image_to_s3 } from "../../damkveti/job";
+import { postgresql_server_request } from "../../utils/ext_requests/posgresql_server_request";
+import { fileserver_request } from "../../utils/ext_requests/fileserver_request";
 
-const MAX_SINGLE_FILE_SIZE = 5 * 1024 * 1024;
-const MAX_TOTAL_SIZE = 25 * 1024 * 1024;
+const MAX_SINGLE_FILE_SIZE = 2 * 1024 * 1024;
+const MAX_TOTAL_SIZE = 15 * 1024 * 1024;
 
 export async function POST({request}) {
     try {
@@ -118,65 +118,77 @@ export async function POST({request}) {
                   ).ExntendToErrorName("ValidationError");
                 }
 
-              const random_id = crypto.randomUUID();
-              service[i]["publicId"] = random_id;
-              service[i]["childCategory"] = childCategory;
-              service[i]["parentCategory"] = parentCategory
+              // const random_id = crypto.randomUUID();
+              // service[i]["publicId"] = random_id;
+              // service[i]["childCategory"] = childCategory;
+              // service[i]["parentCategory"] = parentCategory
           }
         }
 
         const tags = ["mock"]
-        const random_id = crypto.randomUUID();
 
-        const service_post = await Service.create({
-          _creator: user.userId,
-          display: service,
-          categories: [...childCategory, mainCategory, parentCategory],
-          publicId: random_id, 
-          tags: tags,
-          location,
-          mainTitle: title,
-          mainCategory: mainCategory,
-          availability: schedule,
-          mainDescription: description,
-          mainPrice: price
-        });
-    
-        await Xelosani.findByIdAndUpdate(user.userId, {
-          $addToSet: {
-            services: service_post._id
+        const response = await postgresql_server_request(
+          "POST",
+          "xelosani/service",
+          {
+            body: JSON.stringify({
+              _creator: user.userId,
+              categories: [...childCategory, mainCategory, parentCategory],
+              tags: tags,
+              location,
+              mainTitle: title,
+              mainCategory: mainCategory,
+              availability: schedule,
+              mainDescription: description,
+              mainPrice: price
+            }),
+            headers: {
+              "Content-Type": "application/json"
+            }
           }
-        })
-
-        const thumbNail_bytes = await thumbNail.arrayBuffer(thumbNail);
-        const thumbNail_buffer = Buffer.from(thumbNail_bytes);
-        const thumb_compressed = await compress_image(thumbNail_buffer, 50, 200, 200);
-        await add_image_to_s3(
-          thumb_compressed,
-          service_post.publicId,
-          "service-post-thumbnail"
-        );
-    
+        )
         let count = 0;
-    
-        for (let i = 0; i < imageLength; i++) {
-          const current_image = formData.get(`service-${i}-gallery-image`)
-          if (current_image.size > MAX_SINGLE_FILE_SIZE) {
-            throw Error(`${current_image.name}, ფაილის ზომა აჭარბებს 5მბ ლიმიტს.`);
+
+        if (response.status === 200) {
+          if (thumbNail.size > MAX_SINGLE_FILE_SIZE) {
+            throw Error(`${current_image.name}, ფაილის ზომა აჭარბებს 2მბ ლიმიტს.`);
+          } 
+
+          for (let i = 0; i < imageLength; i++) {
+            const current_image = formData.get(`service-${i}-gallery-image`)
+            if (current_image.size > MAX_SINGLE_FILE_SIZE) {
+              throw Error(`${current_image.name}, ფაილის ზომა აჭარბებს 2მბ ლიმიტს.`);
+            }
+            count += current_image.size;
+            if (count > MAX_TOTAL_SIZE) {
+              throw Error("ფაილების ჯამური ზომა აჭარბებს 15მბ ერთობლივ ლიმიტს.");
+            }
           }
-          count += current_image.size;
-          if (count > MAX_TOTAL_SIZE) {
-            throw Error("ფაილების ჯამური ზომა აჭარბებს 25მბ ერთობლივ ლიმიტს.");
+
+          formData.delete("schedule")
+          formData.delete("service")
+          formData.delete("childCategory")
+          formData.delete("price")
+          formData.delete("title")
+          formData.delete("mainCategory")
+          formData.delete("files[]")
+          formData.delete("location")
+          formData.delete("description")
+          formData.delete("parentCategory")
+
+          const file_server_response = fileserver_request("POST", `service/${user.userId}/${response.id}`, {
+            body: formData,
+          })
+
+          if (file_server_response.status === 200) {
+            
           }
-          const bytes = await current_image.arrayBuffer(current_image);
-          const buffer = Buffer.from(bytes);
-          const compressed_buffer = await compress_image(buffer, 50, 600, 400); // mobile has to be added
-          await add_image_to_s3(
-            compressed_buffer,
-            `${service_post.publicId}-${i}`,
-            "service-post-gallery"
-          );
         }
+    
+    /*          
+    const compressed_buffer = await compress_image(buffer, 50, 600, 400); // mobile has to be added
+    `${service_post.publicId}-${i}`
+    */
     
         return {
             status: 200
@@ -189,7 +201,7 @@ export async function POST({request}) {
             status: 400,
           };
         } else {
-          console.log(error);
+          console.log("add_service_error: ", error);
           return {
             status: 500,
           };

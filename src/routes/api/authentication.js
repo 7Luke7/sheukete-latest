@@ -23,54 +23,37 @@ export const LoginUser = async (formData) => {
         }
 
         let user = null;
-
-        console.log(phoneEmail, password)
+        let body = null 
         if (emailRegex.test(phoneEmail)) {
-            const data = await postgresql_server_request(
-                "POST",
-                "login",
-                {
-                    body: JSON.stringify({
-                        email: phoneEmail,
-                    }),
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
-                }
-            )
-            if (data.status !== 200) {
-                throw new CustomError(data.field, data.message)
-            }
-
-            user = data
+            body = {email: phoneEmail}
         } else if (phoneRegex.test(phoneEmail)) {
-            const data = await postgresql_server_request(
-                "POST",
-                "login",
-                {
-                    body: JSON.stringify({
-                        phone: phoneEmail,
-                    }),
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
-                }
-            )
-            
-            if (data.status !== 200) {
-                throw new CustomError(data.field, data.message)
-            }
-            user = data
-        } else {
+            body = {phone: phoneEmail}  
+        }
+
+        if (!body) {
             throw new CustomError("phoneEmail", "მეილი ან ტელეფონის ნომერი არასწორია.")
         }
+        const data = await postgresql_server_request(
+            "POST",
+            "login",
+            {
+                body: JSON.stringify(body),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }
+        )
+        if (data.status !== 200) {
+            throw new CustomError(data.field, data.message)
+        }
+
+        user = data
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             throw new CustomError("password", "პაროლი არასწორია.")
         }
 
-        console.log(user.prof_id, user.id, user.role)
         const sessionId = await memcached_server_request(
             "POST",
             "session",

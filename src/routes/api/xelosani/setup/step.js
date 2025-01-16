@@ -8,7 +8,7 @@ export const get_profile_photo = async () => {
   try {
     const event = getRequestEvent();
     const session = await verify_user(event);
-    const request = await fileserver_request("POST", `profile_image_no_id`, {
+    const request = await fileserver_request("POST", "profile_image_no_id", {
       body: JSON.stringify({
         role: session.role,
         profId: session.profId

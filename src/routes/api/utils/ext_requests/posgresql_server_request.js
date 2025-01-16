@@ -13,7 +13,6 @@ export const postgresql_server_request = async (method, params, headers) => {
         }
         
         const data = await response.json()
-        console.log({...data, status: response.status})
         return {...data, status: response.status}
     } catch (error) {
         console.log(error)

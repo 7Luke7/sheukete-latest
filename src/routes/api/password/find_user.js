@@ -3,6 +3,7 @@ import { CustomError } from "../utils/errors/custom_errors"
 import { postgresql_server_request } from "../utils/ext_requests/posgresql_server_request"
 import { HandleError } from "../utils/errors/handle_errors"
 import { json } from "@solidjs/router"
+import { fileserver_request } from "../utils/ext_requests/fileserver_request"
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 const phoneRegex = /^\d{9}$/
@@ -57,9 +58,19 @@ export async function POST({request}) {
             throw new Error(400)
         }
 
-        // const profImage = await get_s3_image(`${user.profId}-profpic`)
 
-        return json({...user, profImage: "https://hatrabbits.com/wp-content/uploads/2017/01/random.jpg"}, {status: 200})
+        const response = await fileserver_request("POST", "get_profile_image", {
+            body: JSON.stringify({
+                role: user.role,
+                profId: user.prof_id
+              }),
+              headers: {
+                'Content-Type': "application/json"
+              }
+        })
+
+
+        return json(user, {status: 200})
     } catch (error) {
         const errors = new HandleError(error).validation_error();
         return json(errors, {status: 400})

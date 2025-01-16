@@ -24,9 +24,24 @@ export const ProfileRight = (props) => {
           შემოუერთდა {props.user().creationDateDisplayable}
         </p>
       </div>
-      <p class="text-sm mt-2 font-[thin-font] break-all text-gr font-bold">
-        {props.user().about}
-      </p>
+      <Switch>
+        <Match when={props.user().about}>
+          <p class="text-sm mt-2 font-[thin-font] break-all text-gr font-bold">
+          {props.user().about}
+        </p>
+        </Match>
+        <Match when={!props.user().about && props.user().status !== 200}>
+          <p class="text-sm mt-2 font-[thin-font] break-all text-gr font-bold">აღწერა არ არის დამატებული.</p>
+        </Match>
+        <Match when={!props.user().about && props.user().status === 200}>
+            <A
+                href="/setup/xelosani/step/about"
+                class="px-4 py-2 mt-2 bg-dark-green font-[thin-font] w-[160px] text-sm font-bold hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
+              >
+                დაამატე აღწერა
+              </A>
+        </Match>
+      </Switch>
       
       <div class="flex items-center gap-x-1 mt-5">
         <h2 class="font-[bolder-font] font-bold text-gray-900 text-lg">
@@ -38,11 +53,27 @@ export const ProfileRight = (props) => {
           </button>
         </Show>
       </div>
-      <div class="mt-2">
-        <section class="w-full flex">
-          <SkillCarousel skills={props.user()?.skills}></SkillCarousel>
-        </section>
-      </div>
+
+      <Switch>
+        <Match when={props.user().skills}>
+        <div class="mt-2">
+          <section class="w-full flex">
+            <SkillCarousel skills={props.user()?.skills}></SkillCarousel>
+          </section>
+        </div>
+        </Match>
+        <Match when={!props.user().about && props.user().status !== 200}>
+          <p class="text-sm mt-2 font-[thin-font] break-all text-gr font-bold">სპეციალობა არ არის დამატებული.</p>
+        </Match>
+        <Match when={!props.user().about && props.user().status === 200}>
+            <A
+                href="/setup/xelosani/step/skills"
+                class="px-4 py-2 mt-2 bg-dark-green font-[thin-font] w-[200px] text-sm font-bold hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
+              >
+                დაამატე სპეციალობა
+              </A>
+        </Match>
+      </Switch>
       
       <div class="flex items-center gap-x-1 mt-5">
         <h2 class="font-[bolder-font] font-bold text-gray-900 text-lg">

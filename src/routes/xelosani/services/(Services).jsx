@@ -58,11 +58,10 @@ const Services = () => {
     noAutoAbort: true,
   });
   const [isSendingRequest, setIsSendingRequest] = createSignal(false);
-  console.log("services: ", location())
   const navigate = useNavigate();
 
-  const MAX_SINGLE_FILE_SIZE = 5 * 1024 * 1024;
-  const MAX_TOTAL_SIZE = 25 * 1024 * 1024;
+  const MAX_SINGLE_FILE_SIZE = 2 * 1024 * 1024;
+  const MAX_TOTAL_SIZE = 15 * 1024 * 1024;
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
@@ -76,7 +75,7 @@ const Services = () => {
       }
     
       const file_existence = image().some((a) => a.name === file.name)
-      if (file_existence) {
+      if (file_existence && currentStep() !== "thumbnail") {
         return setToast({
           type: false,
           message: `${file.name} უკვე დამატებული გაქვთ.`
@@ -86,7 +85,7 @@ const Services = () => {
       if (file.size > MAX_SINGLE_FILE_SIZE) {
         return setToast({
           type: false,
-          message: `${file.name}, ფაილის ზომა აჭარბებს 5მბ ლიმიტს.`,
+          message: `${file.name}, ფაილის ზომა აჭარბებს 2მბ ლიმიტს.`,
         });
       } else {
         setTotalSize((a) => (a += file.size));
@@ -96,7 +95,7 @@ const Services = () => {
     if (totalSize() > MAX_TOTAL_SIZE) {
       return setToast({
         type: false,
-        message: "ფაილების ჯამური ზომა აჭარბებს 25მბ ერთობლივ ლიმიტს.",
+        message: "ფაილების ჯამური ზომა აჭარბებს 15მბ ერთობლივ ლიმიტს.",
       });
     }
 
@@ -119,7 +118,7 @@ const Services = () => {
       const fd = new FormData(e.target);
 
       if (!childChecked().length) {
-        setToast({ type: false, message: "გთხოვთ აირჩიოთ კატეგორია." });
+        setToast({ type: false, message: "გთხოვთ აირჩიოთ სპეციალობა." });
         return;
       }
 
@@ -412,20 +411,22 @@ const Services = () => {
         if (parentChecked() && parentChecked() !== parentCategory) {
           return [prev];
         }
+
         return [...prev, j];
       });
         setService((prev) => {
           if (prev.some(p => p.id === i())) {
-            return
+            return console.log(i(), p)
           } else {
             return [
               ...prev,
-              { id: i, title: "", category: j, description: "", price: null },
+              { id: i(), title: "", category: j, description: "", price: null },
             ];
           }
         });
     } else {
       setService((prev) => {
+        if (prev)
         return prev.filter((_, index) => index !== i());
       });
       setChildChecked((prev) => {
@@ -612,7 +613,9 @@ const Services = () => {
               >
                 <button
                   type="button"
-                  onClick={() => setShowCategoryModal(true)}
+                  onClick={() => {
+                    setShowCategoryModal(true)
+                  }}
                   class="bg-gray-800 px-4 py-2 mb-4 font-[thin-font] text-md font-bold hover:bg-gray-700 transition ease-in delay-20 text-white text-center rounded-[16px]"
                 >
                   დაამატე სპეციალობა
@@ -802,7 +805,7 @@ const Services = () => {
                         </span>
                       </p>
                       <p class="text-xs text-gray-500">
-                        SVG, PNG, JPG. (მაქს. 5MB)
+                        PNG, JPEG, WEBP. (მაქს. 5MB)
                       </p>
                     </div>
                     <input

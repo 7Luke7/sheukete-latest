@@ -165,6 +165,7 @@ const ResetPassword = (props) => {
         type: true,
         message: "პაროლი წარმატებით განახლდა.",
       });
+      navigate("/login")
     } catch (error) {
       console.log(error);
     }

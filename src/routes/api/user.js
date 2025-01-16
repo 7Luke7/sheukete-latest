@@ -70,8 +70,13 @@ export const get_xelosani = async (prof_id) => {
 
     if (user.services) {
       for (let i = 0; i < user.services.length; i++) {
+        //user.id
+        //user.publicId
+        const file_server_response = await fetch("GET", `service/${user.id}/serviceId/${user.services[i].publicId}`, {
+
+        })
         const service_thumbnail = await get_s3_image(
-          `${user.services[i].publicId}-service-post-thumbnail`
+          `${user.services[i].publicId}-service-0-gallery-image`
         );
         user.services[i]["service_thumbnail"] = service_thumbnail;
       }
@@ -323,15 +328,14 @@ export const get_damkveti = async (prof_id) => {
       throw new Error(401);
     }
 
-    const { jobs, ...user } = await Damkveti.findById(
-      redis_user.userId,
-      "-_id -__v -updatedAt -notificationDevices -__t -password"
-    )
-      .populate("jobs", "-mileStones -_id -__v -updatedAt -_creator")
-      .lean();
+    const user = await postgresql_server_request("GET", `damkveti/${session.profId}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     let displayBirthDate;
-    if (user.date && user.privacy.birthDate !== "private") {
+    if (user.date) {
       displayBirthDate = new Date(user["date"]).toLocaleDateString("ka-GE", {
         weekday: "long",
         year: "numeric",
@@ -345,22 +349,12 @@ export const get_damkveti = async (prof_id) => {
 
     const keys = Object.keys(user.privacy);
     for (let i = 0; i < keys.length; i++) {
-      if (user.privacy[keys[i]] === "semipublic") {
-        if (keys[i] === "email") {
+      if (user.privacy[keys[i]] === "ნახევრად დამალვა") {
+        if (keys[i] === "email" && user.email) {
           user["email"] = hide_email(user.email);
         }
-        if (keys[i] === "phone") {
+        if (keys[i] === "phone" && user.phone) {
           user["phone"] = hide_mobile_number(user.phone);
-        }
-      } else if (user.privacy[keys[i]] === "private") {
-        if (keys[i] === "email") {
-          delete user["email"];
-        }
-        if (keys[i] === "phone") {
-          delete user["phone"];
-        }
-        if (keys[i] === "birthDate") {
-          delete user["date"];
         }
       }
     }

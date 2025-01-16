@@ -29,6 +29,7 @@ const FindUser = () => {
             }
             
             setIsSendingRequest(true)
+            // fetching user specific data
             const response = await fetch(`/api/password/find_user`, {
                 method: "POST",
                 body: formData,
@@ -42,8 +43,22 @@ const FindUser = () => {
                 }])
             }
 
+            // fetching profile picture based on role and profile id
+            const prof_pic_response = await fetch(`http://localhost:5555/get_profile_image`, {
+                method: "POST",
+                body: JSON.stringify({
+                  role: data.role,
+                  profId: data.prof_id,
+                }),
+                headers: {
+                  'Content-Type': "application/json",
+                },
+              });
+
+            const blob = await prof_pic_response.blob();
+            const url = URL.createObjectURL(blob);
             setIsSendingRequest(false)
-            setUser(data) 
+            setUser({...data, profImage: url}) 
         } catch (error) {
             if (error.name === "AbortError") {
                 filterErrors(error);
@@ -91,7 +106,7 @@ const FindUser = () => {
         <Show when={user()}>
         <div class="flex gap-y-1 flex-col items-center">
             <p class="text-gray-900 font-bold font-[normal-font] text-sm">თქვენ ხომ არ ხართ?</p>
-            <img src={user().profImage} width={80} height={80} class="rounded-full"></img>
+            <img src={user().profImage} width={80} height={80} class="rounded-full border"></img>
             <div class="flex gap-x-2 justify-center">
                 <p class="text-gray-700 font-[normal-font] text-sm font-bold">{user().firstname}</p>
                 <p class="text-gray-700 font-[normal-font] text-sm font-bold">{user().lastname}</p>
