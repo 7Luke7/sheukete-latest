@@ -13,7 +13,6 @@ export const fileserver_request = async (method, params, headers) => {
         }
         
         const data = await response.json()
-        console.log(response)
         return {...data, status: response.status}
     } catch (error) {
         console.log(error)

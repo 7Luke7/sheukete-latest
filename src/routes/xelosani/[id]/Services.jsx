@@ -9,13 +9,34 @@ import ChevronRightBlack from "../../../svg-images/ChevronRightBlack.svg";
 import emptyStar from "../../../svg-images/svgexport-24.svg";
 import fullStar from "../../../svg-images/svgexport-19.svg";
 import avialabilityIcon from "../../../svg-images/accessibility-availability-custom-svgrepo-com.svg"
+import { createStore } from "solid-js/store";
 
 export const Services = (props) => {
   let swiperServiceEl;
   let navigateRightService;
   let navigateLeftService;
+  const [services, setServices] = createStore(props.services);
 
-  onMount(() => {
+  onMount(async () => {
+    const response = await fetch(`http://localhost:5555/service/frontpage/thumbnails/${props.profId}`, {
+      method: "POST",
+      body: JSON.stringify({
+        services: services.map(s => s.publicId)
+      }),
+      headers: {
+        'Content-Type': "application/json",
+      }
+    })
+    
+    const { thumbnails } = await response.json();
+
+    setServices(
+      services.map((service) => {
+        const thumbnail = thumbnails.find((t) => t.serviceId === service.publicId);
+        return thumbnail ? { ...service, thumbnail_url: thumbnail.url } : service;
+      })
+    );
+
     new Swiper(swiperServiceEl, {
       modules: [Navigation, Pagination],
       spaceBetween: 10,
@@ -41,14 +62,14 @@ export const Services = (props) => {
     <div class="relative w-full max-w-[1440px] mx-auto">
       <div ref={swiperServiceEl} class="swiper w-full">
         <div class="swiper-wrapper">
-          <For each={props.services}>
+          <For each={services}>
             {(a) => (
               <div class="swiper-slide h-[630px]">
                 <div class="flex border h-[630px] w-[351px] rounded-t-[16px] overflow-hidden flex-col">
                   <div class="relative">
-                    <img src={a.service_thumbnail} loading="lazy" class="w-[351px] h-[351px]" />
+                    <img src={`http://localhost:5555${a.thumbnail_url}`} loading="lazy" class="w-[351px] h-[351px]" />
                     <span class="absolute z-10 bg-dark-green text-white py-2 px-2 text-xs font-[thin-font] font-bold rounded-tl-[16px] top-0 left-0">
-                      {a.mainCategory}
+                      {a.main_category}
                     </span>
                       <img loading="lazy" title="სერვისი ხელმისაწვდომია" class="absolute z-20 bg-dark-green text-white py-2 px-4 text-xs font-[thin-font] font-bold rounded-bl-[16px] top-0 right-0" src={avialabilityIcon}></img>
                     <span class="absolute z-10 bg-dark-green text-white py-2 px-2 text-xs font-[thin-font] font-bold rounded-l-[16px] bottom-4 right-0">
@@ -69,16 +90,16 @@ export const Services = (props) => {
                   <div class="p-2 h-full justify-between gap-y-2 flex flex-col">
                     <div>
                     <h2 class="border-b min-h-[55px] pb-1 font-[normal-font] text-gray-900 break-all text-md font-bold">
-                      {a.mainTitle}
+                      {a.main_title}
                     </h2>
                     <p class="font-[thin-font] text-gr break-all text-xs font-bold">
-                      {a.mainDescription}
+                      {a.main_description}
                     </p>
                     </div>
                     <div>
                     <div class="flex items-center justify-between">
                       <p class="my-1 font-[normal-font] font-bold text-dark-green text-sm">
-                        ფასი: {a.mainPrice}₾
+                        ფასი: {a.main_price}₾
                       </p>
                       <Show when={a.ratings}>
                         <div class="flex">
@@ -113,19 +134,13 @@ export const Services = (props) => {
                           </A>
                         </Match>
                         <Match when={props.status === 200}>
-                          <button
-                            id="service_btn"
-                            onClick={() => {
-                              batch(() => {
-                                props.setModal("სერვისები")
-                                props.setEditingServiceTarget(a)
-                              })
-                            }}
+                          <A
+                            href={`/xelosani/services?id=${a.publicId}&profId=${props.profId}`}
                             class="bg-dark-green flex items-center gap-x-1 justify-center w-1/2 py-1 hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
                           >
                             <img loading="lazy" src={EditSVG} />
                             შეასწორე
-                          </button>
+                          </A>
                         </Match>
                       </Switch>
                     </div>

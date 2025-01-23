@@ -1,8 +1,7 @@
-import { Index, Match, createSignal, Show, Switch, batch, onMount, startTransition } from "solid-js";
+import { Index, Match, createSignal, onMount, Show, Switch, batch, startTransition } from "solid-js";
 import location from "../../../svg-images/location.svg";
 import telephone from "../../../svg-images/telephone.svg";
 import envelope from "../../../svg-images/envelope.svg";
-import defaultProfileSVG from "../../../default_profile.png";
 import CameraSVG from "../../../svg-images/camera.svg";
 import pen from "../../../svg-images/pen.svg";
 import cake from "../../../svg-images/cake.svg";
@@ -10,33 +9,42 @@ import spinnerSVG from "../../../svg-images/spinner.svg";
 import { A } from "@solidjs/router";
 import { makeAbortable } from "@solid-primitives/resource";
 import {Buffer} from "buffer"
-
+ 
 export const ProfileLeft = (props) => {
   const [imageLoading, setImageLoading] = createSignal(false);
   const [imageUrl, setImageUrl] = createSignal();
   const [file, setFile] = createSignal();
   const [signal,abort,filterErrors] = makeAbortable({timeout: 0, noAutoAbort: true});
+  const [friendRequestId, setFriendRequestId] = createSignal()
+  const [sendingFriendRequest, setSendingFriendRequest] = createSignal()
 
   onMount(async () => {
-    const response = await fetch(`http://localhost:5555/get_profile_image`, {
-      method: "POST",
-      body: JSON.stringify({
-        role: "xelosani",
-        profId: props.user().profId || props.url_prof_id
-      }),
-      headers: {
-        'Content-Type': "application/json",
+    if (props.user().status === 200) {
+      return
+    }
+    try {
+      const response = await fetch(`http://localhost:4321/xelosani/friend/request/${props.user().profId}/status`, {
+        method: "GET",
+        credentials: "include"
+      })
+
+      if (response.status === 200) {
+        const data = await response.json()
+        
+        if (data.status === "accepted" || data.status === "pending") {
+          setFriendRequestId({
+            status: data.status,
+            id: data.id
+          })          
+        }
+      } else {
+        throw new Error("დაფიქსირდა შეცდომა მეგობრობის მოთხოვნის გაგზავნისას.")
       }
-    })
-    
-    if (response.status === 200 ){
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      setImageUrl(url)
-    } else {
-      setImageUrl(defaultProfileSVG)
+    } catch (error) {
+      console.log(error)
     }
   })
+
   const handleProfileImageChange = async () => {
     setImageLoading(true);
     const formData = new FormData();
@@ -114,9 +122,76 @@ export const ProfileLeft = (props) => {
     }
   };
 
+  const sendFriendRequest = async () => {
+    setSendingFriendRequest(true)
+    try {
+        const response = await fetch(`http://localhost:4321/xelosani/friend/send/${props.user().profId}`, {
+        method: "GET",
+        credentials: "include",
+        signal: signal()
+      })
+
+      const data = await response.json()
+
+      if (response.status === 200) {        
+        batch(() => {
+          props.setToast({
+            type: true,
+            message: data.message
+          })
+          setFriendRequestId({
+            status: "pending",
+            id: data.friend_request_id
+          })
+        })
+      } else {
+        props.setToast({
+          type: false,
+          message: data.message
+        })
+        throw new Error("დაფიქსირდა შეცდომა მეგობრობის მოთხოვნის გაგზავნისას.")
+      }
+    } catch (error) {
+      if (error.name === "AbortError") {
+        filterErrors(error);
+      }
+      console.log(error)
+    } finally {
+      setSendingFriendRequest(false)
+    }
+  }
+
+  const unfriend_or_cancel_request = async () => {
+    try {
+      if (!friendRequestId()) {
+        throw new Error("მეგობრობის მოთხოვნა არ არის გაგზავნილი.")
+      }
+      const response = await fetch(`http://localhost:4321/xelosani/friend/cancel/${friendRequestId().id}`, {
+        method: "DELETE",
+        credentials: "include"
+      })
+
+      if (response.status === 200) {
+        const data = await response.json()
+        
+        batch(() => {
+          props.setToast({
+            type: true,
+            message: data.message
+          })
+          setFriendRequestId(null)
+        })
+      } else {
+        throw new Error("დაფიქსირდა შეცდომა მეგობრობის მოთხოვნის გაგზავნისას.")
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <div class="flex sticky top-[50px] gap-y-3 flex-col">
-      <div class="border-2 py-2 flex flex-col min-w-[262px] px-2 items-center flex-[2]">
+      <div class="border-2 relative flex flex-col min-w-[262px] items-center flex-[2]">
         <Switch>
           <Match when={props.user().status !== 401}>
             <Switch>
@@ -138,9 +213,9 @@ export const ProfileLeft = (props) => {
                       <img
                         loading="lazy"
                         id="prof_pic"
-                        src={imageUrl()}
+                        src={imageUrl() ? imageUrl() : `http://localhost:5555/static/images/xelosani/profile/${props.user().profId}.webp`}
                         alt="profilis foto"
-                        class="border-2 rounded-[50%] w-[140px] h-[140px] border-solid border-[#14a800] mb-4"
+                        class="border-2 border-indigo-100 h-[180px] w-[180px] rounded-full my-2"
                       />
                       <img
                         loading="lazy"
@@ -148,13 +223,13 @@ export const ProfileLeft = (props) => {
                         alt="კამერის აიქონი"
                         class="absolute transform opacity-50 -translate-x-1/2 -translate-y-1/2 absolute top-[50%] left-[50%]"
                       />
-                      <span class="bottom-1 right-4 absolute w-5 h-5 bg-[#14a800] border-2 border-indigo-100 rounded-full"></span>
+                      <span class="bottom-2 right-6 absolute w-5 h-5 bg-[#14a800] border-2 border-indigo-100 rounded-full"></span>
                     </div>
                   </label>
                 </div>
               </Match>
               <Match when={imageLoading()}>
-                <div class="flex flex-col justify-center mb-4 items-center w-[140px] h-[140px] rounded-[50%] bg-[#E5E7EB]">
+                <div class="flex flex-col justify-center mb-4 items-center w-full h-full rounded-[50%] bg-[#E5E7EB]">
                   <img
                     loading="lazy"
                     class="animate-spin"
@@ -190,10 +265,13 @@ export const ProfileLeft = (props) => {
               <img
                 loading="lazy"
                 id="prof_pic"
-                class="w-[130px] border-2 border-solid border-[#108a00] rounded-[50%] h-[130px]"
-                src={imageUrl()}
+                class="border-2 border-indigo-100 h-[180px] w-[180px] rounded-full my-2"
+                src={`http://localhost:5555/static/images/xelosani/profile/${props.user()?.profId}.webp`}
+                onError={(e) => {
+                  e.currentTarget.src = "http://localhost:5555/static/images/default_profile.png"
+                }}
               ></img>
-              <span class="bottom-1 right-4 absolute w-5 h-5 bg-[#108a00] border-2 border-white rounded-full"></span>
+              <span class="bottom-2 right-6 absolute w-5 h-5 bg-[#14a800] border-2 border-indigo-100 rounded-full"></span>
             </div>
           </Match>
         </Switch>
@@ -341,6 +419,13 @@ export const ProfileLeft = (props) => {
               </Match>
             </Switch>
           </div>
+          <Show when={props.user().status === 401}>
+            <div class="flex pb-1 border-b px-2 items-center gap-x-1">
+              <button onClick={sendingFriendRequest() ? () => abort() : friendRequestId() ? unfriend_or_cancel_request : sendFriendRequest} class="bg-dark-green w-full py-1 font-[thin-font] text-sm font-bold hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]">
+                {sendingFriendRequest() ? "გაუქმება" : friendRequestId()?.status === "pending" ? "მოთხოვნის გაუქმება" : friendRequestId()?.status === "accepted" ? "მეგობრობიდან წაშლა" : "მეგობრობის გაგზავნა"}
+              </button>
+            </div>
+          </Show>
           {props.user().avgrating && (
             <div class="flex">
               <Index each={new Array(3)}>

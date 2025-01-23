@@ -1,6 +1,11 @@
 import { defineConfig } from "@solidjs/start/config";
 
 export default defineConfig({
+  server: {
+    experimental: {
+      websocket: true,
+    }
+  },
   vite({ router }) {
     if (router === "server") {
      
@@ -12,4 +17,10 @@ export default defineConfig({
     return { plugins: [] };
   },
   ssr: true
-})
+}).addRouter({
+  name: "ws",
+  type: "http",
+  handler: "./src/api/ws.js",
+  target: "server",
+  base: "/ws",
+});

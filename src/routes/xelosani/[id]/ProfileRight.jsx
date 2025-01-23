@@ -3,7 +3,7 @@ import { Match, Switch, Suspense, Show, startTransition } from "solid-js";
 import { Services } from "./Services";
 import { SkillCarousel } from "./SkillCarousel";
 import pen from "../../../svg-images/pen.svg";
-
+  
 export const ProfileRight = (props) => {
   return (
     <div class="flex flex-1 flex-col border-r px-3">
@@ -83,9 +83,10 @@ export const ProfileRight = (props) => {
       <div class="mt-2">
         <Suspense fallback={<div>Loading Services...</div>}>
           <Switch>
-            <Match when={props.user().services}>
+            <Match when={props.user().services.length > 0}>
               <Services
                 services={props.user().services}
+                profId={props.user().profId}
                 setEditingServiceTarget={props.setEditingServiceTarget}
                 setModal={props.setModal}
                 status={props.user().status}

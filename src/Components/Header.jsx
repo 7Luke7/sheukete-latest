@@ -18,17 +18,39 @@ import person from "../svg-images/person.svg";
 import gear from "../svg-images/gear.svg";
 import bellSVG from "../svg-images/bell.svg";
 import { WorkDropdown } from "./header-comps/WorkDropdown";
-import defaultProfileSVG from "../default_profile.png";
 import logoutSVG from "../svg-images/box-arrow-right.svg";
 import { logout_user } from "~/routes/api/user";
-import {header} from "~/routes/api/header"
+import { header } from "~/routes/api/header";
 
 export const Header = () => {
   const user = createAsync(() => header());
   const [chosenQuery, setChosenQuery] = createSignal("ხელოსანი");
   const [value, setValue] = createSignal("");
   const [display, setDisplay] = createSignal(null);
-  const [profileImage, setProfileImage] = createSignal()
+  const [notifications, setNoifications] = createSignal();
+
+  onMount(async () => {
+    if (user() === 401) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:4321/friend/request/pending/get`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      const data = await response.json();
+      if (response.status === 200) {
+        setNoifications(data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  });
 
   const switch_query_options = (query) => {
     if (query === "ხელოსანი" || query === "სამუშაო") {
@@ -41,33 +63,6 @@ export const Header = () => {
       alert("მოძებნა ვერ მოხერხდება ცადეთ თავიდან");
     }
   };
-  
-  onMount(async () => {
-    if (user() === 401) return setProfileImage(defaultProfileSVG);
-    try {
-      const response = await fetch(`http://localhost:5555/get_profile_image`, {
-        method: "POST",
-        body: JSON.stringify({
-          role: user()?.role,
-          profId: user()?.profId,
-        }),
-        headers: {
-          'Content-Type': "application/json",
-        },
-      });
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        setProfileImage(url);
-      } else {
-        console.error(`Failed to fetch profile image: ${response.status}`);
-        setProfileImage(defaultProfileSVG);
-      }
-    } catch (error) {
-      console.error(`Error fetching profile image: ${error.message}`);
-      setProfileImage(defaultProfileSVG);
-    }
-  });
 
   const handleBodyClick = (event) => {
     if (
@@ -98,6 +93,49 @@ export const Header = () => {
     }
   };
 
+  const accept_request = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:4321/xelosani/friend/accept/${id}`, {
+        method: "GET",
+        credentials: "include"
+      })
+
+      if (response.status === 200) {        
+        setNoifications(prev => {
+          return {
+            count: prev.count - 1,
+            notifications: prev.notifications.filter(n => n.id !== id),
+          };
+        });      
+      } else {
+        throw new Error("დაფიქსირდა შეცდომა მეგობრობის მოთხოვნის უარყოფისას.")
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const reject_request = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:4321/xelosani/friend/cancel/${id}`, {
+        method: "DELETE",
+        credentials: "include"
+      })
+
+      if (response.status === 200) {
+        setNoifications(prev => {
+          return {
+            count: prev.count - 1,
+            notifications: prev.notifications.filter(n => n.id !== id),
+          };
+        });      
+      } else {
+        throw new Error("დაფიქსირდა შეცდომა მეგობრობის მოთხოვნის უარყოფისას.")
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
   return (
     <header class="border-b sticky top-0 left-0 right-0 z-50 bg-white border-slate-300">
       <div class="flex h-[45px] itmes-center mx-auto w-[90%]">
@@ -175,7 +213,9 @@ export const Header = () => {
                     <img
                       class="rounded-[50%] border-2 w-[25px] h-[25px]"
                       alt="პროფილის ფოტო სათავე"
-                      src={profileImage()}
+                      src={`http://localhost:5555/static/images/${
+                        user()?.role
+                      }/profile/${user()?.profId}.webp`}
                     ></img>
                   </button>
                 </div>
@@ -287,7 +327,7 @@ export const Header = () => {
           <button class="text-left w-full border-t font-[thin-font] items-center hover:bg-[rgb(243,244,246)] rounded-[16px] gap-x-2 flex font-bold border-b p-2">
             <img
               class="rounded-[50%] w-[28px] h-[28px]"
-              src={defaultProfileSVG}
+              src="https://picsum.photos/id/237/200/300"
             ></img>
             <div class="flex flex-col">
               <p class="font-bold text-sm font-[thin-font]">ლუკა ჩიკვაიძე</p>
@@ -299,7 +339,7 @@ export const Header = () => {
           <button class="text-left w-full border-t font-[thin-font] items-center hover:bg-[rgb(243,244,246)] rounded-[16px] gap-x-2 flex font-bold border-b p-2">
             <img
               class="rounded-[50%] w-[28px] h-[28px]"
-              src={defaultProfileSVG}
+              src="https://picsum.photos/id/237/200/300"
             ></img>
             <div class="flex flex-col">
               <p class="font-bold text-sm font-[thin-font]">ლუკა ჩიკვაიძე</p>
@@ -311,7 +351,7 @@ export const Header = () => {
           <button class="text-left w-full border-t font-[thin-font] items-center hover:bg-[rgb(243,244,246)] rounded-[16px] gap-x-2 flex font-bold border-b p-2">
             <img
               class="rounded-[50%] w-[28px] h-[28px]"
-              src={defaultProfileSVG}
+              src="https://picsum.photos/id/237/200/300"
             ></img>
             <div class="flex flex-col">
               <p class="font-bold text-sm font-[thin-font]">ლუკა ჩიკვაიძე</p>
@@ -323,7 +363,7 @@ export const Header = () => {
           <button class="text-left w-full border-t font-[thin-font] items-center hover:bg-[rgb(243,244,246)] rounded-[16px] gap-x-2 flex font-bold border-b p-2">
             <img
               class="rounded-[50%] w-[28px] h-[28px]"
-              src={defaultProfileSVG}
+              src="https://picsum.photos/id/237/200/300"
             ></img>
             <div class="flex flex-col">
               <p class="font-bold text-sm font-[thin-font]">ლუკა ჩიკვაიძე</p>
@@ -339,7 +379,7 @@ export const Header = () => {
             <img
               id="message-menu"
               class="rounded-[50%] w-[28px] h-[28px]"
-              src={defaultProfileSVG}
+              src="https://picsum.photos/id/237/200/300"
             ></img>
             <div id="message-menu" class="flex flex-col">
               <p id="message-menu" class="font-bold text-sm font-[thin-font]">
@@ -369,58 +409,62 @@ export const Header = () => {
           class="absolute shadow-2xl flex flex-col gap-y-2 rounded-b-lg px-4 py-3 border-t border-slate-300 right-[1%] z-50 bg-white opacity-100 w-[490px]"
         >
           <h2 id="notification-menu" class="font-[bolder-font] text-gray-800">
-            შეტყობინებები (5)
+            შეტყობინებები ({notifications()?.count})
           </h2>
-          <button
-            id="notification-menu"
-            class="p-2 font-[thin-font] gap-x-2 font-bold hover:bg-[rgb(243,244,246)] text-left w-full border-b pb-2"
-          >
-            <p
-              id="notification-menu"
-              class="font-bold text-sm font-[thin-font]"
-            >
-              ლუკა ჩიკვაიძე
-            </p>
-            <p
-              id="notification-menu"
-              class="font-bold break-all text-gr text-xs font-[thin-font]"
-            >
-              მაქსიმუმ 60 ჩარაქთერი
-            </p>
-          </button>
-          <button class="p-2 font-[thin-font] gap-x-2 font-bold hover:bg-[rgb(243,244,246)] text-left w-full border-b pb-2">
-            <p class="font-bold text-sm font-[thin-font]">ლუკა ჩიკვაიძე</p>
-            <p class="font-bold break-all text-gr text-xs font-[thin-font]">
-              მაქსიმუმ 60 ჩარაქთერი
-            </p>
-          </button>
-          <button class="p-2 font-[thin-font] gap-x-2 font-bold hover:bg-[rgb(243,244,246)] text-left w-full border-b pb-2">
-            <p class="font-bold text-sm font-[thin-font]">ლუკა ჩიკვაიძე</p>
-            <p class="font-bold break-all text-gr text-xs font-[thin-font]">
-              მაქსიმუმ 60 ჩარაქთერი
-            </p>
-          </button>
-          <button class="p-2 font-[thin-font] gap-x-2 font-bold hover:bg-[rgb(243,244,246)] text-left w-full border-b pb-2">
-            <p class="font-bold text-sm font-[thin-font]">ლუკა ჩიკვაიძე</p>
-            <p class="font-bold break-all text-gr text-xs font-[thin-font]">
-              მაქსიმუმ 60 ჩარაქთერი
-            </p>
-          </button>
-          <button class="p-2 font-[thin-font] gap-x-2 font-bold hover:bg-[rgb(243,244,246)] text-left w-full border-b pb-2">
-            <div class="flex flex-col">
-              <p class="font-bold text-sm font-[thin-font]">ლუკა ჩიკვაიძე</p>
-              <p class="font-bold break-all text-gr text-xs font-[thin-font]">
-                მაქსიმუმ 60 ჩარაქთერი
-              </p>
-            </div>
-          </button>
-          <div id="notification-menu" class="px-2 py-1">
-            <A
-              href="/message"
-              class="text-blue-500 font-[thin-font] font-bold text-sm underline"
-            >
-              ნახე ყველა
-            </A>
+          <div id="notification-menu" class="flex flex-col gap-y-1">
+            <For each={notifications()?.notifications}>
+              {(n, i) => {
+                return (
+                  <div class="p-2 font-[thin-font] gap-x-2 font-bold hover:bg-[rgb(243,244,246)] text-left w-full rounded-[50px] border-b pb-2">
+                    <A href={`/${n.role}/${n.prof_id}`} id="notification-menu">
+                      <div class="flex px-2">
+                        <img
+                          src={n.image_url}
+                          class="w-[60px] h-[60px] rounded-full border border-indigo-100"
+                        ></img>
+                        <div
+                          id="notification-menu"
+                          class="flex flex-col px-2 text-xs"
+                        >
+                          <p class="text-sm font-[bolder-font]">
+                            {n.firstname} {n.lastname}
+                          </p>
+                          <Show when={n.status === "pending"}>
+                            <p class="font-[thin-font]">
+                              სურს თქვენი მეგობრებში დამატება
+                            </p>
+                          </Show>
+                          <div class="flex gap-x-2 mt-2 items-center">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                accept_request(n.id)
+                              }}
+                              id="notification-menu"
+                              class="font-bold px-2 py-1 rounded bg-gray-200 break-all cursor-default text-gr text-xs font-[thin-font]"
+                            >
+                              თანხმობა
+                            </button>
+                            <button
+                              onClick={e => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                reject_request(n.id);
+                              }}
+                              id="notification-menu"
+                              class="font-bold px-2 py-1 rounded bg-gray-200 cursor-default break-all text-gr text-xs font-[thin-font]"
+                            >
+                              უარყოფა
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </A>
+                  </div>
+                );
+              }}
+            </For>
           </div>
         </div>
       )}

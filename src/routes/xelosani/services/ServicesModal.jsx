@@ -23,6 +23,7 @@ export const ServicesModal = (props) => {
                     cm[index()].title = e.target.value
                     return cm
                 })}
+                value={m.title}
                 maxLength={60}
                 name="title"
                 type="text"
@@ -38,6 +39,7 @@ export const ServicesModal = (props) => {
                 class="font-[bolder-font] text-sm bg-gray-100 p-3 h-60 w-full border border-gray-300 outline-none"
                 spellcheck="false"
                 name="description"
+                value={m.description}
                 onInput={(e) => props.setService((cm) => {
                     cm[index()].description = e.target.value
                     return cm
@@ -65,6 +67,7 @@ export const ServicesModal = (props) => {
                         return cm
                     })}
                     id="price"
+                    value={m.price}
                     name="price"
                     type="number"
                   />

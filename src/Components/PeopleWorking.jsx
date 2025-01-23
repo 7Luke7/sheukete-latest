@@ -5,14 +5,13 @@ import emptyStar from "../svg-images/svgexport-24.svg";
 import fullStar from "../svg-images/svgexport-19.svg";
 import { Navigation, Pagination } from "swiper/modules";
 import Swiper from "swiper";
-import profileImage from "../default_profile.png"
 import { A } from "@solidjs/router";
 
 const recently_complete_jobs = [
   {
     firstname: "ლუკა",
     lastName: "ჩიკვაიძე",
-    profile_image: profileImage,
+    profile_image: "https://picsum.photos/id/237/200/300",
     job_description: "შეაკეთა კარი და სარეცხი მანქანა",
     timestamp: "14:12",
     review_given: 5,
@@ -20,7 +19,7 @@ const recently_complete_jobs = [
   {
     firstname: "ლუკა",
     lastName: "ჩიკვაიძე",
-    profile_image: profileImage,
+    profile_image: "https://picsum.photos/id/237/200/300",
     job_description:
       "შეაკეთა კარი და სარეცხი მანქანა დწაჯდწად აწდპაწ ჯდპაწჯ დწაჯდ წაპდწადიპ აწჯ დპაწჯდპ აწჯდპწაჯ დპაჯდპა ჯდწა ა ჯ აწდად დაწჯდ წადჯ აპდჯაწჯ პ",
     timestamp: "14:12",
@@ -29,7 +28,7 @@ const recently_complete_jobs = [
   {
     firstname: "ლუკა",
     lastName: "ჩიკვაიძე",
-    profile_image: profileImage,
+    profile_image: "https://picsum.photos/id/237/200/300",
     job_description:
       "შეაკეთა კარი და სარეცხი მანქანა დაწ წადწადაწ დაწ დწადაწ დ",
     timestamp: "14:12",
@@ -38,7 +37,7 @@ const recently_complete_jobs = [
   {
     firstname: "ლუკა",
     lastName: "ჩიკვაიძე",
-    profile_image: profileImage,
+    profile_image: "https://picsum.photos/id/237/200/300",
     job_description: "შეაკეთა კარი და სარეცხი მანქანა დწად ა დწა დ",
     timestamp: "14:12",
     review_given: 4,
@@ -46,7 +45,7 @@ const recently_complete_jobs = [
   {
     firstname: "ლუკა",
     lastName: "ჩიკვაიძე",
-    profile_image: profileImage,
+    profile_image: "https://picsum.photos/id/237/200/300",
     job_description: "შეაკეთა კარი და სარეცხი მანქანასე ჰსჯ ეჰაე4ჰ ეზჰ ",
     timestamp: "14:12",
     review_given: 1,
@@ -54,7 +53,7 @@ const recently_complete_jobs = [
   {
     firstname: "ლუკა",
     lastName: "ჩიკვაიძე",
-    profile_image: profileImage,
+    profile_image: "https://picsum.photos/id/237/200/300",
     job_description: "შეაკეთა კარი და სარეცხი მანქანა",
     timestamp: "14:12",
     review_given: 2,

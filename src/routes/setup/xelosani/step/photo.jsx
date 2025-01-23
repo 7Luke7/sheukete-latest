@@ -1,8 +1,7 @@
 import { A, createAsync, useNavigate } from "@solidjs/router";
-import defaultProfileSVG from "../../../../default_profile.png";
 import CameraSVG from "../../../../svg-images/camera.svg";
 import spinnerSVG from "../../../../svg-images/spinner.svg";
-import { Match, Suspense, Switch, batch, createSignal, onMount } from "solid-js";
+import { Match, Suspense, Switch, batch, createSignal } from "solid-js";
 import { makeAbortable } from "@solid-primitives/resource";
 import { Buffer } from 'buffer';
 import { get_profile_photo } from "~/routes/api/xelosani/setup/step";
@@ -12,7 +11,7 @@ const ProfilePictureStep = () => {
   const [imageLoading, setImageLoading] = createSignal(false);
   const [submitted, setSubmitted] = createSignal(false);
   const [file, setFile] = createSignal();
-  const [imageUrl, setImageUrl] = createSignal(defaultProfileSVG);
+  const [imageUrl, setImageUrl] = createSignal();
   const [signal, abort, filterErrors] = makeAbortable({
     timeout: 0,
     noAutoAbort: true,
@@ -45,7 +44,9 @@ const ProfilePictureStep = () => {
         return navigate(`/xelosani/${data.profId}`);
       }
 
+      console.log('hello world?')
       batch(() => {
+        setImageLoading(false)
         setFile(null);
         setSubmitted(true);
       });
@@ -98,7 +99,7 @@ const ProfilePictureStep = () => {
                   >
                     <img
                       id="setup_image"
-                      src={imageUrl()}
+                      src={imageUrl() ? imageUrl() : `http://localhost:5555/static/images/xelosani/profile/${userImage()?.profId}.webp`}
                       alt="Profile"
                       class="object-cover w-[140px] border-2 h-[140px] rounded-full mb-4"
                     />

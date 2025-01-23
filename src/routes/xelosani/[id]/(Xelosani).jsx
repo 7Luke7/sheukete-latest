@@ -22,7 +22,6 @@ import { FireworkConfetti } from "~/Components/FireworkConfetti";
 import airPlane from "../../../svg-images/airplane.svg";
 import closeIcon from "../../../svg-images/svgexport-12.svg";
 import exclamationWhite from "../../../svg-images/exclamationWhite.svg";
-import { Review } from "./Review";
 import {ModifyAbout} from "../modals/ModifyAbout";
 
 const Xelosani = (props) => {
@@ -193,7 +192,6 @@ const Xelosani = (props) => {
                   </div>
                 </div>
             </Show>
-            <Review></Review>
           </Show>
           <div class={`${modal() && "pointer-events-none blur-[0.8px]"}`}>
             <Footer />

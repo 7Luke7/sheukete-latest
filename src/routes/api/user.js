@@ -68,19 +68,6 @@ export const get_xelosani = async (prof_id) => {
       });
     }
 
-    if (user.services) {
-      for (let i = 0; i < user.services.length; i++) {
-        //user.id
-        //user.publicId
-        const file_server_response = await fetch("GET", `service/${user.id}/serviceId/${user.services[i].publicId}`, {
-
-        })
-        const service_thumbnail = await get_s3_image(
-          `${user.services[i].publicId}-service-0-gallery-image`
-        );
-        user.services[i]["service_thumbnail"] = service_thumbnail;
-      }
-    }
     const creationDateDisplayable = getTimeAgo(user.created_at);
 
     const keys = Object.keys(user.privacy);
@@ -98,6 +85,7 @@ export const get_xelosani = async (prof_id) => {
     return {
       profId: session.profId,
       ...user,
+      ...user.skillset[0],
       displayBirthDate,
       creationDateDisplayable,
       status: 200,
@@ -109,7 +97,7 @@ export const get_xelosani = async (prof_id) => {
           "Content-Type": "application/json",
         },
       });
-  
+        
       let displayBirthDate;
       if (user.date) {
         displayBirthDate = new Date(user["date"]).toLocaleDateString("ka-GE", {
@@ -120,14 +108,6 @@ export const get_xelosani = async (prof_id) => {
         });
       }
   
-      if (user.services) {
-        for (let i = 0; i < user.services.length; i++) {
-          const service_thumbnail = await get_s3_image(
-            `${user.services[i].publicId}-service-post-thumbnail`
-          );
-          user.services[i]["service_thumbnail"] = service_thumbnail;
-        }
-      }
       const creationDateDisplayable = getTimeAgo(user.created_at);
   
       const keys = Object.keys(user.privacy);
@@ -142,8 +122,10 @@ export const get_xelosani = async (prof_id) => {
         }
       }
   
-      return {
+        return {
         ...user,
+        ...user.skillset[0],
+        profId: prof_id,
         displayBirthDate,
         creationDateDisplayable,
         status: 401,

@@ -121,12 +121,13 @@ export async function POST({request}) {
 
         const tags = ["mock"]
 
+        const public_id = formData.get("public_id")
         const response = await postgresql_server_request(
-          "POST",
+          "PUT",
           "xelosani/service",
           {
             body: JSON.stringify({
-              _creator: user.userId,
+              public_id: public_id,
               categories: [...childCategory, mainCategory, parentCategory],
               tags: tags,
               location,
@@ -172,12 +173,13 @@ export async function POST({request}) {
           formData.delete("galleryLength")
           formData.delete("parentCategory")
 
-          const file_server_response = fileserver_request("POST", `service/${user.profId}/${response.id}`, {
+          console.log(public_id)
+          const file_server_response = await fileserver_request("PUT", `service/${user.profId}/${public_id}`, {
             body: formData,
           })
 
           if (file_server_response.status !== 200) {
-            throw new Error("someting went wrong in filesrver")  
+            throw new Error("something went wrong in file server.")
           }
         } else {
           throw new Error("something went wrong in postgresql server")
@@ -185,18 +187,7 @@ export async function POST({request}) {
         return {
           status: 200
         };
-      } catch (error) {
-        if (error.name === "ValidationError") {
-          const errors = new HandleError(error).validation_error();
-          return {
-            errors,
-            status: 400,
-          };
-        } else {
-          console.log("add_service_error: ", error);
-          return {
-            status: 500,
-          };
-        }
-      }
+    } catch (error) {
+        console.log(error)
+    }
 }

@@ -7,8 +7,13 @@ import {
   onCleanup,
   createEffect,
   Show,
+  onMount,
 } from "solid-js";
-import { createAsync, useNavigate } from "@solidjs/router";
+import {
+  createAsync,
+  useLocation,
+  useNavigate,
+} from "@solidjs/router";
 import { NotAuthorized } from "~/Components/NotAuthorized";
 import closeIcon from "../../../svg-images/svgexport-12.svg";
 import uploadIcon from "../../../svg-images/uploadIcon.svg";
@@ -24,6 +29,9 @@ import { ServiceSchedule } from "./ServiceSchedule";
 import { makeAbortable } from "@solid-primitives/resource";
 import spinner from "../../../svg-images/spinner.svg";
 import { Toast } from "~/Components/ToastComponent";
+import { get_user_service } from "~/routes/api/xelosani/service/service";
+import eyeFillSVG from "../../../svg-images/eye-fill.svg";
+import ImagePreview from "./ImagePreview";
 
 /*
 
@@ -31,7 +39,7 @@ import { Toast } from "~/Components/ToastComponent";
 
 */
 
-const Services = () => {
+const Services = (props) => {
   const location = createAsync(get_location);
   const [image, setImage] = createSignal([]);
   const [markedLocation, setMarkedLocation] = createSignal();
@@ -58,10 +66,64 @@ const Services = () => {
     noAutoAbort: true,
   });
   const [isSendingRequest, setIsSendingRequest] = createSignal(false);
+  const [isEditing, setIsEditing] = createSignal(false);
+  const [imageToPreviewUrl, setImageToPreviewUrl] = createSignal()
+  const [ids, setIds] = createSignal()
   const navigate = useNavigate();
+  const browserLocation = useLocation();
 
   const MAX_SINGLE_FILE_SIZE = 2 * 1024 * 1024;
   const MAX_TOTAL_SIZE = 15 * 1024 * 1024;
+
+  // newly added images shouldn't have preview icons
+  // 
+
+  onMount(async () => {
+    const [name1, value1_name2, value2] = browserLocation.search?.split("=");
+    if (name1 === "?id" && value1_name2.split("&")[1] === "profId") {
+      const response = await get_user_service(
+        value1_name2.split("&")[0],
+        value2
+      );
+
+      if (response.status === 200) {
+        document.getElementById("price").value = Number(response.main_price);
+        batch(() => {
+          setIsEditing(true);
+          setIds([value1_name2.split("&")[0], value2])
+          setToast({ type: true, message: "თქვენ ანახლებთ სერვისს." });
+          setTitle(response.main_title);
+          setInput(response.main_description);
+          setMainChecked(response.main_category);
+          setParentChecked(response.categories[response.categories.length - 1]);
+          setService(response.child_services);
+          setChildChecked([
+            ...response.categories.filter((a) => {
+              return (
+                response.categories[response.categories.length - 1] !== a &&
+                response.main_category !== a
+              );
+            }),
+          ]);
+          setActiveParentIndex(
+            jobs
+              .flatMap((obj) => Object.keys(obj))
+              .findIndex((a) => a === response.main_category)
+          );
+          setActiveChildIndex(
+            jobs[0][response.main_category].findIndex(
+              (a) =>
+                a["კატეგორია"] ===
+                response.categories[response.categories.length - 1]
+            )
+          );
+          setImage(response.gallery);
+          setThumbnail(response.thumbnail);
+          setCurrentStep("thumbnail");
+        });
+      }
+    }
+  });
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
@@ -70,18 +132,18 @@ const Services = () => {
       if (!file.type.startsWith("image/")) {
         return setToast({
           type: false,
-          message: "გთხოვთ აირჩიოთ ფაილი ფოტო ფორმატით."
-        }) 
+          message: "გთხოვთ აირჩიოთ ფაილი ფოტო ფორმატით.",
+        });
       }
-    
-      const file_existence = image().some((a) => a.name === file.name)
+
+      const file_existence = image().some((a) => a.name === file.name);
       if (file_existence && currentStep() !== "thumbnail") {
         return setToast({
           type: false,
-          message: `${file.name} უკვე დამატებული გაქვთ.`
-        })
+          message: `${file.name} უკვე დამატებული გაქვთ.`,
+        });
       }
-      
+
       if (file.size > MAX_SINGLE_FILE_SIZE) {
         return setToast({
           type: false,
@@ -90,6 +152,7 @@ const Services = () => {
       } else {
         setTotalSize((a) => (a += file.size));
       }
+      file["is_user_added"] = true
     }
 
     if (totalSize() > MAX_TOTAL_SIZE) {
@@ -181,7 +244,7 @@ const Services = () => {
         return;
       }
 
-      if (service && service().length) {
+      if (service() && service().length) {
         const error = service().find((service, index) => {
           if (service.title.length < 5) {
             setToast({
@@ -278,9 +341,13 @@ const Services = () => {
       for (let i = 0; i < image().length; i++) {
         fd.append(`service-${i}-gallery-image`, image()[i]);
       }
-
+      if (isEditing()) {
+        const [name1, value1_name2, value2] = browserLocation.search?.split("=");
+        fd.append("public_id", value1_name2.split("&")[0])
+      }
       setIsSendingRequest(true);
-      const response = await fetch("/api/xelosani/service/add_service", {
+      const url = isEditing() ? "/api/xelosani/service/edit_service" : "/api/xelosani/service/add_service"
+      const response = await fetch(url, {
         method: "POST",
         body: fd,
         credentials: "include",
@@ -289,7 +356,7 @@ const Services = () => {
 
       if (!response.ok) {
         return props.setToast({
-          message: "პროფილის ფოტო ვერ განახლდა, სცადეთ თავიდან.",
+          message: "სერვისი გამოქვეყნება ვერ მოხერხდა.",
           type: false,
         });
       }
@@ -304,13 +371,16 @@ const Services = () => {
         setToast({ typle: false, message: data.errors[0].message });
         setError(data.errors);
       } else {
-        document.getElementById("title").value = "";
-        document.getElementById("desc").value = "";
+        if (isEditing()) {
+          return setToast({ type: true, message: "სერვისი წარმატებით განახლდა."})
+        }
         document.getElementById("price").value = null;
 
         batch(() => {
-          setToast({ type: true, message: "განცხადება წარმატებით აიტვირთა." });
+          setToast({ type: true, message: isEditing() ? "სერვისი წარმატებით განახლდა." : "სერვისი წარმატებით აიტვირთა."});
           setImage([]);
+          setTitle("");
+          setInput("");
           setMainChecked();
           setParentChecked();
           setService([]);
@@ -324,7 +394,7 @@ const Services = () => {
         filterErrors(error);
       }
     } finally {
-        setIsSendingRequest(false);
+      setIsSendingRequest(false);
     }
   };
 
@@ -378,8 +448,8 @@ const Services = () => {
     if (isChecked) {
       toggleChildAccordion(index);
       const structured_services = childCategories.map((cc, i) => {
-        return {id: i, title: "", category: cc, description: "", price: null}
-      })
+        return { id: i, title: "", category: cc, description: "", price: null };
+      });
       setService(structured_services);
       batch(() => {
         setMainChecked(m);
@@ -388,7 +458,7 @@ const Services = () => {
       });
     } else {
       batch(() => {
-        setService([])
+        setService([]);
         setChildChecked((prev) => {
           const filt = prev.filter((p) => !childCategories.includes(p));
           return filt;
@@ -405,6 +475,7 @@ const Services = () => {
         setParentChecked(parentCategory);
 
         setChildChecked([]);
+        setService([]);
         setMainChecked(m);
       }
       setChildChecked((prev) => {
@@ -414,20 +485,15 @@ const Services = () => {
 
         return [...prev, j];
       });
-        setService((prev) => {
-          if (prev.some(p => p.id === i())) {
-            return console.log(i(), p)
-          } else {
-            return [
-              ...prev,
-              { id: i(), title: "", category: j, description: "", price: null },
-            ];
-          }
-        });
+      setService((prev) => {
+        return [
+          ...prev,
+          { id: i(), title: "", category: j, description: "", price: null },
+        ];
+      });
     } else {
       setService((prev) => {
-        if (prev)
-        return prev.filter((_, index) => index !== i());
+        if (prev) return prev.filter((_, index) => index !== i());
       });
       setChildChecked((prev) => {
         const filt = prev.filter((p) => p !== j);
@@ -442,12 +508,52 @@ const Services = () => {
 
   const removeService = (index) => {
     setService((prev) => {
+      if (prev.length === 1) {
+        setParentChecked(false);
+      }
       return prev.filter((_, i) => i !== index);
     });
     setChildChecked((prev) => {
       return prev.filter((_, i) => i !== index);
     });
   };
+
+  const handle_file_delete = async (prop, filename, is_user_added, index) => {
+    if (is_user_added) {
+      if (prop === "thumbnail") {
+        setThumbnail(null)
+      } else {
+        return setImage(
+          image().filter((a, i) => i !== index)
+        )
+      }
+      return
+    }
+    try {
+      const [name1, value1_name2, value2] = browserLocation.search?.split("=");
+      const response = await fetch("http://localhost:5555/delete_service_image", {
+        method: "DELETE",
+        body: JSON.stringify({
+          filename, 
+          prop, 
+          xelosaniProfId: value2,
+          serviceId: value1_name2.split("&")[0]
+        }),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "include"
+      })
+
+      if (response.status === 200) {
+        return setImage(
+          image().filter((a, i) => i !== index)
+        )
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   return (
     <section>
@@ -457,8 +563,11 @@ const Services = () => {
           <NotAuthorized></NotAuthorized>
         </Match>
         <Match when={location() && location() !== 401}>
+          <Show when={imageToPreviewUrl()}>
+            <ImagePreview setImageToPreviewUrl={setImageToPreviewUrl} imageToPreviewUrl={imageToPreviewUrl}></ImagePreview>
+          </Show>
           <h1 class="heading text-center font-bold text-2xl m-5 text-gray-800">
-            დაამატე სერვისი
+            {isEditing() ? "გაანახლე სერვისი" : "დაამატე სერვისი"}
           </h1>
           <div class="flex w-full justify-center">
             <div class="flex w-[80%] mt-2 border border-gray-300">
@@ -614,7 +723,7 @@ const Services = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    setShowCategoryModal(true)
+                    setShowCategoryModal(true);
                   }}
                   class="bg-gray-800 px-4 py-2 mb-4 font-[thin-font] text-md font-bold hover:bg-gray-700 transition ease-in delay-20 text-white text-center rounded-[16px]"
                 >
@@ -626,6 +735,7 @@ const Services = () => {
                   placeholder="სათაური"
                   onInput={(e) => setTitle(e.target.value)}
                   id="title"
+                  value={title()}
                   maxLength={60}
                   name="title"
                   type="text"
@@ -644,6 +754,7 @@ const Services = () => {
                   class="font-[bolder-font] text-sm bg-gray-100 p-3 h-60 border border-gray-300 outline-none"
                   spellcheck="false"
                   name="description"
+                  value={input()}
                   onInput={(e) => setInput(e.target.value)}
                   maxlength={300}
                   id="desc"
@@ -826,14 +937,20 @@ const Services = () => {
                       <span class="truncate pr-3 text-base font-[normal-font] text-[#07074D]">
                         {thumbNail().name}
                       </span>
-                      <button
-                        onClick={() => {
-                          setThumbnail(null);
-                        }}
-                        class="text-[#07074D]"
-                      >
-                        <img src={closeIcon} width={18} height={18}></img>
-                      </button>
+                      <div class="flex gap-x-2">
+                        <Show when={isEditing() && !thumbNail().is_user_added}>
+                          <button type="button" onClick={() => setImageToPreviewUrl(`http://localhost:5555/static/images/xelosani/${ids()[1]}/services/${ids()[0]}/thumbnail/${thumbNail().name}`)}>
+                            <img src={eyeFillSVG} width={18} height={18}></img>
+                          </button>
+                        </Show>
+                        <button
+                          type="button"
+                          onClick={() => handle_file_delete("thumbnail", thumbNail().name, thumbNail().is_user_added)}
+                          class="text-[#07074D]"
+                        >
+                          <img src={closeIcon} width={18} height={18}></img>
+                        </button>
+                      </div>
                     </div>
                     <div class="flex flex-col relative h-[6px] w-full rounded-lg bg-[#E2E5EF]">
                       <div class="w-full z-10 absolute h-full flex-1 rounded-lg bg-dark-green"></div>
@@ -854,12 +971,15 @@ const Services = () => {
                               <span class="truncate pr-3 text-base font-[normal-font] text-[#07074D]">
                                 {l.name}
                               </span>
+                              <div class="flex gap-x-2">
+                              <Show when={isEditing() && !l.is_user_added}>
+                          <button type="button" onClick={() => setImageToPreviewUrl(`http://localhost:5555/static/images/xelosani/${ids()[1]}/services/${ids()[0]}/gallery/${l.name}`)}>
+                            <img src={eyeFillSVG} width={18} height={18}></img>
+                          </button>
+                        </Show>
                               <button
-                                onClick={() => {
-                                  setImage(
-                                    image().filter((_, i) => i !== index())
-                                  );
-                                }}
+                              type="button"
+                              onClick={() => handle_file_delete("gallery", l.name, l.is_user_added, index())}
                                 class="text-[#07074D]"
                               >
                                 <img
@@ -868,6 +988,7 @@ const Services = () => {
                                   height={18}
                                 ></img>
                               </button>
+                              </div>
                             </div>
                             <div class="flex flex-col relative h-[6px] w-full rounded-lg bg-[#E2E5EF]">
                               <div class="w-full z-10 absolute h-full flex-1 rounded-lg bg-dark-green"></div>
@@ -904,7 +1025,7 @@ const Services = () => {
                       type="submit"
                       class="border border-gray-300 rounded-[16px] p-1 px-4 w-full text-center text-base font-bold font-[normal-font] cursor-pointer text-gray-200 ml-2 bg-dark-green"
                     >
-                      სერვისის გამოქვეყნება
+                      სერვისის {isEditing() ? "განახლება" : "გამოქვეყნება"}
                     </button>
                   )}
                 </div>
@@ -930,7 +1051,12 @@ const Services = () => {
         </Match>
       </Switch>
       <Show when={toast()}>
-          <Toast toast={toast} setToast={setToast} isExiting={isExiting} setIsExiting={setIsExiting}></Toast>
+        <Toast
+          toast={toast}
+          setToast={setToast}
+          isExiting={isExiting}
+          setIsExiting={setIsExiting}
+        ></Toast>
       </Show>
       <Show when={service().length}>
         <ServicesModal

@@ -13,7 +13,6 @@ export const LoginUser = async (formData) => {
     const phoneEmail = formData.get("phoneEmail");
     const password = formData.get("password");
 
-    console.log(phoneEmail, password)
     try {
         if (!phoneEmail.length) {
             throw new CustomError("phoneEmail", "მეილი ან ტელეფონის ნომერი არასწორია.")
