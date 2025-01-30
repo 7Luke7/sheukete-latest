@@ -13,7 +13,7 @@ export const get_location = async () => {
       }
       const data = await postgresql_server_request(
         "GET",
-        `xelosani/check_location/:${user.profId}`,
+        `xelosani/check_location/${user.userId}`,
       )
       
       return data

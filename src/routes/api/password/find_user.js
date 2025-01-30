@@ -58,18 +58,6 @@ export async function POST({request}) {
             throw new Error(400)
         }
 
-
-        const response = await fileserver_request("POST", "get_profile_image", {
-            body: JSON.stringify({
-                role: user.role,
-                profId: user.prof_id
-              }),
-              headers: {
-                'Content-Type': "application/json"
-              }
-        })
-
-
         return json(user, {status: 200})
     } catch (error) {
         const errors = new HandleError(error).validation_error();

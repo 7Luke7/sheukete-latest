@@ -347,6 +347,7 @@ const Services = (props) => {
       }
       setIsSendingRequest(true);
       const url = isEditing() ? "/api/xelosani/service/edit_service" : "/api/xelosani/service/add_service"
+      console.log("hi")
       const response = await fetch(url, {
         method: "POST",
         body: fd,
@@ -354,6 +355,8 @@ const Services = (props) => {
         signal: signal(),
       });
 
+      console.log("hello")
+      console.log(response)
       if (!response.ok) {
         return props.setToast({
           message: "სერვისი გამოქვეყნება ვერ მოხერხდა.",

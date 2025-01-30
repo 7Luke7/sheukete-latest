@@ -121,9 +121,9 @@ const ResetPassword = (props) => {
       if (!response.ok) {
         const data = await response.json()
         if (data.redirect) return navigate(data.redirect)
-        setToast({
+        return setToast({
           type: false,
-          message: data.message
+          message: data
         })
       }
 

@@ -62,10 +62,10 @@ export const ProfileRight = (props) => {
           </section>
         </div>
         </Match>
-        <Match when={!props.user().about && props.user().status !== 200}>
+        <Match when={!props.user().skillset.length && props.user().status !== 200}>
           <p class="text-sm mt-2 font-[thin-font] break-all text-gr font-bold">სპეციალობა არ არის დამატებული.</p>
         </Match>
-        <Match when={!props.user().about && props.user().status === 200}>
+        <Match when={!props.user().skillset.length && props.user().status === 200}>
             <A
                 href="/setup/xelosani/step/skills"
                 class="px-4 py-2 mt-2 bg-dark-green font-[thin-font] w-[200px] text-sm font-bold hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"

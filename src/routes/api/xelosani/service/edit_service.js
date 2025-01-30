@@ -173,7 +173,6 @@ export async function POST({request}) {
           formData.delete("galleryLength")
           formData.delete("parentCategory")
 
-          console.log(public_id)
           const file_server_response = await fileserver_request("PUT", `service/${user.profId}/${public_id}`, {
             body: formData,
           })
@@ -181,12 +180,12 @@ export async function POST({request}) {
           if (file_server_response.status !== 200) {
             throw new Error("something went wrong in file server.")
           }
+          return {
+            status: 200
+          };
         } else {
           throw new Error("something went wrong in postgresql server")
         }
-        return {
-          status: 200
-        };
     } catch (error) {
         console.log(error)
     }

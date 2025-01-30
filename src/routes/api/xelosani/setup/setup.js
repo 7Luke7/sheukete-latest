@@ -10,6 +10,10 @@ export const get_xelosani_step = async () => {
     const event = getRequestEvent();
     const session = await verify_user(event);
 
+    if (session === 401) {
+      throw new Error(401);
+    }
+
     const user = await postgresql_server_request("GET", `xelosani/step_percent/${session.profId}`, {
       headers: {
         "Content-Type": "application/json",
@@ -45,8 +49,8 @@ export const handle_contact = async (formData, contact) => {
       throw new Error(401);
     }
 
-    const user = await postgresql_server_request("PUT", `xelosani/update_${contact}/${session.profId}`, {
-      body: JSON.stringify({[contact]: inputText}),
+    const user = await postgresql_server_request("PUT", `xelosani/update_${contact}`, {
+      body: JSON.stringify({[contact]: inputText, userId: session.userId}),
       headers: {
         "Content-Type": "application/json",
       },
@@ -58,6 +62,7 @@ export const handle_contact = async (formData, contact) => {
 
     return {
       ...user,
+      prof_id: session.profId,
       status: 200
     };
   } catch (error) {
@@ -232,7 +237,7 @@ export const check_selected_jobs = async () => {
       throw new Error(401);
     }
 
-    const user = await postgresql_server_request("GET", `xelosani/check_skills/${session.profId}`, {
+    const user = await postgresql_server_request("GET", `xelosani/check_skills/${session.userId}`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -259,9 +264,10 @@ export const handle_selected_skills = async (skills) => {
       throw new Error(401);
     }
 
-    const user = await postgresql_server_request("POST", `xelosani/insert_skills/${session.profId}`, {
+    const user = await postgresql_server_request("POST", `xelosani/insert_skills`, {
       body: JSON.stringify({
-        skills
+        skills,
+        userId: session.userId
       }),
       headers: {
         "Content-Type": "application/json",

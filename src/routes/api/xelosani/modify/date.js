@@ -9,7 +9,7 @@ export const modify_user_date = async (date) => {
         const session = await verify_user(event);
 
         if (session === 401) {
-        throw new Error(401);
+            throw new Error(401);
         }
 
         const data = await postgresql_server_request("PUT", `xelosani/modify_xelosani_age/${session.profId}`, {

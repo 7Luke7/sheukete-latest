@@ -43,20 +43,7 @@ const FindUser = () => {
                 }])
             }
 
-            // fetching profile picture based on role and profile id
-            const prof_pic_response = await fetch(`http://localhost:5555/get_profile_image`, {
-                method: "POST",
-                body: JSON.stringify({
-                  role: data.role,
-                  profId: data.prof_id,
-                }),
-                headers: {
-                  'Content-Type': "application/json",
-                },
-              });
-
-            const blob = await prof_pic_response.blob();
-            const url = URL.createObjectURL(blob);
+            const url = `http://localhost:5555/static/images/${data.role}/profile/${data.prof_id}.webp`
             setIsSendingRequest(false)
             setUser({...data, profImage: url}) 
         } catch (error) {

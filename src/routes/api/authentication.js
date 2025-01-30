@@ -120,7 +120,6 @@ export const RegisterUser = async (formData, role) => {
         if (!rules) {
             throw new CustomError("rules", "გთხოვთ დაეთანხმოთ სერვისის წესებსა და კონფიდენციალურობის პოლიტიკას.")
         }
-        // Check for role not being equal to "xelosani" or "damkveti" throw error
             
         const salt = await bcrypt.genSalt(8);
         const hash = await bcrypt.hash(password, salt);
@@ -130,9 +129,10 @@ export const RegisterUser = async (formData, role) => {
 
         const data = await postgresql_server_request(
             "POST",
-            `${role}/register`,
+            `register`,
             {
                 body: JSON.stringify({
+                    role: role,
                     firstname: firstname.trim(), 
                     lastname: lastname.trim(),
                     notification_devices: column,

@@ -39,3 +39,23 @@
 
 	-- სერვისები
 		- სერვისის ატვირთვის/განახლებისას არ ვამოწმებთ თუ მომხმარებლის id ემთხვევა სერვისის ამტვირთველის id-ს
+
+
+---- მეგობრობის სისტემა ---- 
+
+	-- ზოგადად მეგობრობის სისტემა მინდა იყოს განსხვავებული ქონდეს მეტი ისეთი ფუნქცია
+	-- რომელიც რეალურად დაეხმარება გაარკვიონ ვინ რას აკეთებს რა
+	-- მაგალითად თუ ერთი მეგობარი შეუსრულებს სამუშაოს ვიღაცას შეგვიძლია დამკვეთის
+	-- პროფილს დავადოთ მესიჯი რო 'შენს x მეგობარს ნამუშევარი აქვს დამკვეთთან'
+	-- რაღაც სანდოობას გამოიწვევს
+
+---- Header modals ----
+
+	-- Header toggle modals depend on id's maybe we could improve it later
+	-- for now its alright
+
+
+---- SECURITY ----
+
+	-- So We have stuff like if (session === 401) but this only checks if user is logged in
+	-- meaning anyone whose logged in can bypass it so we should check for specific ids as well

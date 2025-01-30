@@ -31,6 +31,7 @@ export const ProfileLeft = (props) => {
       if (response.status === 200) {
         const data = await response.json()
         
+        console.log(data)
         if (data.status === "accepted" || data.status === "pending") {
           setFriendRequestId({
             status: data.status,
@@ -166,8 +167,14 @@ export const ProfileLeft = (props) => {
       if (!friendRequestId()) {
         throw new Error("მეგობრობის მოთხოვნა არ არის გაგზავნილი.")
       }
-      const response = await fetch(`http://localhost:4321/xelosani/friend/cancel/${friendRequestId().id}`, {
-        method: "DELETE",
+      const response = await fetch(`http://localhost:4321/xelosani/friend/cancel`, {
+        method: "POST",
+        body: JSON.stringify({
+          friend_request_id: friendRequestId().id,
+        }),
+        headers: {
+          "Content-Type": "application/json"
+        },
         credentials: "include"
       })
 

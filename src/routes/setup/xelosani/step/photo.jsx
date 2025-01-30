@@ -44,7 +44,6 @@ const ProfilePictureStep = () => {
         return navigate(`/xelosani/${data.profId}`);
       }
 
-      console.log('hello world?')
       batch(() => {
         setImageLoading(false)
         setFile(null);

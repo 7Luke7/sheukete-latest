@@ -11,7 +11,7 @@ export const modify_about = async (formData) => {
         const about = formData.get("about")
 
         if (about.length > 600) {
-            return
+            return // we must have error or smth
         }
         if (session === 401) {
             throw new Error(401);

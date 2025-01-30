@@ -189,6 +189,10 @@ export const toggle_notification = async (target) => {
     const event = getRequestEvent();
     const session = await verify_user(event);
 
+    if (session === 401) {
+      throw new Error(401);
+    }
+
     await postgresql_server_request(
       "PUT",
       `xelosani/notification_targets`,
@@ -212,6 +216,10 @@ export const get_notification_targets = async () => {
     const event = getRequestEvent();
     const session = await verify_user(event);
 
+    if (session === 401) {
+      throw new Error(401);
+    }
+
     const data = await postgresql_server_request("POST", `xelosani/notification_targets`, {
       body: JSON.stringify({
         userId: session.userId,
@@ -233,6 +241,11 @@ export const modify_user = async (firstname, lastname, email, phone) => {
   try {
     const event = getRequestEvent();
     const session = await verify_user(event);
+
+    if (session === 401) {
+      throw new Error(401);
+    }
+
     if (!firstname.length) {
       throw new CustomError(
         "სახელი",

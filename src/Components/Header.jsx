@@ -21,6 +21,8 @@ import { WorkDropdown } from "./header-comps/WorkDropdown";
 import logoutSVG from "../svg-images/box-arrow-right.svg";
 import { logout_user } from "~/routes/api/user";
 import { header } from "~/routes/api/header";
+import threeDotsSVG from "../svg-images/three-dots.svg"
+import { NotificationTools } from "./NotificationTools";
 
 export const Header = () => {
   const user = createAsync(() => header());
@@ -28,15 +30,19 @@ export const Header = () => {
   const [value, setValue] = createSignal("");
   const [display, setDisplay] = createSignal(null);
   const [notifications, setNoifications] = createSignal();
+  const [isUnseenNotif, setIsUnseenNotif] = createSignal()
+  const [isUnseenMessage, setIsUnseenMessage] = createSignal()
+  const [notificationTools, setNotificationTools] = createSignal()
 
   onMount(async () => {
+    // we should just check for unseen notifications and apply red dot on notification icon
     if (user() === 401) {
       return;
     }
 
     try {
       const response = await fetch(
-        `http://localhost:4321/friend/request/pending/get`,
+        `http://localhost:4321/notifications/unseen`,
         {
           method: "GET",
           credentials: "include",
@@ -45,7 +51,7 @@ export const Header = () => {
 
       const data = await response.json();
       if (response.status === 200) {
-        setNoifications(data);
+        setIsUnseenNotif(data.message);
       }
     } catch (error) {
       console.log(error);
@@ -63,6 +69,27 @@ export const Header = () => {
       alert("მოძებნა ვერ მოხერხდება ცადეთ თავიდან");
     }
   };
+
+  createEffect(async () => {
+    try {
+      if (display() === "notif") {
+        const response = await fetch(
+          `http://localhost:4321/notifications`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+  
+        const data = await response.json();
+        if (response.status === 200) {
+          setNoifications(data);
+        }  
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  })
 
   const handleBodyClick = (event) => {
     if (
@@ -93,19 +120,24 @@ export const Header = () => {
     }
   };
 
-  const accept_request = async (id) => {
+  const accept_request = async (id, friend_request_id) => {
     try {
-      const response = await fetch(`http://localhost:4321/xelosani/friend/accept/${id}`, {
-        method: "GET",
+      const response = await fetch(`http://localhost:4321/xelosani/friend/accept`, {
+        method: "POST",
+        body: JSON.stringify({
+          friend_request_id: friend_request_id,
+          notification_id: id
+        }),
+        headers: {
+          "Content-Type": "application/json"
+        },
         credentials: "include"
       })
 
-      if (response.status === 200) {        
+      if (response.status === 200) {       
+        // we could make an animation of adding people to friends later 
         setNoifications(prev => {
-          return {
-            count: prev.count - 1,
-            notifications: prev.notifications.filter(n => n.id !== id),
-          };
+          return prev.filter(n => n.id !== id)
         });      
       } else {
         throw new Error("დაფიქსირდა შეცდომა მეგობრობის მოთხოვნის უარყოფისას.")
@@ -115,10 +147,17 @@ export const Header = () => {
     }
   }
 
-  const reject_request = async (id) => {
+  const reject_request = async (friend_request_id) => {
+    // we could make an animation of rejecting people friend requests later 
     try {
-      const response = await fetch(`http://localhost:4321/xelosani/friend/cancel/${id}`, {
-        method: "DELETE",
+      const response = await fetch(`http://localhost:4321/xelosani/friend/cancel`, {
+        method: "POST",
+        body: JSON.stringify({
+          friend_request_id: friend_request_id,
+        }),
+        headers: {
+          "Content-Type": "application/json"
+        },
         credentials: "include"
       })
 
@@ -195,19 +234,22 @@ export const Header = () => {
             <Switch>
               <Match when={user() !== 401}>
                 <div class="flex items-center gap-x-3">
-                  <button class="relative">
+                  <button onClick={() => setDisplay("notif")} class="relative">
                     <img
-                      onClick={() => setDisplay("notif")}
                       src={bellSVG}
                     ></img>
-                    <div class="bg-red-700 pointer-events-none absolute top-3 right-0 w-[8px] h-[8px] text-white font-thin text-xs font-[thin-font] rounded-[50%]"></div>
+                    <Show when={isUnseenNotif()}>
+                      <div class="bg-dark-green-hover pointer-events-none absolute top-3 right-0 w-[8px] h-[8px] text-white font-thin text-xs font-[thin-font] rounded-[50%]"></div>
+                    </Show>
                   </button>
                   <button
                     class="relative"
                     onClick={() => setDisplay("message")}
                   >
                     <img src={envelopeSVG}></img>
-                    <div class="bg-red-700 pointer-events-none absolute top-3 right-0 w-[8px] h-[8px] text-white font-thin text-xs font-[thin-font] rounded-[50%]"></div>
+                    <Show when={isUnseenMessage()}>
+                      <div class="bg-dark-green-hover pointer-events-none absolute top-3 right-0 w-[8px] h-[8px] text-white font-thin text-xs font-[thin-font] rounded-[50%]"></div>
+                    </Show>
                   </button>
                   <button onClick={() => setDisplay("account")}>
                     <img
@@ -409,15 +451,19 @@ export const Header = () => {
           class="absolute shadow-2xl flex flex-col gap-y-2 rounded-b-lg px-4 py-3 border-t border-slate-300 right-[1%] z-50 bg-white opacity-100 w-[490px]"
         >
           <h2 id="notification-menu" class="font-[bolder-font] text-gray-800">
-            შეტყობინებები ({notifications()?.count})
+            შეტყობინებები
           </h2>
           <div id="notification-menu" class="flex flex-col gap-y-1">
-            <For each={notifications()?.notifications}>
+            <For each={notifications()}>
               {(n, i) => {
                 return (
-                  <div class="p-2 font-[thin-font] gap-x-2 font-bold hover:bg-[rgb(243,244,246)] text-left w-full rounded-[50px] border-b pb-2">
+                  <div class="p-2 font-[thin-font] font-bold shadow-lg hover:bg-[rgb(243,244,246)] rounded-3xl w-full border-b">
                     <A href={`/${n.role}/${n.prof_id}`} id="notification-menu">
-                      <div class="flex px-2">
+                      <div class="flex relative items-center justify-between px-2 group">
+                        <p class="absolute right-0 top-0 font-[thin-font] text-gr text-xs">
+                          {n.created_at}
+                        </p>
+                        <div class="flex items-center w-[360px]">
                         <img
                           src={n.image_url}
                           class="w-[60px] h-[60px] rounded-full border border-indigo-100"
@@ -429,17 +475,16 @@ export const Header = () => {
                           <p class="text-sm font-[bolder-font]">
                             {n.firstname} {n.lastname}
                           </p>
-                          <Show when={n.status === "pending"}>
-                            <p class="font-[thin-font]">
-                              სურს თქვენი მეგობრებში დამატება
-                            </p>
-                          </Show>
+                          <p class="font-[thin-font] text-gr">
+                            {n.message}
+                          </p>
+                          <Show when={n.type === "FRIEND_REQUEST"}>
                           <div class="flex gap-x-2 mt-2 items-center">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
-                                accept_request(n.id)
+                                accept_request(n.id, n.friend_request_id)
                               }}
                               id="notification-menu"
                               class="font-bold px-2 py-1 rounded bg-gray-200 break-all cursor-default text-gr text-xs font-[thin-font]"
@@ -450,7 +495,7 @@ export const Header = () => {
                               onClick={e => {
                                 e.stopPropagation();
                                 e.preventDefault();
-                                reject_request(n.id);
+                                reject_request(n.friend_request_id);
                               }}
                               id="notification-menu"
                               class="font-bold px-2 py-1 rounded bg-gray-200 cursor-default break-all text-gr text-xs font-[thin-font]"
@@ -458,8 +503,33 @@ export const Header = () => {
                               უარყოფა
                             </button>
                           </div>
+                          </Show>
+
                         </div>
-                      </div>
+                        </div>
+                        <button id="notification-menu" onClick={e => {
+                          e.stopPropagation();
+                          e.preventDefault(); 
+                          setNotificationTools((prev) => {
+                            if (prev) {
+                              return null
+                            } else {
+                              return {
+                                type: n.type,
+                                id: n.id
+                              }
+                            }
+                          });
+                        }}>
+                          <img id="notification-menu" class={`${notificationTools()?.id === n.id ? "block" : "hidden group-hover:block"} bg-gray-200 p-1 rounded-full`} src={threeDotsSVG} width={30} height={30}></img>
+                          <Show when={notificationTools()?.id === n.id}>
+                          <NotificationTools setNoifications={setNoifications} seen={n.seen} notificationTools={notificationTools} setNotificationTools={setNotificationTools}></NotificationTools>
+                        </Show>
+                        </button>
+                          <Show when={!n.seen}>
+                            <div class="bg-dark-green-hover pointer-events-none w-[11px] h-[11px] text-white text-xs font-[thin-font] rounded-[50%]"></div>
+                          </Show>
+                        </div>
                     </A>
                   </div>
                 );
