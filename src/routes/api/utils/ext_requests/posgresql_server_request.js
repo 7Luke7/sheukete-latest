@@ -7,11 +7,11 @@ export const postgresql_server_request = async (method, params, headers) => {
             ...headers
         })
 
-        if (!response.ok) { 
+        if (!response.ok || response.status !== 200) { 
             const data = await response.json()
             return {status: response.status, ...data}
         }
-        
+
         const data = await response.json()
         return {...data, status: response.status}
     } catch (error) {

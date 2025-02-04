@@ -1,5 +1,5 @@
 import { A } from "@solidjs/router";
-import { batch, For, Index, Match, onMount, Switch, Show } from "solid-js";
+import { For, Index, Match, onMount, Switch, Show } from "solid-js";
 import EditSVG from "../../../svg-images/edit_icon.svg";
 import ExternalLinkSVG from "../../../svg-images/external_link.svg";
 import Swiper from "swiper";
@@ -45,7 +45,7 @@ export const Services = (props) => {
         nextEl: navigateRightService,
         prevEl: navigateLeftService,
       },
-    });
+    })
     const banners = document.querySelectorAll('.banner');
 
     banners.forEach((banner) => {
@@ -135,7 +135,7 @@ export const Services = (props) => {
                         </Match>
                         <Match when={props.status === 200}>
                           <A
-                            href={`/xelosani/services?id=${a.publicId}&profId=${props.profId}`}
+                            href={`/xelosani/services?id=${a.publicId}`}
                             class="bg-dark-green flex items-center gap-x-1 justify-center w-1/2 py-1 hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
                           >
                             <img loading="lazy" src={EditSVG} />

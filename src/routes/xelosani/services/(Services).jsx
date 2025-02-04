@@ -5,13 +5,12 @@ import {
   Match,
   batch,
   onCleanup,
-  createEffect,
   Show,
   onMount,
+  createEffect
 } from "solid-js";
 import {
   createAsync,
-  useLocation,
   useNavigate,
 } from "@solidjs/router";
 import { NotAuthorized } from "~/Components/NotAuthorized";
@@ -21,8 +20,6 @@ import jobs from "../../../Components/header-comps/jobs_list.json";
 import dropdownSVG from "../../../svg-images/svgexport-8.svg";
 import gallery from "../../../svg-images/images.svg";
 import thumnail from "../../../svg-images/thumbnails-svgrepo-com.svg";
-import { get_location } from "~/routes/api/xelosani/get_location";
-import { CreateJobMap } from "~/routes/new/[id]/CreateJobMap";
 import { SmallFooter } from "~/Components/SmallFooter";
 import { ServicesModal } from "./ServicesModal";
 import { ServiceSchedule } from "./ServiceSchedule";
@@ -32,15 +29,23 @@ import { Toast } from "~/Components/ToastComponent";
 import { get_user_service } from "~/routes/api/xelosani/service/service";
 import eyeFillSVG from "../../../svg-images/eye-fill.svg";
 import ImagePreview from "./ImagePreview";
+import {MapRenderer} from "../../map/MapRenderer";
 
 /*
 
   ასევე აჩვენე შეუძლია თუ არა მომხმარებელს ახლა სერვისის შესრულება schedule გაქვს სერვისის ამიტომ მარტივი იქნება
 
+  ---
+
+  I Believe after user marks location we should have a pop up
+  Which will show the information: city, distinct, street, etc.
+  But while showing it will allow users to modify the data
+  so we can get more information out of it.
+
 */
 
 const Services = (props) => {
-  const location = createAsync(get_location);
+  const response = createAsync(() => get_user_service(props?.location?.search), {deferStream: true})
   const [image, setImage] = createSignal([]);
   const [markedLocation, setMarkedLocation] = createSignal();
   const [error, setError] = createSignal(null);
@@ -59,7 +64,6 @@ const Services = (props) => {
   const [toast, setToast] = createSignal(null);
   const [service, setService] = createSignal([]);
   const [showSchedule, setShowSchedule] = createSignal();
-  const [isUsingMainSchedule, setIsUsingMainSchedule] = createSignal(false);
   const [schedule, setSchedule] = createSignal();
   const [signal, abort, filterErrors] = makeAbortable({
     timeout: 0,
@@ -68,61 +72,49 @@ const Services = (props) => {
   const [isSendingRequest, setIsSendingRequest] = createSignal(false);
   const [isEditing, setIsEditing] = createSignal(false);
   const [imageToPreviewUrl, setImageToPreviewUrl] = createSignal()
-  const [ids, setIds] = createSignal()
+
   const navigate = useNavigate();
-  const browserLocation = useLocation();
 
   const MAX_SINGLE_FILE_SIZE = 2 * 1024 * 1024;
   const MAX_TOTAL_SIZE = 15 * 1024 * 1024;
 
-  // newly added images shouldn't have preview icons
-  // 
-
-  onMount(async () => {
-    const [name1, value1_name2, value2] = browserLocation.search?.split("=");
-    if (name1 === "?id" && value1_name2.split("&")[1] === "profId") {
-      const response = await get_user_service(
-        value1_name2.split("&")[0],
-        value2
-      );
-
-      if (response.status === 200) {
-        document.getElementById("price").value = Number(response.main_price);
+  onMount(() => {
+      if (response() && response()?.status === 200 && response().isEditing) {
+        document.getElementById("price").value = Number(response().main_price);
         batch(() => {
           setIsEditing(true);
-          setIds([value1_name2.split("&")[0], value2])
+          setMarkedLocation([response().longitude, response().latitude])
           setToast({ type: true, message: "თქვენ ანახლებთ სერვისს." });
-          setTitle(response.main_title);
-          setInput(response.main_description);
-          setMainChecked(response.main_category);
-          setParentChecked(response.categories[response.categories.length - 1]);
-          setService(response.child_services);
+          setTitle(response().main_title);
+          setInput(response().main_description);
+          setMainChecked(response().main_category);
+          setParentChecked(response().categories[response().categories.length - 1]);
+          setService(response().child_services);
           setChildChecked([
-            ...response.categories.filter((a) => {
+            ...response().categories.filter((a) => {
               return (
-                response.categories[response.categories.length - 1] !== a &&
-                response.main_category !== a
+                response().categories[response().categories.length - 1] !== a &&
+                response().main_category !== a
               );
             }),
           ]);
           setActiveParentIndex(
             jobs
               .flatMap((obj) => Object.keys(obj))
-              .findIndex((a) => a === response.main_category)
+              .findIndex((a) => a === response().main_category)
           );
           setActiveChildIndex(
-            jobs[0][response.main_category].findIndex(
+            jobs[0][response().main_category].findIndex(
               (a) =>
                 a["კატეგორია"] ===
-                response.categories[response.categories.length - 1]
+                response().categories[response().categories.length - 1]
             )
           );
-          setImage(response.gallery);
-          setThumbnail(response.thumbnail);
+          setImage(response().gallery || []);
+          setThumbnail(response().thumbnail);
           setCurrentStep("thumbnail");
         });
       }
-    }
   });
 
   const handleFileChange = (e) => {
@@ -136,7 +128,7 @@ const Services = (props) => {
         });
       }
 
-      const file_existence = image().some((a) => a.name === file.name);
+      const file_existence = image() && image().some((a) => a.name === file.name);
       if (file_existence && currentStep() !== "thumbnail") {
         return setToast({
           type: false,
@@ -163,7 +155,7 @@ const Services = (props) => {
     }
 
     if (currentStep() === "thumbnail") {
-      if (!image().length) {
+      if (!image() || !image().length) {
         setThumbnail(files[0]);
         return setCurrentStep("gallery");
       } else {
@@ -322,7 +314,7 @@ const Services = (props) => {
 
       fd.append(
         "location",
-        JSON.stringify(markedLocation()) || JSON.stringify(location())
+        JSON.stringify(markedLocation())
       );
       fd.append("thumbnail", thumbNail());
       fd.append("mainCategory", mainChecked());
@@ -331,9 +323,6 @@ const Services = (props) => {
       fd.append("service", JSON.stringify(service()));
       fd.append("galleryLength", image().length);
 
-      if (isUsingMainSchedule()) {
-        fd.append("schedule", JSON.stringify(location().schedule));
-      }
       if (schedule()) {
         fd.append("schedule", JSON.stringify(schedule()));
       }
@@ -342,12 +331,11 @@ const Services = (props) => {
         fd.append(`service-${i}-gallery-image`, image()[i]);
       }
       if (isEditing()) {
-        const [name1, value1_name2, value2] = browserLocation.search?.split("=");
-        fd.append("public_id", value1_name2.split("&")[0])
+        const sp = new URLSearchParams(props?.location?.search)
+        fd.append("public_id", sp.get("id", sp.get("public_id")))
       }
       setIsSendingRequest(true);
       const url = isEditing() ? "/api/xelosani/service/edit_service" : "/api/xelosani/service/add_service"
-      console.log("hi")
       const response = await fetch(url, {
         method: "POST",
         body: fd,
@@ -355,8 +343,6 @@ const Services = (props) => {
         signal: signal(),
       });
 
-      console.log("hello")
-      console.log(response)
       if (!response.ok) {
         return props.setToast({
           message: "სერვისი გამოქვეყნება ვერ მოხერხდა.",
@@ -533,14 +519,13 @@ const Services = (props) => {
       return
     }
     try {
-      const [name1, value1_name2, value2] = browserLocation.search?.split("=");
-      const response = await fetch("http://localhost:5555/delete_service_image", {
+      const delete_response = await fetch("http://localhost:5555/delete_service_image", {
         method: "DELETE",
         body: JSON.stringify({
           filename, 
           prop, 
-          xelosaniProfId: value2,
-          serviceId: value1_name2.split("&")[0]
+          xelosaniProfId: response().profId,
+          serviceId: response().serviceId
         }),
         headers: {
           "Content-Type": "application/json"
@@ -548,7 +533,7 @@ const Services = (props) => {
         credentials: "include"
       })
 
-      if (response.status === 200) {
+      if (delete_response.status === 200) {
         return setImage(
           image().filter((a, i) => i !== index)
         )
@@ -562,10 +547,10 @@ const Services = (props) => {
     <section>
       <Header></Header>
       <Switch>
-        <Match when={location() && location() === 401}>
+        <Match when={response() && response() === 401}>
           <NotAuthorized></NotAuthorized>
         </Match>
-        <Match when={location() && location() !== 401}>
+        <Match when={response() && response() !== 401}>
           <Show when={imageToPreviewUrl()}>
             <ImagePreview setImageToPreviewUrl={setImageToPreviewUrl} imageToPreviewUrl={imageToPreviewUrl}></ImagePreview>
           </Show>
@@ -711,7 +696,7 @@ const Services = (props) => {
                   <button
                     onClick={() => {
                       setShowCategoryModal(false);
-                      navigate("#serviceWrapper");
+                      navigate(`${props.location.pathname + props.location.search}#serviceWrapper`);
                     }}
                     class="border mt-4 border-gray-300 rounded-[16px] p-1 px-4 w-full text-center font-semibold cursor-pointer text-gray-200 bg-dark-green"
                   >
@@ -750,7 +735,6 @@ const Services = (props) => {
                     </p>
                   </Show>
                   <div class="ml-auto text-gray-400 text-xs font-[thin-font]">
-                    {title().trim().length}/60
                   </div>
                 </div>
                 <textarea
@@ -770,7 +754,6 @@ const Services = (props) => {
                     </p>
                   </Show>
                   <div class="count ml-auto text-gray-400 text-xs font-[thin-font]">
-                    {input().trim().length}/300
                   </div>
                 </div>
                 <div class="flex items-center justify-between">
@@ -792,36 +775,6 @@ const Services = (props) => {
                   >
                     დაამატე განრიგი (სურვილისამებრ)
                   </button>
-                  <Show
-                    when={location().schedule && location().schedule.length}
-                  >
-                    <span class="text-sm font-[thin-font] font-bold">ან</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsUsingMainSchedule((prev) => !prev);
-                        if (isUsingMainSchedule()) {
-                          setSchedule(null);
-                          return setToast({
-                            type: true,
-                            message: "თქვენ იყენებთ მთავარ განრიგს.",
-                          });
-                        } else {
-                          return setToast({
-                            type: false,
-                            message: "თქვენ არ იყენებთ მთავარ განრიგს.",
-                          });
-                        }
-                      }}
-                      class={`${
-                        !isUsingMainSchedule()
-                          ? "hover:bg-gray-700 bg-gray-800"
-                          : "bg-dark-green hover:bg-dark-green-hover"
-                      } px-4 py-2 font-bold font-[thin-font] text-xs transition ease-in delay-20 text-white text-center rounded-[16px]`}
-                    >
-                      გამოიყენე მთავარი განრიგი
-                    </button>
-                  </Show>
                 </div>
                 <Show when={error()?.some((a) => a.field === "price")}>
                   <p class="text-xs text-red-500 font-[thin-font] font-bold mt-1">
@@ -942,7 +895,7 @@ const Services = (props) => {
                       </span>
                       <div class="flex gap-x-2">
                         <Show when={isEditing() && !thumbNail().is_user_added}>
-                          <button type="button" onClick={() => setImageToPreviewUrl(`http://localhost:5555/static/images/xelosani/${ids()[1]}/services/${ids()[0]}/thumbnail/${thumbNail().name}`)}>
+                          <button type="button" onClick={() => setImageToPreviewUrl(`http://localhost:5555/static/images/xelosani/${response().profId}/services/${response().serviceId}/thumbnail/${thumbNail().name}`)}>
                             <img src={eyeFillSVG} width={18} height={18}></img>
                           </button>
                         </Show>
@@ -963,7 +916,7 @@ const Services = (props) => {
                     </div>
                   </div>
                 </Show>
-                <Show when={image().length}>
+                <Show when={image() && image().length}>
                   <div class="flex flex-col gap-y-2 mt-4 w-full">
                     <p class="text-md font-[normal-font] font-bold">გალერეა</p>
                     <For each={image()}>
@@ -976,7 +929,7 @@ const Services = (props) => {
                               </span>
                               <div class="flex gap-x-2">
                               <Show when={isEditing() && !l.is_user_added}>
-                          <button type="button" onClick={() => setImageToPreviewUrl(`http://localhost:5555/static/images/xelosani/${ids()[1]}/services/${ids()[0]}/gallery/${l.name}`)}>
+                          <button type="button" onClick={() => setImageToPreviewUrl(`http://localhost:5555/static/images/xelosani/${response().profId}/services/${response().serviceId}/gallery/${l.name}`)}>
                             <img src={eyeFillSVG} width={18} height={18}></img>
                           </button>
                         </Show>
@@ -1038,17 +991,21 @@ const Services = (props) => {
                       setSchedule={setSchedule}
                       schedule={schedule}
                       setToast={setToast}
-                      setIsUsingMainSchedule={setIsUsingMainSchedule}
                       setShowSchedule={setShowSchedule}
                     ></ServiceSchedule>
                   </div>
                 </Show>
               </form>
-              <CreateJobMap
-                location={location}
+              <MapRenderer
                 markedLocation={markedLocation}
                 setMarkedLocation={setMarkedLocation}
-              ></CreateJobMap>
+                longitude={response().longitude}
+                latitude={response().latitude}
+                center={response().center}
+                place_name_ka={response().place_name_ka}
+                height={"100%"}
+                width={"800px"}
+              ></MapRenderer>
             </div>
           </div>
         </Match>
@@ -1061,7 +1018,7 @@ const Services = (props) => {
           setIsExiting={setIsExiting}
         ></Toast>
       </Show>
-      <Show when={service().length}>
+      <Show when={service() && service().length}>
         <ServicesModal
           error={error}
           removeService={removeService}

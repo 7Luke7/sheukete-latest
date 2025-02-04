@@ -289,11 +289,11 @@ export const ProfileLeft = (props) => {
         <div class="flex flex-col w-full justify-start mt-2 gap-y-2">
           <div class="flex pb-1 border-b px-2 items-center gap-x-1">
             <Switch>
-              <Match when={props.user().location}>
+              <Match when={props.user().place_name_ka}>
                 <div class="flex items-center w-full gap-x-2">
                   <img loading="lazy" src={location}></img>
                   <p class="text-gr text-xs font-[thin-font] break-word font-bold">
-                    {props.user().location.display_name.substr(0, 20)}.
+                    {props.user().place_name_ka.substr(0, 20)}.
                   </p>
                 </div>
                 <Show when={props.user().status === 200}>
@@ -301,6 +301,12 @@ export const ProfileLeft = (props) => {
                     <img loading="lazy" id="locationButton" src={pen} />
                   </button>
                 </Show>
+              </Match>
+              <Match when={props.user().privacy.location === "დამალვა"}>
+              <img loading="lazy" src={location}></img>
+              <p class="text-gr ml-1 text-xs font-[thin-font] font-bold">
+                  ლოკაცია დამალულია
+                </p>
               </Match>
               <Match when={props.user().status === 200}>
                 <A
@@ -310,7 +316,7 @@ export const ProfileLeft = (props) => {
                   დაამატე ლოკაცია
                 </A>
               </Match>
-              <Match when={props.user().status === 401}>
+              <Match when={props.user().status === 401 && props.user().privacy.location !== "დამალვა"}>
                 <img loading="lazy" src={location}></img>
                 <p class="text-gr text-xs font-[thin-font] font-bold">
                   არ არის დამატებული

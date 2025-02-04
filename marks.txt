@@ -59,3 +59,44 @@
 
 	-- So We have stuff like if (session === 401) but this only checks if user is logged in
 	-- meaning anyone whose logged in can bypass it so we should check for specific ids as well
+
+---- ABOUT MAP DATA ----
+
+	-- Check all the city/region values of cities.json against the map api values of them
+	-- Sometimes they have minor "-" differences so we gotta check that one out
+
+---- SETUP ----
+	
+	-- When user adds about for example and after adding about if they remove it they are not able to add it
+	-- fix this issue later
+
+---- "JOBS_COMPLETED" COLUMN THAT WE HAVE IN DATABASE SHOULDN't BE IN users_xelosni_specific
+ 	-- LATER WE WILL HAVE TABLE THAT WILL HOLD ORDERS AND it will have status "completed" | "pending" | "canceled"	
+	-- WE WILL USE AGGREGATE functions to count orders that include status "completed"
+
+---- SERVICE REVIEWS ----
+	We should have reviews table that will hold service_id and we will have damkveti_id
+	as well we will have message and rating
+
+	so here is how it will look 
+
+		TABLE (
+			id PRIMARY KEY
+			rating
+			message
+			user_id --> References table users(id)
+			service_id
+			user_role --> References TABLE users(role)
+			created_at now() || other timestamp
+		)
+	
+	to get avg rating for services we will use aggregate functions	
+
+---- UPLOADING SERVICE ----
+	USER SHOULD HAVE preferences so they
+	can hide
+		street_name/placename
+		ability to not show job on map for premium users
+
+---- PREMIUM USERS ----
+	I GOTTA THINK ABOUT THIS ONE LATER LOL

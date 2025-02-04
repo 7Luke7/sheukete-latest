@@ -85,7 +85,7 @@ export const get_xelosani = async (prof_id) => {
     return {
       profId: session.profId,
       ...user,
-      ...user.skillset[0],
+      skillset: user.skillset[0],
       displayBirthDate,
       creationDateDisplayable,
       status: 200,
@@ -122,9 +122,9 @@ export const get_xelosani = async (prof_id) => {
         }
       }
   
-        return {
+      return {
         ...user,
-        ...user.skillset[0],
+        skillset: user.skillset[0],
         profId: prof_id,
         displayBirthDate,
         creationDateDisplayable,

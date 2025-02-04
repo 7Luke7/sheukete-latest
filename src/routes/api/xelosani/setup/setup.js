@@ -348,13 +348,21 @@ export const handle_location = async (location) => {
       throw new Error("აირჩიე ლოკაცია");
     }
 
-    const user = await postgresql_server_request("GET", `xelosani/handle_location/${session.profId}`, {
+    const user = await postgresql_server_request("POST", `xelosani/handle_location/${session.userId}`, {
+      body: JSON.stringify({
+        location
+      }),
       headers: {
         "Content-Type": "application/json",
       },
     });
 
-    return { ...user, status: 200 };
+    if (user.status === 400) {
+      console.log("hi")
+      throw new Error("problem")
+    } 
+
+    return { ...user, status: 200, profId: session.profId };
   } catch (error) {
     console.log(error);
   }
@@ -369,7 +377,7 @@ export const check_location = async () => {
       throw new Error(401);
     }
 
-    const user = await postgresql_server_request("GET", `xelosani/check_location/${session.profId}`, {
+    const user = await postgresql_server_request("GET", `xelosani/check_location/${session.userId}`, {
       headers: {
         "Content-Type": "application/json",
       },

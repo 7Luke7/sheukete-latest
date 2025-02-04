@@ -1,7 +1,6 @@
 "use server"
 import { getRequestEvent } from "solid-js/web";
 import { verify_user } from "../session_management";
-import { postgresql_server_request } from "../utils/ext_requests/posgresql_server_request";
 
 export const get_location = async () => {
     try {
@@ -13,10 +12,10 @@ export const get_location = async () => {
       }
       const data = await postgresql_server_request(
         "GET",
-        `xelosani/check_location/${user.userId}`,
+        `xelosani/handle_service_location/:serviceId`,
       )
       
-      return data
+      return []
     } catch (error) {
       console.log(error);
     }

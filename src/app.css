@@ -11,6 +11,40 @@ body {
   scroll-behavior: smooth;
 }
 
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+}
+#results {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30%;
+  overflow: auto;
+  background: 
+rgba(255, 255, 255, 0.8);
+}
+#results ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+#results ul li {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid 
+gray;
+}
+#results ul li:hover {
+  color: 
+gray;
+}
+#results ul li:last-child{
+  border-bottom-width: 0;
+}
+
 @font-face {
   font-family: "normal-font";
   src: url("../../public/fonts/TBCXMedium.ttf");

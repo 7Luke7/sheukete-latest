@@ -185,7 +185,7 @@ export const Header = () => {
             </A>
             <div class="relative group">
               <div class="cursor-pointer flex">
-                <A href="/talent">მოძებნე ხელოსანი</A>
+                <p>მოძებნე სერვისი</p>
                 <img
                   class="transform transition-transform duration-300 group-hover:rotate-180"
                   src={dropdownSVG}
@@ -196,7 +196,7 @@ export const Header = () => {
             </div>
             <div class="group relative">
               <div class=" cursor-pointer flex">
-                <A href="/work">მოძებნე სამუშაო</A>
+                <p href="#">მოძებნე სამუშაო</p>
                 <img
                   class="transform transition-transform duration-300 group-hover:rotate-180"
                   src={dropdownSVG}

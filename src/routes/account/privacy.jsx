@@ -9,6 +9,7 @@ const Privacy = () => {
   const [toast, setToast] = createSignal();
   const [isExiting, setIsExiting] = createSignal(false);
 
+  console.log(privacy())
   const handlePrivacyChange = async (e) => {
     try {
       const response = await fetch("/api/privacy", {
@@ -67,6 +68,18 @@ const Privacy = () => {
               <option selected={privacy()?.birthDate === "დამალვა"} value="birthDate-დამალვა">დამალვა</option>
             </select>
           </div>
+          <div class="gap-x-5 flex">
+          <div class="flex flex-col gap-y-2">
+            <p class="font-[thin-font] font-bold">ლოკაცია</p>
+            <select
+              onChange={handlePrivacyChange}
+              class="w-[220px] border font-[normal-font] text-base border-green-500 rounded-lg bg-white text-green-800 p-2 focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-200 ease-in-out shadow-lg hover:bg-green-50"
+            >
+              <option selected={privacy()?.location === "გამოჩენა"} value="location-გამოჩენა">გამოჩენა</option>
+              <option selected={privacy()?.location === "დამალვა"} value="location-დამალვა">დამალვა</option>
+            </select>
+          </div>
+        </div>
         </div>
       </Suspense>
       <Show when={toast()}>

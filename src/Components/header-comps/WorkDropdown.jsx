@@ -28,7 +28,7 @@ export const WorkDropdown = () => {
                 <div class="w-[400px]">
                     <For each={jobs.flatMap(obj => Object.keys(obj))}>
                         {(m) => {
-                            return <A href="#" onMouseEnter={() => handleCategories(m)} class="text-left">
+                            return <A href={`/find/service?category=${m}`} onMouseEnter={() => handleCategories(m)} class="text-left">
                             <li class="flex p-2 justify-between items-center hover:bg-[rgb(243,244,246)] rounded-[16px] gap-x-2">
                                 <h2 class="font-[normal-font] text-sm font-bold">{m}</h2>
                                 <img src={dropdownGreenSVG}></img>
@@ -42,7 +42,7 @@ export const WorkDropdown = () => {
                 <div class="flex flex-col w-[400px] px-3 h-[40px]">
                     <For each={showChildCat()}>
                         {(c, i) => {
-                            return <A href="#" onMouseEnter={() => handleChildCategories(i)} class="text-left">
+                            return <A href={`/find/service?category=${c["კატეგორია"]}`} onMouseEnter={() => handleChildCategories(i)} class="text-left">
                             <li class="flex p-2 justify-between items-center hover:bg-[rgb(243,244,246)] rounded-[16px] gap-x-2">
                                 <h2 class="font-[normal-font] text-sm font-bold">{c["კატეგორია"]}</h2>
                                 <img src={dropdownGreenSVG}></img>
@@ -56,7 +56,7 @@ export const WorkDropdown = () => {
                 <div class="flex w-[600px] px-3 h-[40px] flex-wrap">
                     <For each={showGrandChildCat()}>
                         {(c) => {
-                            return <A href="#" class="text-left">
+                            return <A href={`/find/service?category=${c}`} class="text-left">
                             <li class="p-2 hover:bg-[rgb(243,244,246)] rounded-[16px] gap-x-2">
                                 <h2 class="font-[normal-font] text-sm font-bold">{c}</h2>
                             </li>

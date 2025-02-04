@@ -121,6 +121,7 @@ export async function POST({request}) {
 
         const tags = ["mock"]
 
+        console.log(location)
         const response = await postgresql_server_request(
           "POST",
           "xelosani/service",

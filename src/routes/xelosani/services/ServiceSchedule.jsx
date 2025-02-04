@@ -55,7 +55,6 @@ export const ServiceSchedule = (props) => {
             ]
             batch(() => {
                 props.setSchedule(insertableSchedule)
-                props.setIsUsingMainSchedule(false)
                 props.setToast({
                   message: "განრიგი დამატებულია.",
                   type: true

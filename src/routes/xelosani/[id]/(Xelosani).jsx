@@ -25,7 +25,7 @@ import exclamationWhite from "../../../svg-images/exclamationWhite.svg";
 import {ModifyAbout} from "../modals/ModifyAbout";
 
 const Xelosani = (props) => {
-  const user = createAsync(() => get_xelosani(props.params.id));
+  const user = createAsync(() => get_xelosani(props.params.id), {deferStream: true});
   const navigate = useNavigate();
   const [modal, setModal] = createSignal(null);
   const [toast, setToast] = createSignal();
@@ -123,10 +123,10 @@ const Xelosani = (props) => {
                       setModal={setModal}
                       setIsExiting={setIsExiting}
                       setToast={setToast}
-                      skills={user().skills}
-                      main={user().main}
-                      parent={user().parent}
-                      child={user().child}
+                      skills={user().skillset.skills}
+                      main={user().skillset.main}
+                      parent={user().skillset.parent}
+                      child={user().skillset.child}
                     ></ModifySkill>
                   </Match>
                   <Match when={modal() === "აღწერა"}>
