@@ -24,8 +24,8 @@ const BrowseServices = (props) => {
             services={services}
             currentSearchURL={services().query}
           ></ServiceFilters>
-          <div class="flex flex-col w-full mt-4">
-            <div class="flex border-b items-center justify-between px-4">
+          <div class="flex flex-col w-full">
+            <div class="flex sticky top-[46px] py-2 bg-white z-[10] border-b items-center justify-between px-4">
               <p class="font-[thin-font] text-xs font-bold">
                 ნაჩვენებია 1–დან {services().total_count <= 16 ? <>
                 {services().total_count}-მდე შედეგი 

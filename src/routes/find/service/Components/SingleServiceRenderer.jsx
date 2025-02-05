@@ -4,31 +4,9 @@ import { For } from "solid-js";
 export const SignleServiceRenderer = (props) => {
   const { s, i } = props;
 
-  /*
-        --- props.services Preview ---
-        {
-            main_category: 'ზოგადი შეკეთება და მოვლა',
-            main_title: 'ლორემ იპსუმ უკვდავყო შავებშია ნადავლი მეყო მოიხდენს სხვაგვარ',
-            main_description: 'ლორემ იპსუმ უკვდავყო შავებშია ნადავლი მეყო მოიხდენს სხვაგვარი მოიქცეს, სწამეთ შექმნილ გამასხარავება ინფორმაციაა იტრიალეს. გაგაჩერებენ ამოუფრთხო სწერს დაიკვნესა სახარება უყვიროდა წამოსხმული, ადგულებისთვისაც ვბრჭყვიალა მიუთითებენ ცეცხლისა. ფრანგებთან ხმალი ვბრჭყვიალა ინფორმაციაა, წამოსხმული გადააბავდა',
-            main_price: 100,
-            categories: [Array],
-            publicId: '41b3e910-a0bd-41d1-b344-4d40161e9d9e',
-            city: 'თბილისი',
-            place_name_ka: 'ქსანის ქუჩა 35, 0141, სანზონა, ნაძალადევის რაიონი, თბილისი, საქართველო',
-            center: [Array],
-            bbox: [Array],
-            longitude: 44.78673322753957,
-            region: 'თბილისი',
-            street: 'ქსანის ქუჩა',
-            latitude: 41.76844595255673,
-            neighbourhood: null,
-            created_at: '2025-01-30T18:54:16.756649+04:00'
-        }
-    */
-
   return (
-    <div key={i()} class="w-full mx-auto p-4">
-      <div class="bg-white shadow-lg rounded-lg overflow-hidden min-h-80 flex flex-col md:flex-row">
+    <div key={i()} class="w-full mx-auto p-2">
+      <div class="bg-white shadow-md rounded-lg overflow-hidden min-h-80 flex flex-col md:flex-row">
         {/* Image Section */}
         <A class="w-[351px] h-[351px]" href={`/xelosani/${s.profId}`}>
           <img
@@ -39,36 +17,38 @@ export const SignleServiceRenderer = (props) => {
         </A>
 
         {/* Content Section */}
-        <div class="md:w-full p-3 flex flex-col relative justify-between">
+        <div class="md:w-full p-2 flex flex-col relative justify-between">
           {/* Top Section */}
           <div>
             <div class="flex justify-between items-start">
               <A href={`/xelosani/${s.profId}`}>
-                <h2 class="text-xl font-bold text-gray-800">{s.main_title}</h2>
+                <h2 class="text-lg font-bold text-gray-800">
+                  {s.main_title}
+                </h2>
               </A>
               {/* Location Badge */}
               {s.place_name_ka && (
-                <span class="bg-green-600 absolute right-5 text-white text-xs font-semibold font-[thin-font] px-3 py-1 rounded-full">
-                  {s.place_name_ka.slice(0, 60)}...
+                <span class="bg-green-600 absolute opacity-[0.9] right-2 top-0 text-white text-xs font-semibold font-[thin-font] px-2 py-1 rounded-full">
+                  {s.place_name_ka.slice(0, 50)}...
                 </span>
               )}
             </div>
 
             <A href={`/xelosani/${s.profId}`}>
-              <p class="mt-3 text-sm font-[normal-font] text-gray-600">
+              <p class="mt-2 text-xs font-[normal-font] text-gray-600">
                 {s.main_description}
               </p>
             </A>
-            <p class="mt-4 text-gray-800 font-[bolder-font] text-sm">
+            <p class="mt-2 text-gray-800 font-[bolder-font] text-xs">
               {s.main_category}
             </p>
 
             {/* Categories */}
-            <div class="mt-2 flex flex-wrap gap-2">
+            <div class="mt-1 flex flex-wrap gap-1">
               <For each={s.categories}>
                 {(sc) => (
-                  <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs font-[thin-font] font-semibold">
-                    {sc}
+                  <span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs font-[thin-font] font-semibold">
+                    {sc.slice(0, 20)}...
                   </span>
                 )}
               </For>
@@ -76,41 +56,39 @@ export const SignleServiceRenderer = (props) => {
           </div>
 
           {/* Bottom Section */}
-          <div class="mt-6 flex justify-between items-center border-t pt-4">
-            <div class="flex gap-x-4">
+          <div class="mt-4 flex justify-between items-center border-t pt-2">
+            <div class="flex gap-x-2">
               {/* Price & Publication Date */}
-              <div class="flex flex-col items-start p-3 bg-gray-50 rounded-lg shadow-sm">
+              <div class="flex flex-col items-start p-2 bg-gray-50 rounded-lg shadow-sm">
                 <A href={`/xelosani/${s.profId}`}>
-                  <p class="text-2xl font-bold text-gray-900">
+                  <p class="text-lg font-bold text-gray-900">
                     ₾{s.main_price}
                   </p>
                 </A>
-                <p class="mt-1 text-xs font-medium text-gray-500">
+                <p class="mt-1 text-xs font-[normal-font] text-gray-500">
                   გამოქვეყნდა: {new Date(s.created_at).toLocaleDateString()}
                 </p>
               </div>
 
               {/* Average Rating & Completed Count */}
-              <div class="flex flex-col items-start p-3 bg-gray-50 rounded-lg shadow-sm">
+              <div class="flex flex-col items-start p-2 bg-gray-50 rounded-lg shadow-sm">
                 <A href={`/xelosani/${s.profId}`}>
-                  <p class="text-2xl font-bold text-gray-900">
-                    {s.avgrating} 
-                    დეველოპმენტის ქვეშ
+                  <p class="text-lg font-bold text-gray-900">
+                    {s.avgrating}
                   </p>
                 </A>
-                <p class="mt-1 text-xs font-medium text-gray-500">
-                  {s.completed_count}
-                  დეველოპმენტის ქვეშ
+                <p class="mt-1 text-xs font-[normal-font] text-gray-500">
+                  შესრულებული: {s.completed_count}
                 </p>
               </div>
             </div>
 
             <A
               href={`/xelosani/${s.profId}`}
-              class="flex items-center bg-green-500 hover:bg-green-600 transition-colors text-white px-4 py-2 rounded-lg"
+              class="flex items-center bg-green-500 hover:bg-green-600 transition-colors text-white px-3 py-2 rounded-lg"
             >
               <img
-                class="w-16 h-16 rounded-full object-cover mr-4"
+                class="w-12 h-12 rounded-full object-cover mr-3"
                 src={s.prof_pic_src}
                 alt="Professional"
               />
@@ -119,9 +97,9 @@ export const SignleServiceRenderer = (props) => {
                   {s.firstname + " " + s.lastname}
                 </p>
                 <p class="text-xs">
-                  შესრულებული სამუშაოები: {s.completed_jobs}
+                  სამუშაოები: {s.completed_jobs}
                 </p>
-                <p class="text-xs">საშუალო შეფასება: {s.avgrating}</p>
+                <p class="text-xs">საშუალო: {s.avgrating}</p>
               </div>
             </A>
           </div>

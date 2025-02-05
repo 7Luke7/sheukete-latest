@@ -24,7 +24,7 @@ export const ServicePagination = (props) => {
   
   const gotoPage = (target) => {
     const sp = new URLSearchParams(props.currentSearchURL)
-    if (props.currentSearchParams.sort  .includes("-")) {      
+    if (props.currentSearchParams.sort.includes("-")) {      
       const field = props.currentSearchParams.sort.split("-")[0]
       const value = props.lastPageService[props.currentSearchParams.sort.split("-")[0]]
       sp.set(`lastservice-${field}`, value)

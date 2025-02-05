@@ -60,16 +60,8 @@ export async function GET({ request }) {
         ],
       ];
 
-      const last_service = postgresql_response.services[postgresql_response.services.length - 1]
 
-      const field = mergedParams.sort.split("-")[0]
-      const value = last_service[mergedParams.sort.split("-")[0]]
-      sp.set(`lastservice-${field}`, value)
-      sp.set("lastservice-pid", last_service.publicId)
-
-      console.log({...postgresql_response, query: search, defaultParams: mergedParams, parent, main})
-
-      return json({...postgresql_response, query: search, defaultParams: mergedParams, parent, main});
+      return json({...postgresql_response, query: search, defaultParams: mergedParams, parent, main, last_service: postgresql_response.services[postgresql_response.services.length - 1]});
     } catch (error) {
       console.log("err", error);
     }

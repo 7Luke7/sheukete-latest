@@ -17,7 +17,7 @@ export const PricingRange = (props) => {
   let thumbTo;
   let highlight; 
   let dragging = null;
-  const fixedTrackWidth = 180;
+  const fixedTrackWidth = 110;
   
   const updateThumbPositions = () => {
     const range = max - min;

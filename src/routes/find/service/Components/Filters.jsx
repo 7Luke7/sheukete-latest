@@ -22,8 +22,9 @@ export const ServiceFilters = (props) => {
     }
 
     return (
-    <form onSubmit={handleFiltering} class="h-full w-1/4 left-0 top-[46px] sticky py-2 border-r">
-      <div class="w-full flex px-4 gap-y-3 flex-col pt-3">
+    <form onSubmit={handleFiltering} class="w-1/6 h-full left-0 top-[46px] sticky py-2 border-r">
+      <div class="w-full flex justify-between px-4 h-[calc(100vh-80px)] flex-col pt-3">
+        <div class="flex gap-y-3 flex-col ">
         <div class="flex font-[thin-font] gap-x-1 border-b pb-2 font-bold text-xs">
           <button type="button" onClick={() => changeParams(props.services().main)}>
             {props.services().main}
@@ -113,6 +114,7 @@ export const ServiceFilters = (props) => {
             currentSearchURL={props.services().query}
         ></LocationFilter>
         <Distance></Distance>
+        </div>
         <button type="submit" class="text-sm rounded px-2 py-1 text-white font-[thin-font] font-bold bg-dark-green">
           გაფილტვრა
       </button>
