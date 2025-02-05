@@ -28,7 +28,7 @@ export const ServiceFilters = (props) => {
           <button type="button" onClick={() => changeParams(props.services().main)}>
             {props.services().main}
           </button>
-          {props.services().query_name_values.category !==
+          {props.services().defaultParams.category !==
             props.services().main && (
             <>
               <span>/</span>
@@ -44,7 +44,7 @@ export const ServiceFilters = (props) => {
               when={
                 props.services().services[0].categories[
                   props.services().services[0].categories.length - 2
-                ] === props.services().query_name_values.category
+                ] === props.services().defaultParams.category
               }
             >
               <For
@@ -71,7 +71,7 @@ export const ServiceFilters = (props) => {
               when={
                 props.services().services[0].categories[
                   props.services().services[0].categories.length - 1
-                ] && props.services().query_name_values.category
+                ] && props.services().defaultParams.category
               }
             >
               <For
@@ -105,11 +105,11 @@ export const ServiceFilters = (props) => {
           </Switch>
         </div>
         <PricingRange
-          currentSearchParams={props.services().query_name_values}
+          currentSearchParams={props.services().defaultParams}
           currentSearchURL={props.services().query}
         ></PricingRange>
         <LocationFilter
-            currentSearchParams={props.services().query_name_values}
+            currentSearchParams={props.services().defaultParams}
             currentSearchURL={props.services().query}
         ></LocationFilter>
         <Distance></Distance>

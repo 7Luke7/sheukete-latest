@@ -21,11 +21,18 @@ export const ServicePagination = (props) => {
   const pageIndex = Number(props.currentSearchParams.page) - 1
   const canPreviousPage = pageIndex > 0
   const canNextPage = pageIndex < pageCount - 1
-
+  
   const gotoPage = (target) => {
     const sp = new URLSearchParams(props.currentSearchURL)
-    sp.set("page", target + 1)
-    return window.location.search = sp.toString() 
+    if (props.currentSearchParams.sort  .includes("-")) {      
+      const field = props.currentSearchParams.sort.split("-")[0]
+      const value = props.lastPageService[props.currentSearchParams.sort.split("-")[0]]
+      sp.set(`lastservice-${field}`, value)
+      sp.set("lastservice-pid", props.lastPageService.publicId)
+    } 
+    sp.set("page", 1)
+    console.log(props.lastPageService.publicId)
+    return (window.location.search = sp.toString())
   }
 
   const renderPageLinks = () => {

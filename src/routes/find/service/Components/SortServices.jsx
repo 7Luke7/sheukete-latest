@@ -2,28 +2,32 @@ import { For } from "solid-js";
 
 export const SortServices = (props) => {
   const options = [
-    { name: "დამატების თარიღი: ახლიდან ძველამდე", value: "ახლიდან ძველამდე" },
-    { name: "დამატების თარიღი: ძველიდან ახალამდე", value: "ძველიდან ახალამდე" },
-    { name: "ფასი: მაღლიდან დაბალზე", value: "მაღლიდან დაბალზე" },
-    { name: "ფასი: დაბლიდან მაღალზე", value: "დაბლიდან მაღალზე" },
-    { name: "მდებარეობა: ყველაზე ახლოს", value: "ყველაზე ახლოს" },
-    { name: "რეიტინგი: მაღალი დან დაბალზე", value: "რეიტინგი" },
-    { name: "შესრულებული: ყველაზე მეტი", value: "ყველაზე მეტი" },
+    { name: "დამატების თარიღი: ახლიდან ძველამდე", value: "created_at-DESC" },
+    { name: "დამატების თარიღი: ძველიდან ახალამდე", value: "created_at-ASC" },
+    { name: "ფასი: მაღლიდან დაბალზე", value: "main_price-DESC" },
+    { name: "ფასი: დაბლიდან მაღალზე", value: "main_price-ASC" },
+    { name: "მდებარეობა: ყველაზე ახლოს", value: "longitude-latitude-ASC" },
+    { name: "რეიტინგი: მაღალი დან დაბალზე", value: "avgrating-DESC" },
+    { name: "შესრულებული: ყველაზე მეტი", value: "completed_count-DESC" },
   ];
 
   const handleSorting = (e) => {
     const sp = new URLSearchParams(props.currentSearchURL);
-    if (e.target.value === "ყველაზე ახლოს") {
+    if (e.target.value === "longitude-latitude-ASC") {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (position) => {
           sp.set(
             "sort",
-            `lng.${position.coords.longitude},lat.${position.coords.latitude}`
+            `longitude.${position.coords.longitude},latitude.${position.coords.latitude}`
           );
+          sp.delete(`lastservice-${props.currentSearchParams.sort.split("-")[0]}`)
+          sp.delete("lastservice-pid")
           return (window.location.search = sp.toString());
         });
       }
     } else {
+      sp.delete(`lastservice-${props.currentSearchParams.sort.split("-")[0]}`)
+      sp.delete("lastservice-pid")
       sp.set("sort", e.target.value);
       return (window.location.search = sp.toString());
     }
