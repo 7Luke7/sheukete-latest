@@ -1,16 +1,10 @@
 import { Match, Switch } from "solid-js";
-import jobs from "../../../../Components/header-comps/jobs_list.json";
 import { PricingRange } from "./PriceRange";
 import { LocationFilter } from "./LocationFilter";
 import { Distance } from "./Distance";
+import { A } from "@solidjs/router";
 
 export const ServiceFilters = (props) => {
-    const changeParams = (target) => {
-        const sp = new URLSearchParams(props.currentSearchURL)
-        sp.set("category", target)
-        return window.location.search = sp.toString()
-    }
-
     const handleFiltering = (e) => {
       e.preventDefault()
       const fd = new FormData(e.target)
@@ -26,16 +20,18 @@ export const ServiceFilters = (props) => {
       <div class="w-full flex justify-between px-4 h-[calc(100vh-80px)] flex-col pt-3">
         <div class="flex gap-y-3 flex-col ">
         <div class="flex font-[thin-font] gap-x-1 border-b pb-2 font-bold text-xs">
-          <button type="button" onClick={() => changeParams(props.services().main)}>
-            {props.services().main}
-          </button>
-          {props.services().defaultParams.category !==
-            props.services().main && (
+          <A 
+            href={`http://localhost:3000/find/service?category=${props.main}`}
+          >
+            {props.main}
+          </A>
+          {props.category !==
+            props.main && (
             <>
               <span>/</span>
-              <button type="button" onClick={() => changeParams(props.services().parent)}>
-                {props.services().parent}
-              </button>
+              <A href={`http://localhost:3000/find/service?category=${props.parent}`}>
+                {props.parent}
+              </A>
             </>
           )}
         </div>
@@ -43,62 +39,36 @@ export const ServiceFilters = (props) => {
           <Switch>
             <Match
               when={
-                props.services().services[0].categories[
-                  props.services().services[0].categories.length - 2
-                ] === props.services().defaultParams.category
+                props.main === props.category
               }
             >
-              <For
-                each={jobs[0][
-                  props.services().services[0].categories[
-                    props.services().services[0].categories.length - 2
-                  ]
-                ].map((a) => a["კატეგორია"])}
-              >
-                {(c) => {
+              <For each={props.displayCategories.parent}>
+                {(l) => {
                   return (
-                    <button
-                    type="button"
-                    onClick={() => changeParams(c)}
-                      class="text-left text-xs font-bold font-[thin-font]"
+                    <A
+                    href={`http://localhost:3000/find/service?category=${l}`}
+                    class="text-xs text-left font-semibold font-[thin-font]"
                     >
-                      {c}
-                    </button>
+                      {l}
+                    </A>
                   );
                 }}
               </For>
             </Match>
             <Match
-              when={
-                props.services().services[0].categories[
-                  props.services().services[0].categories.length - 1
-                ] && props.services().defaultParams.category
-              }
+              when={props.parent && props.category}
             >
               <For
-                each={
-                  jobs[0][
-                    props.services().services[0].categories[
-                      props.services().services[0].categories.length - 2
-                    ]
-                  ].find(
-                    (pc) =>
-                      pc["კატეგორია"] ===
-                      props.services().services[0].categories[
-                        props.services().services[0].categories.length - 1
-                      ]
-                  )["სამუშაოები"]
-                }
+                each={props.displayCategories.child}
               >
-                {(c) => {
+                {(l) => {
                   return (
-                    <button
-                      type="button"
-                      onClick={() => changeParams(c)}
+                    <A
+                      href={`http://localhost:3000/find/service?category=${l}`}
                       class="text-xs text-left font-bold font-[thin-font]"
                     >
-                      {c}
-                    </button>
+                      {l}
+                    </A>
                   );
                 }}
               </For>
@@ -106,12 +76,15 @@ export const ServiceFilters = (props) => {
           </Switch>
         </div>
         <PricingRange
-          currentSearchParams={props.services().defaultParams}
-          currentSearchURL={props.services().query}
+          priceFrom={props.priceFrom}
+          priceTo={props.priceTo}
+          min_price_filter={props.min_price_filter}
+          max_price_filter={props.max_price_filter}
         ></PricingRange>
         <LocationFilter
-            currentSearchParams={props.services().defaultParams}
-            currentSearchURL={props.services().query}
+            city={props.city}
+            region={props.region}
+            currentSearchURL={props.currentSearchURL}
         ></LocationFilter>
         <Distance></Distance>
         </div>

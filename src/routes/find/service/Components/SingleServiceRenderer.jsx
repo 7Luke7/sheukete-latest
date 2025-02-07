@@ -13,11 +13,12 @@ export const SignleServiceRenderer = (props) => {
             class="object-cover w-full h-full"
             src={s.thumbnail_src}
             alt="Service"
+            loading="lazy"
           />
         </A>
 
         {/* Content Section */}
-        <div class="md:w-full p-2 flex flex-col relative justify-between">
+        <div class="md:w-11/12 p-2 flex flex-col relative justify-between">
           {/* Top Section */}
           <div>
             <div class="flex justify-between items-start">

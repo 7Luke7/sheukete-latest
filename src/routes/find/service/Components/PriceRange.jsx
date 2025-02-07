@@ -1,16 +1,10 @@
 import { createSignal, createEffect } from "solid-js";
 
 export const PricingRange = (props) => {
-  const min = 0;
-  const max = 2000
-  const [priceFrom, setPriceFrom] = createSignal(
-    props.currentSearchParams.priceFrom 
-    &&
-    props.currentSearchURL.includes("priceFrom") ? props.currentSearchParams.priceFrom : min);
-  const [priceTo, setPriceTo] = createSignal(
-    props.currentSearchParams.priceTo 
-    &&
-    props.currentSearchURL.includes("priceTo") ? props.currentSearchParams.priceTo : max);
+  const min = props.min_price_filter;
+  const max = props.max_price_filter
+  const [priceFrom, setPriceFrom] = createSignal(props.priceFrom);
+  const [priceTo, setPriceTo] = createSignal(props.priceTo);
 
   let track;
   let thumbFrom;

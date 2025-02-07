@@ -16,55 +16,90 @@ function Button2(props) {
     </button>
   );
 }
-export const ServicePagination = (props) => {
-  const pageCount = 10;
-  const pageIndex = Number(props.currentSearchParams.page) - 1
-  const canPreviousPage = pageIndex > 0
-  const canNextPage = pageIndex < pageCount - 1
-  
-  const gotoPage = (target) => {
-    const sp = new URLSearchParams(props.currentSearchURL)
-    if (props.currentSearchParams.sort.includes("-")) {      
-      const field = props.currentSearchParams.sort.split("-")[0]
-      const value = props.lastPageService[props.currentSearchParams.sort.split("-")[0]]
-      sp.set(`lastservice-${field}`, value)
-      sp.set("lastservice-pid", props.lastPageService.publicId)
-    } 
-    sp.set("page", 1)
-    console.log(props.lastPageService.publicId)
-    return (window.location.search = sp.toString())
-  }
 
+export const ServicePagination = (props) => {
+  // Assume a fixed total page count (could come from props too)
+  console.log(props.pageCount)
+  const pageCount = props.pageCount;
+
+  // Convert page to a number and compute zero-based index.
+  const currentPage = props.currentSearchParams.page
+    ? Number(props.currentSearchParams.page) ||
+      Number(props.currentSearchParams.page.split("-")[1])
+    : 1;
+  const pageIndex = currentPage - 1;
+
+  const canPreviousPage = pageIndex > 0;
+  const canNextPage = pageIndex < pageCount - 1;
+
+  // The gotoPage function builds a new search string and updates window.location.search.
+  const gotoPage = (target) => {
+    const sp = new URLSearchParams(props.currentSearchURL);
+    const field = props.currentSearchParams.sort.split("-")[0];
+
+    // For direct neighboring pages (prev/next), set page as target.
+    // For non-neighboring (skipped pages), optionally set a "skipped-" prefix.
+    if (target !== 1) {
+      if (currentPage + 1 === target) {
+        const value = props.lastPageService[field];
+        sp.set("page", `next-${target}`);
+        sp.set(`service-${field}`, value);
+        sp.set("service-pid", props.lastPageService.publicId);      
+      } else if (currentPage - 1 === target) {
+        const value = props.firstPageService[field];
+        sp.set("page", `prev-${target}`);
+        sp.set(`service-${field}`, value);
+        sp.set("service-pid", props.firstPageService.publicId);
+      } else if (currentPage + 1 !== target && currentPage - 1 !== target) {
+        // here we might have to add how many they skipped or smth
+        if (target < currentPage) {
+          sp.set("page", `prev-skipped_${target}`);
+        } else {
+          sp.set("page", `next-skipped_${target}`);
+        }
+      }
+    } else {
+      sp.delete(`service-${field}`);
+      sp.set("page", 1);
+      sp.delete("service-pid");
+    }
+    return (window.location.search = sp.toString());
+  };
+
+  // Render a group of page buttons around the current page.
   const renderPageLinks = () => {
     if (pageCount === 0) return null;
     const visiblePageButtonCount = 5;
-    let numberOfButtons =
-      pageCount < visiblePageButtonCount
-        ? pageCount
-        : visiblePageButtonCount;
+    let numberOfButtons = Math.min(pageCount, visiblePageButtonCount);
+
+    // Start with the current page index.
     const pageIndices = [pageIndex];
-    numberOfButtons--;
 
-    Array.from({ length: numberOfButtons }).forEach((_, itemIndex) => {
-      const pageNumberBefore = pageIndices[0] - 1;
-      const pageNumberAfter = pageIndices[pageIndices.length - 1] + 1;
+    // Generate additional page indices around the current one.
+    for (let i = 1; i < numberOfButtons; i++) {
+      const lower = pageIndices[0] - 1;
+      const upper = pageIndices[pageIndices.length - 1] + 1;
+      // Prefer to add lower index if it's valid; otherwise add upper.
       if (
-        pageNumberBefore >= 0 &&
-        (itemIndex < numberOfButtons / 2 ||
-          pageNumberAfter > props.pageCount - 1)
+        lower >= 0 &&
+        (pageIndices.length < visiblePageButtonCount / 2 ||
+          upper > pageCount - 1)
       ) {
-        pageIndices.unshift(pageNumberBefore);
-      } else {
-        pageIndices.push(pageNumberAfter);
+        pageIndices.unshift(lower);
+      } else if (upper < pageCount) {
+        pageIndices.push(upper);
       }
-    });
+    }
 
-    return pageIndices.map((pageIndexToMap) => (
-      <li>
+    // Sort the indices just in case
+    pageIndices.sort((a, b) => a - b);
+
+    return pageIndices.map((pageIdx) => (
+      <li key={pageIdx}>
         <Button2
-          content={pageIndexToMap + 1}
-          onClick={() => gotoPage(pageIndexToMap)}
-          active={pageIndex === pageIndexToMap}
+          content={pageIdx + 1}
+          onClick={() => gotoPage(pageIdx + 1)}
+          active={pageIndex === pageIdx}
         />
       </li>
     ));
@@ -76,10 +111,11 @@ export const ServicePagination = (props) => {
         <Button2
           content={
             <div class="flex ml-1">
+              {/* Left arrow SVG */}
               <svg
                 stroke="currentColor"
                 fill="currentColor"
-                stroke-width="0"
+                strokeWidth="0"
                 viewBox="0 0 512 512"
                 height="1em"
                 width="1em"
@@ -89,13 +125,12 @@ export const ServicePagination = (props) => {
                   d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160zm352-160l-160 160c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L301.3 256 438.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0z"
                   stroke="#14a800"
                   fill="#14a800"
-                  stroke-width="0px"
                 ></path>
               </svg>
             </div>
           }
-          onClick={() => gotoPage(0)}
-          disabled={canPreviousPage}
+          onClick={() => gotoPage(1)}
+          disabled={!canPreviousPage}
         />
       </li>
       {renderPageLinks()}
@@ -103,10 +138,11 @@ export const ServicePagination = (props) => {
         <Button2
           content={
             <div class="flex ml-1">
+              {/* Right arrow SVG */}
               <svg
                 stroke="currentColor"
                 fill="currentColor"
-                stroke-width="0"
+                strokeWidth="0"
                 viewBox="0 0 512 512"
                 height="1em"
                 width="1em"
@@ -116,13 +152,12 @@ export const ServicePagination = (props) => {
                   d="M470.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 256 265.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160zm-352 160l160-160c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L210.7 256 73.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0z"
                   stroke="#14a800"
                   fill="#14a800"
-                  stroke-width="0px"
                 ></path>
-              </svg>{" "}
+              </svg>
             </div>
           }
-          onClick={() => gotoPage(pageCount - 1)}
-          disabled={canNextPage}
+          onClick={() => gotoPage(pageCount)}
+          disabled={!canNextPage}
         />
       </li>
     </ul>

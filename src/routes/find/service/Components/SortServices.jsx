@@ -20,15 +20,16 @@ export const SortServices = (props) => {
             "sort",
             `longitude.${position.coords.longitude},latitude.${position.coords.latitude}`
           );
-          sp.delete(`lastservice-${props.currentSearchParams.sort.split("-")[0]}`)
+          sp.delete(`lastservice-${props.sort.split("-")[0]}`)
           sp.delete("lastservice-pid")
           return (window.location.search = sp.toString());
         });
       }
     } else {
-      sp.delete(`lastservice-${props.currentSearchParams.sort.split("-")[0]}`)
-      sp.delete("lastservice-pid")
+      sp.delete(`service-${props.sort.split("-")[0]}`)
+      sp.delete("service-pid")
       sp.set("sort", e.target.value);
+      sp.set("page", 1)
       return (window.location.search = sp.toString());
     }
   };
@@ -43,7 +44,7 @@ focus:ring-dark-green sm:text-xs sm:leading-6 mb-1"
         {(opt, i) => (
           <option
             key={i()}
-            selected={opt.value === props.currentSearchParams.sort}
+            selected={opt.value === props.sort}
             class="font-[thin-font] font-bold text-xs"
             value={opt.value}
           >

@@ -1,0 +1,21 @@
+const links =  {
+      parent_link: [],
+      parent_text: [],
+      child_text: [],
+      child_links: []
+    }
+
+    //
+    jobs[0][main].forEach((a) => {
+      links.parent_text.push(l)
+      links.parent_link.push(`${this.req_url.origin}?category=${l}`)
+    })
+    jobs[0][main].find(
+      (pc) =>
+        pc["კატეგორია"] === parent
+    )["სამუშაოები"].forEach((l) => {
+      links.child_text.push(l)
+      links.child_links.push(`${this.req_url.origin}?category=${l}`)
+    })
+
+    return links

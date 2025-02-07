@@ -2,8 +2,8 @@ import { createSignal } from "solid-js";
 import cities from "~/Components/cities.json";
 
 export const LocationFilter = (props) => {
-    const [state, setState] = createSignal(props.currentSearchParams.region)
-    const [city, setCity] = createSignal(props.currentSearchParams.city)
+    const [state, setState] = createSignal(props.region)
+    const [city, setCity] = createSignal(props.city)
 
     return <>
       <div class="flex justify-center flex-col my-2 items-start">

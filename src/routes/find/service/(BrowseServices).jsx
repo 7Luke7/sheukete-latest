@@ -15,33 +15,42 @@ const BrowseServices = (props) => {
     so it fits well withing the hydration target code
   */
 
-  return (
+    return (
     <div>
       <Header></Header>
       <div class="w-full flex">
         <Show when={services()}>
           <ServiceFilters
-            services={services}
+            parent={services().parent}
+            main={services().main}
             currentSearchURL={services().query}
+            category={services().category}
+            displayCategories={services().displayCategories}
+            priceFrom={services().priceFrom}
+            priceTo={services().priceTo}
+            city={services().city}
+            region={services().region}
+            min_price_filter={services().min_price_filter}
+            max_price_filter={services().max_price_filter}
           ></ServiceFilters>
           <div class="flex flex-col w-full">
             <div class="flex sticky top-[46px] py-2 bg-white z-[10] border-b items-center justify-between px-4">
               <p class="font-[thin-font] text-xs font-bold">
                 ნაჩვენებია 1–დან {services().total_count <= 16 ? <>
                 {services().total_count}-მდე შედეგი 
-                <span class="text-dark-green-hover">"{services().defaultParams.category}"</span>
+                <span class="text-dark-green-hover">"{services().category}"</span>
                 -ის ძებნისას
                 </>
                 : <>
                   16-მდე                  
                   სულ {services().total_count}-ზე მეტი შედეგი მოიძებნა 
-                  <span class="text-dark-green-hover">"{services().defaultParams.category}"</span>
+                  <span class="text-dark-green-hover">"{services().category}"</span>
                   -ის ძებნისას
                 </>
                 };
               </p>
               <SortServices 
-                currentSearchParams={services().defaultParams}
+                currentSearchParams={services().sort}
                 currentSearchURL={services().query}
               ></SortServices>
             </div>
@@ -50,8 +59,8 @@ const BrowseServices = (props) => {
             ></ServicesRenderer>
               <ServicePagination
                 currentSearchParams={services().defaultParams}
-                currentSearchURL={services().query}                 
-                lastPageService={services().last_service}
+                currentSearchURL={services().query}     
+                pageCount={services().pageCount}            
               ></ServicePagination>
           </div>
         </Show>
