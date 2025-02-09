@@ -1,4 +1,4 @@
-import { For, Index, lazy, onMount } from "solid-js";
+import { For, Index, onMount } from "solid-js";
 import ChevronLeftBlack from "../../../svg-images/ChevronLeftBlack.svg";
 import ChevronRightBlack from "../../../svg-images/ChevronRightBlack.svg";
 import emptyStar from "../../../svg-images/svgexport-24.svg";

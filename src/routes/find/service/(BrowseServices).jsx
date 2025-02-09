@@ -14,7 +14,6 @@ const BrowseServices = (props) => {
     Do everything on server meaning: constructing the whole services object
     so it fits well withing the hydration target code
   */
-
     return (
     <div>
       <Header></Header>
@@ -29,6 +28,7 @@ const BrowseServices = (props) => {
             priceFrom={services().priceFrom}
             priceTo={services().priceTo}
             city={services().city}
+            sort={services().sort}
             region={services().region}
             min_price_filter={services().min_price_filter}
             max_price_filter={services().max_price_filter}
@@ -52,15 +52,17 @@ const BrowseServices = (props) => {
               <SortServices 
                 currentSearchParams={services().sort}
                 currentSearchURL={services().query}
+                sort={services().sort}
               ></SortServices>
             </div>
             <ServicesRenderer
               services={services().services}
             ></ServicesRenderer>
               <ServicePagination
-                currentSearchParams={services().defaultParams}
-                currentSearchURL={services().query}     
-                pageCount={services().pageCount}            
+                links={services().links}
+                pageCount={services().pageCount}    
+                right_btn_link={services().last_btn_link}        
+                left_btn_link={services().first_btn_link}        
               ></ServicePagination>
           </div>
         </Show>

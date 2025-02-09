@@ -1,105 +1,32 @@
-function Button2(props) {
-  return (
-    <button
+import { A } from "@solidjs/router";
+
+function Link(props) {
+  return <>
+  {props.active ? <span
       class={`flex flex-col cursor-pointer items-center justify-center w-9 h-9 shadow-[0_4px_10px_rgba(0,0,0,0.15)] text-sm font-normal transition-colors rounded-lg
-          ${props.active ? "bg-green-600 text-white" : "text-green-500"}
-          ${
-            !props.disabled
-              ? "hover:bg-green-400 hover:text-white"
-              : "text-red-300 bg-white cursor-not-allowed"
-          }
+        ${props.active ? "bg-green-600 text-white" : "text-green-500"}
         `}
-      onClick={props.onClick}
-      disabled={props.disabled}
     >
       {props.content}
-    </button>
-  );
+    </span> : <A
+      href={props.link}
+      class={`flex flex-col cursor-pointer items-center justify-center w-9 h-9 shadow-[0_4px_10px_rgba(0,0,0,0.15)] text-sm font-normal transition-colors rounded-lg
+        ${props.active ? "bg-green-600 text-white" : "text-green-500"}
+        `}
+    >
+      {props.content}
+    </A>}
+  </>
 }
 
 export const ServicePagination = (props) => {
-  // Assume a fixed total page count (could come from props too)
-  console.log(props.pageCount)
-  const pageCount = props.pageCount;
-
-  // Convert page to a number and compute zero-based index.
-  const currentPage = props.currentSearchParams.page
-    ? Number(props.currentSearchParams.page) ||
-      Number(props.currentSearchParams.page.split("-")[1])
-    : 1;
-  const pageIndex = currentPage - 1;
-
-  const canPreviousPage = pageIndex > 0;
-  const canNextPage = pageIndex < pageCount - 1;
-
-  // The gotoPage function builds a new search string and updates window.location.search.
-  const gotoPage = (target) => {
-    const sp = new URLSearchParams(props.currentSearchURL);
-    const field = props.currentSearchParams.sort.split("-")[0];
-
-    // For direct neighboring pages (prev/next), set page as target.
-    // For non-neighboring (skipped pages), optionally set a "skipped-" prefix.
-    if (target !== 1) {
-      if (currentPage + 1 === target) {
-        const value = props.lastPageService[field];
-        sp.set("page", `next-${target}`);
-        sp.set(`service-${field}`, value);
-        sp.set("service-pid", props.lastPageService.publicId);      
-      } else if (currentPage - 1 === target) {
-        const value = props.firstPageService[field];
-        sp.set("page", `prev-${target}`);
-        sp.set(`service-${field}`, value);
-        sp.set("service-pid", props.firstPageService.publicId);
-      } else if (currentPage + 1 !== target && currentPage - 1 !== target) {
-        // here we might have to add how many they skipped or smth
-        if (target < currentPage) {
-          sp.set("page", `prev-skipped_${target}`);
-        } else {
-          sp.set("page", `next-skipped_${target}`);
-        }
-      }
-    } else {
-      sp.delete(`service-${field}`);
-      sp.set("page", 1);
-      sp.delete("service-pid");
-    }
-    return (window.location.search = sp.toString());
-  };
-
-  // Render a group of page buttons around the current page.
-  const renderPageLinks = () => {
-    if (pageCount === 0) return null;
-    const visiblePageButtonCount = 5;
-    let numberOfButtons = Math.min(pageCount, visiblePageButtonCount);
-
-    // Start with the current page index.
-    const pageIndices = [pageIndex];
-
-    // Generate additional page indices around the current one.
-    for (let i = 1; i < numberOfButtons; i++) {
-      const lower = pageIndices[0] - 1;
-      const upper = pageIndices[pageIndices.length - 1] + 1;
-      // Prefer to add lower index if it's valid; otherwise add upper.
-      if (
-        lower >= 0 &&
-        (pageIndices.length < visiblePageButtonCount / 2 ||
-          upper > pageCount - 1)
-      ) {
-        pageIndices.unshift(lower);
-      } else if (upper < pageCount) {
-        pageIndices.push(upper);
-      }
-    }
-
-    // Sort the indices just in case
-    pageIndices.sort((a, b) => a - b);
-
-    return pageIndices.map((pageIdx) => (
-      <li key={pageIdx}>
-        <Button2
-          content={pageIdx + 1}
-          onClick={() => gotoPage(pageIdx + 1)}
-          active={pageIndex === pageIdx}
+  const renderPageLinks = () => {    
+    return props.links.map((l) => (
+      <li>
+        <Link
+          content={l.page}
+          active={l.active}
+          link={l.link}
         />
       </li>
     ));
@@ -108,10 +35,9 @@ export const ServicePagination = (props) => {
   return (
     <ul class="flex mt-8 justify-center w-full gap-2">
       <li>
-        <Button2
+        <Link
           content={
             <div class="flex ml-1">
-              {/* Left arrow SVG */}
               <svg
                 stroke="currentColor"
                 fill="currentColor"
@@ -129,16 +55,14 @@ export const ServicePagination = (props) => {
               </svg>
             </div>
           }
-          onClick={() => gotoPage(1)}
-          disabled={!canPreviousPage}
+          link={props.left_btn_link}
         />
       </li>
       {renderPageLinks()}
       <li>
-        <Button2
+        <Link
           content={
             <div class="flex ml-1">
-              {/* Right arrow SVG */}
               <svg
                 stroke="currentColor"
                 fill="currentColor"
@@ -156,8 +80,7 @@ export const ServicePagination = (props) => {
               </svg>
             </div>
           }
-          onClick={() => gotoPage(pageCount)}
-          disabled={!canNextPage}
+          link={props.right_btn_link}
         />
       </li>
     </ul>

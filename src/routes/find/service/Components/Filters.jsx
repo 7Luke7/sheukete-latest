@@ -12,9 +12,14 @@ export const ServiceFilters = (props) => {
       fd.forEach((v, k) => {
         sp.set(k, v)
       })
+      sp.set("page", 1)
+      sp.delete(`service-${props.sort.split("-")[0]}`)
+      sp.delete("sort")
+      sp.delete("service-pid")
+      sp.delete("priceFrom")
+      sp.delete("priceTo")
       return window.location.search = sp.toString()
     }
-
     return (
     <form onSubmit={handleFiltering} class="w-1/6 h-full left-0 top-[46px] sticky py-2 border-r">
       <div class="w-full flex justify-between px-4 h-[calc(100vh-80px)] flex-col pt-3">
@@ -46,10 +51,10 @@ export const ServiceFilters = (props) => {
                 {(l) => {
                   return (
                     <A
-                    href={`http://localhost:3000/find/service?category=${l}`}
+                    href={l.link}
                     class="text-xs text-left font-semibold font-[thin-font]"
                     >
-                      {l}
+                      {l.content}
                     </A>
                   );
                 }}
@@ -64,10 +69,10 @@ export const ServiceFilters = (props) => {
                 {(l) => {
                   return (
                     <A
-                      href={`http://localhost:3000/find/service?category=${l}`}
+                      href={l.link}
                       class="text-xs text-left font-bold font-[thin-font]"
                     >
-                      {l}
+                      {l.content}
                     </A>
                   );
                 }}
@@ -78,6 +83,8 @@ export const ServiceFilters = (props) => {
         <PricingRange
           priceFrom={props.priceFrom}
           priceTo={props.priceTo}
+          currentSearchURL={props.currentSearchURL}
+          sort={props.sort}
           min_price_filter={props.min_price_filter}
           max_price_filter={props.max_price_filter}
         ></PricingRange>

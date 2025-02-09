@@ -7,8 +7,7 @@ export const SignleServiceRenderer = (props) => {
   return (
     <div key={i()} class="w-full mx-auto p-2">
       <div class="bg-white shadow-md rounded-lg overflow-hidden min-h-80 flex flex-col md:flex-row">
-        {/* Image Section */}
-        <A class="w-[351px] h-[351px]" href={`/xelosani/${s.profId}`}>
+        <A class="w-[351px] h-[351px]" href={`/service/${s.publicId}`}>
           <img
             class="object-cover w-full h-full"
             src={s.thumbnail_src}
@@ -17,17 +16,14 @@ export const SignleServiceRenderer = (props) => {
           />
         </A>
 
-        {/* Content Section */}
         <div class="md:w-11/12 p-2 flex flex-col relative justify-between">
-          {/* Top Section */}
           <div>
             <div class="flex justify-between items-start">
-              <A href={`/xelosani/${s.profId}`}>
+              <A href={`/service/${s.publicId}`}>
                 <h2 class="text-lg font-bold text-gray-800">
                   {s.main_title}
                 </h2>
               </A>
-              {/* Location Badge */}
               {s.place_name_ka && (
                 <span class="bg-green-600 absolute opacity-[0.9] right-2 top-0 text-white text-xs font-semibold font-[thin-font] px-2 py-1 rounded-full">
                   {s.place_name_ka.slice(0, 50)}...
@@ -35,7 +31,7 @@ export const SignleServiceRenderer = (props) => {
               )}
             </div>
 
-            <A href={`/xelosani/${s.profId}`}>
+            <A href={`/service/${s.publicId}`}>
               <p class="mt-2 text-xs font-[normal-font] text-gray-600">
                 {s.main_description}
               </p>
@@ -44,7 +40,6 @@ export const SignleServiceRenderer = (props) => {
               {s.main_category}
             </p>
 
-            {/* Categories */}
             <div class="mt-1 flex flex-wrap gap-1">
               <For each={s.categories}>
                 {(sc) => (
@@ -56,24 +51,21 @@ export const SignleServiceRenderer = (props) => {
             </div>
           </div>
 
-          {/* Bottom Section */}
           <div class="mt-4 flex justify-between items-center border-t pt-2">
             <div class="flex gap-x-2">
-              {/* Price & Publication Date */}
               <div class="flex flex-col items-start p-2 bg-gray-50 rounded-lg shadow-sm">
-                <A href={`/xelosani/${s.profId}`}>
+                <A href={`/service/${s.publicId}`}>
                   <p class="text-lg font-bold text-gray-900">
                     ₾{s.main_price}
                   </p>
                 </A>
                 <p class="mt-1 text-xs font-[normal-font] text-gray-500">
-                  გამოქვეყნდა: {new Date(s.created_at).toLocaleDateString()}
+                  გამოქვეყნდა: {s.display_created_at}
                 </p>
               </div>
 
-              {/* Average Rating & Completed Count */}
               <div class="flex flex-col items-start p-2 bg-gray-50 rounded-lg shadow-sm">
-                <A href={`/xelosani/${s.profId}`}>
+                <A href={`/service/${s.publicId}`}>
                   <p class="text-lg font-bold text-gray-900">
                     {s.avgrating}
                   </p>

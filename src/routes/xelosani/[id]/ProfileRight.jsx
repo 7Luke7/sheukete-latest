@@ -55,7 +55,7 @@ export const ProfileRight = (props) => {
       </div>
 
       <Switch>
-        <Match when={props.user().skillset.skills.length}>
+        <Match when={props.user().skillset.skills}>
         <div class="mt-2">
           <section class="w-full flex">
             <SkillCarousel skills={props.user().skillset.skills}></SkillCarousel>

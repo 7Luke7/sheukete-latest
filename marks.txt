@@ -100,3 +100,32 @@
 
 ---- PREMIUM USERS ----
 	I GOTTA THINK ABOUT THIS ONE LATER LOL
+
+---- MAPS ----
+
+	-- compatibility issue
+		- so every browser has its own way of providing location details
+
+		  - all of them supply features array so we kind of have to loop over all of them
+		  to make sure we don't miss any detail that could be used for identifying user location
+
+
+---- IMAGE SIZES ---- 
+	-- POSITIONS
+		- So I think I have problems with how image is positioned,
+		I thought just having object-cover was enough but later I got images that looked ugly
+		with it so idk I'll have a look at it,
+
+		Well Basically What I think is 
+
+			-- Currently I have fixed 351x351px images which is bad considering that
+			images might come in as a lot larger or smaller
+
+		
+		-- Solution --
+
+			We should first until we compress the image we should have a look at image 
+				- sizes
+				- bytes
+
+			so whatever is accessible and would be useful we have to utilize it

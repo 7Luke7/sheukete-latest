@@ -58,8 +58,12 @@ export const PricingRange = (props) => {
 
   const adjustPrice = () => {
     const sp = new URLSearchParams(props.currentSearchURL)
+    sp.delete(`service-${props.sort}`)
+    sp.delete("service-pid")
+    sp.set("page", 1)
     sp.set("priceFrom", priceFrom())
     sp.set("priceTo", priceTo())
+
     return window.location.search = sp.toString()
   }
 

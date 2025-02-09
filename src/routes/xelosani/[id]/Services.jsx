@@ -18,6 +18,7 @@ export const Services = (props) => {
   const [services, setServices] = createStore(props.services);
 
   onMount(async () => {
+    // here we might be able to get thumbnails without doing this request at all
     const response = await fetch(`http://localhost:5555/service/frontpage/thumbnails/${props.profId}`, {
       method: "POST",
       body: JSON.stringify({
