@@ -129,3 +129,28 @@
 				- bytes
 
 			so whatever is accessible and would be useful we have to utilize it
+
+
+
+---- IMAGE SIZES ----
+
+	-- SERVICE IMAGE
+		- FRONT VIEW "Thumbnail" -> 251x251 quality 60-90 
+		- DEDICATED SERVICE PAGE VIEW "gallery/plain" -> 420x420 quality 60-90
+		- HIGH SCALE ON DEMAND VIEW "GALLERY/DEMAND" -> {original}x{original} 80-100
+
+	-- PROFILE IMAGE
+		- PROFILE PAGE VIEW
+
+---- VIDEOS SIZES ----
+
+	-- THE THING IS SHOULD I DO VIDEOS AS WELL?	
+	-- LETS DO VIDEOS AS WELL
+
+
+---- შეტყობინებები ----
+
+	-- მეგობრები --
+		-- დამკვეთი --
+			შეტყობინება როცა
+				- ხელოსანი პოსტს დადებს

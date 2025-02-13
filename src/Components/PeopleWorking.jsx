@@ -6,6 +6,9 @@ import fullStar from "../svg-images/svgexport-19.svg";
 import { Navigation, Pagination } from "swiper/modules";
 import Swiper from "swiper";
 import { A } from "@solidjs/router";
+import { register } from "swiper/element/bundle";
+import 'swiper/css/bundle';
+register()
 
 const recently_complete_jobs = [
   {
@@ -69,6 +72,7 @@ export const PeopleWorking = () => {
       modules: [Navigation, Pagination],
       spaceBetween: 10,
       slidesPerView: 1,
+      loop: false,
       navigation: {
         nextEl: navigateRight,
         prevEl: navigateLeft,

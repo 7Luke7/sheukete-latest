@@ -7,12 +7,9 @@ import {
   onCleanup,
   Show,
   onMount,
-  createEffect
+  createEffect,
 } from "solid-js";
-import {
-  createAsync,
-  useNavigate,
-} from "@solidjs/router";
+import { createAsync, useNavigate } from "@solidjs/router";
 import { NotAuthorized } from "~/Components/NotAuthorized";
 import closeIcon from "../../../svg-images/svgexport-12.svg";
 import uploadIcon from "../../../svg-images/uploadIcon.svg";
@@ -29,7 +26,8 @@ import { Toast } from "~/Components/ToastComponent";
 import { get_user_service } from "~/routes/api/xelosani/service/service";
 import eyeFillSVG from "../../../svg-images/eye-fill.svg";
 import ImagePreview from "./ImagePreview";
-import {MapRenderer} from "../../map/MapRenderer";
+import { MapRenderer } from "../../map/MapRenderer";
+import { Link, MetaProvider } from "@solidjs/meta";
 
 /*
 
@@ -45,7 +43,10 @@ import {MapRenderer} from "../../map/MapRenderer";
 */
 
 const Services = (props) => {
-  const response = createAsync(() => get_user_service(props?.location?.search), {deferStream: true})
+  const response = createAsync(
+    () => get_user_service(props?.location?.search),
+    { deferStream: true }
+  );
   const [image, setImage] = createSignal([]);
   const [markedLocation, setMarkedLocation] = createSignal();
   const [error, setError] = createSignal(null);
@@ -71,7 +72,7 @@ const Services = (props) => {
   });
   const [isSendingRequest, setIsSendingRequest] = createSignal(false);
   const [isEditing, setIsEditing] = createSignal(false);
-  const [imageToPreviewUrl, setImageToPreviewUrl] = createSignal()
+  const [imageToPreviewUrl, setImageToPreviewUrl] = createSignal();
 
   const navigate = useNavigate();
 
@@ -79,42 +80,45 @@ const Services = (props) => {
   const MAX_TOTAL_SIZE = 15 * 1024 * 1024;
 
   onMount(() => {
-      if (response() && response()?.status === 200 && response().isEditing) {
-        document.getElementById("price").value = Number(response().main_price);
-        batch(() => {
-          setIsEditing(true);
-          setMarkedLocation([response().longitude, response().latitude])
-          setToast({ type: true, message: "თქვენ ანახლებთ სერვისს." });
-          setTitle(response().main_title);
-          setInput(response().main_description);
-          setMainChecked(response().main_category);
-          setParentChecked(response().categories[response().categories.length - 1]);
-          setService(response().child_services);
-          setChildChecked([
-            ...response().categories.filter((a) => {
-              return (
-                response().categories[response().categories.length - 1] !== a &&
-                response().main_category !== a
-              );
-            }),
-          ]);
-          setActiveParentIndex(
-            jobs
-              .flatMap((obj) => Object.keys(obj))
-              .findIndex((a) => a === response().main_category)
-          );
-          setActiveChildIndex(
-            jobs[0][response().main_category].findIndex(
-              (a) =>
-                a["კატეგორია"] ===
-                response().categories[response().categories.length - 1]
-            )
-          );
-          setImage(response().gallery || []);
-          setThumbnail(response().thumbnail);
-          setCurrentStep("thumbnail");
-        });
-      }
+    if (response() && response()?.status === 200 && response().isEditing) {
+      document.getElementById("price").value = Number(response().main_price);
+      batch(() => {
+        setIsEditing(true);
+        setMarkedLocation([response().longitude, response().latitude]);
+        setToast({ type: true, message: "თქვენ ანახლებთ სერვისს." });
+        setTitle(response().main_title);
+        setInput(response().main_description);
+        setMainChecked(response().main_category);
+        setParentChecked(
+          response().categories[response().categories.length - 1]
+        );
+        setService(response().child_services);
+        setChildChecked([
+          ...response().categories.filter((a) => {
+            return (
+              response().categories[response().categories.length - 1] !== a &&
+              response().main_category !== a
+            );
+          }),
+        ]);
+        setActiveParentIndex(
+          jobs
+            .flatMap((obj) => Object.keys(obj))
+            .findIndex((a) => a === response().main_category)
+        );
+        setActiveChildIndex(
+          jobs[0][response().main_category].findIndex(
+            (a) =>
+              a["კატეგორია"] ===
+              response().categories[response().categories.length - 1]
+          )
+        );
+        console.log(response().gallery, response().thumbnail);
+        setImage(response().gallery || []);
+        setThumbnail(response().thumbnail);
+        setCurrentStep("thumbnail");
+      });
+    }
   });
 
   const handleFileChange = (e) => {
@@ -128,7 +132,8 @@ const Services = (props) => {
         });
       }
 
-      const file_existence = image() && image().some((a) => a.name === file.name);
+      const file_existence =
+        image() && image().some((a) => a.name === file.name);
       if (file_existence && currentStep() !== "thumbnail") {
         return setToast({
           type: false,
@@ -144,7 +149,7 @@ const Services = (props) => {
       } else {
         setTotalSize((a) => (a += file.size));
       }
-      file["is_user_added"] = true
+      file["is_user_added"] = true;
     }
 
     if (totalSize() > MAX_TOTAL_SIZE) {
@@ -312,10 +317,7 @@ const Services = (props) => {
         return;
       }
 
-      fd.append(
-        "location",
-        JSON.stringify(markedLocation())
-      );
+      fd.append("location", JSON.stringify(markedLocation()));
       fd.append("thumbnail", thumbNail());
       fd.append("mainCategory", mainChecked());
       fd.append("parentCategory", parentChecked());
@@ -331,11 +333,13 @@ const Services = (props) => {
         fd.append(`service-${i}-gallery-image`, image()[i]);
       }
       if (isEditing()) {
-        const sp = new URLSearchParams(props?.location?.search)
-        fd.append("public_id", sp.get("id", sp.get("public_id")))
+        const sp = new URLSearchParams(props?.location?.search);
+        fd.append("public_id", sp.get("id", sp.get("public_id")));
       }
       setIsSendingRequest(true);
-      const url = isEditing() ? "/api/xelosani/service/edit_service" : "/api/xelosani/service/add_service"
+      const url = isEditing()
+        ? "/api/xelosani/service/edit_service"
+        : "/api/xelosani/service/add_service";
       const response = await fetch(url, {
         method: "POST",
         body: fd,
@@ -361,12 +365,20 @@ const Services = (props) => {
         setError(data.errors);
       } else {
         if (isEditing()) {
-          return setToast({ type: true, message: "სერვისი წარმატებით განახლდა."})
+          return setToast({
+            type: true,
+            message: "სერვისი წარმატებით განახლდა.",
+          });
         }
         document.getElementById("price").value = null;
 
         batch(() => {
-          setToast({ type: true, message: isEditing() ? "სერვისი წარმატებით განახლდა." : "სერვისი წარმატებით აიტვირთა."});
+          setToast({
+            type: true,
+            message: isEditing()
+              ? "სერვისი წარმატებით განახლდა."
+              : "სერვისი წარმატებით აიტვირთა.",
+          });
           setImage([]);
           setTitle("");
           setInput("");
@@ -509,527 +521,547 @@ const Services = (props) => {
 
   const handle_file_delete = async (prop, filename, is_user_added, index) => {
     if (is_user_added) {
-      if (prop === "thumbnail") {
-        setThumbnail(null)
+      if (prop === "thumbnail/medium") {
+        setThumbnail(null);
       } else {
-        return setImage(
-          image().filter((a, i) => i !== index)
-        )
+        return setImage(image().filter((a, i) => i !== index));
       }
-      return
+      return;
     }
     try {
-      const delete_response = await fetch("http://localhost:5555/delete_service_image", {
-        method: "DELETE",
-        body: JSON.stringify({
-          filename, 
-          prop, 
-          xelosaniProfId: response().profId,
-          serviceId: response().serviceId
-        }),
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include"
-      })
+      const delete_response = await fetch(
+        "http://localhost:5555/delete_service_image",
+        {
+          method: "DELETE",
+          body: JSON.stringify({
+            filename,
+            prop,
+            xelosaniProfId: response().profId,
+            serviceId: response().serviceId,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
 
+      // Deleting thumbnail doesnt update the ui just send back the prop: "gallery" || "thumbnail"
       if (delete_response.status === 200) {
-        return setImage(
-          image().filter((a, i) => i !== index)
-        )
+        return setImage(image().filter((a, i) => i !== index));
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
 
   return (
-    <section>
-      <Header></Header>
-      <Switch>
-        <Match when={response() && response() === 401}>
-          <NotAuthorized></NotAuthorized>
-        </Match>
-        <Match when={response() && response() !== 401}>
-          <Show when={imageToPreviewUrl()}>
-            <ImagePreview setImageToPreviewUrl={setImageToPreviewUrl} imageToPreviewUrl={imageToPreviewUrl}></ImagePreview>
-          </Show>
-          <h1 class="heading text-center font-bold text-2xl m-5 text-gray-800">
-            {isEditing() ? "გაანახლე სერვისი" : "დაამატე სერვისი"}
-          </h1>
-          <div class="flex w-full justify-center">
-            <div class="flex w-[80%] mt-2 border border-gray-300">
-              <Show when={jobs && showCategoryModal()}>
-                <div class="fixed top-1/2 -translate-y-1/2 border bg-white z-[500] py-4 px-12 min-h-[480px] w-[950px] left-1/2 -translate-x-1/2">
-                  <div class="flex items-center justify-between">
-                    <h3 class="font-bold font-[bolder-font] text-xl">
-                      აირჩიე სპეციალობა
-                    </h3>
-                    <img
-                      src={closeIcon}
-                      onClick={() => setShowCategoryModal(false)}
-                    />
-                  </div>
-                  <div class="grid grid-cols-2 justify-items-stretch border-t gap-x-5 mt-8">
-                    <For each={jobs.flatMap((obj) => Object.keys(obj))}>
-                      {(m, Parentindex) => (
-                        <div class="border-b border-slate-200">
-                          <div
-                            onClick={() => toggleParentAccordion(Parentindex())}
-                            class="w-full flex justify-between items-center py-5 text-slate-800"
-                          >
-                            <span class="text-md font-bold font-[normal-font]">
-                              {m}
-                            </span>
-                            <div class="flex items-center gap-x-2">
-                              <span
-                                class={`text-slate-800 transition-transform duration-300 ${
-                                  activeParentIndex() === Parentindex()
-                                    ? "rotate-[180deg]"
-                                    : ""
-                                }`}
-                              >
-                                <img
-                                  class="transform transition-transform duration-300"
-                                  src={dropdownSVG}
-                                  alt="dropdown icon"
-                                />
-                              </span>
-                            </div>
-                          </div>
-                          <div
-                            class={`overflow-hidden transition-all duration-300 ease-in-out ${
-                              activeParentIndex() === Parentindex()
-                                ? "max-h-screen"
-                                : "max-h-0"
-                            }`}
-                          >
-                            <Show when={activeParentIndex() === Parentindex()}>
-                              <For each={jobs[0][m]}>
-                                {(child, index) => (
-                                  <div>
-                                    <div class="w-full flex justify-between items-center py-1 px-2 text-slate-800">
-                                      <span class="text-sm font-bold font-[normal-font]">
-                                        {child["კატეგორია"]}
-                                      </span>
-                                      <div class="flex items-center gap-x-2">
-                                        <input
-                                          type="checkbox"
-                                          checked={
-                                            parentChecked() ===
-                                            child["კატეგორია"]
-                                          }
-                                          onChange={(e) =>
-                                            handleParentChange(
-                                              e.target.checked,
-                                              child["კატეგორია"],
-                                              child["სამუშაოები"],
-                                              index(),
-                                              m
-                                            )
-                                          }
-                                          name="rules-confirmation"
-                                          class="accent-dark-green-hover"
-                                        ></input>
-                                        <span
-                                          class={`text-slate-800 transition-transform duration-300 ${
-                                            activeChildIndex() === index()
-                                              ? "rotate-[180deg]"
-                                              : ""
-                                          }`}
-                                          onClick={() =>
-                                            toggleChildAccordion(index())
-                                          }
-                                        >
-                                          <img
-                                            class="transform transition-transform duration-300"
-                                            src={dropdownSVG}
-                                            alt="dropdown icon"
-                                          />
-                                        </span>
-                                      </div>
-                                    </div>
-                                    <div
-                                      class={`overflow-hidden px-4 transition-all duration-300 ease-in-out ${
-                                        activeChildIndex() === index()
-                                          ? "max-h-screen"
-                                          : "max-h-0"
-                                      }`}
-                                    >
-                                      <For each={child["სამუშაოები"]}>
-                                        {(j, i) => (
-                                          <div class="flex w-full items-center justify-between text-xs text-slate-800">
-                                            <p class="text-xs pb-2 font-[normal-font] font-bold">
-                                              {j}
-                                            </p>
-                                            <input
-                                              type="checkbox"
-                                              checked={childChecked().includes(
-                                                j
-                                              )}
-                                              name="rules-confirmation"
-                                              class="accent-dark-green-hover"
-                                              onChange={(e) =>
-                                                handleGrandChange(
-                                                  j,
-                                                  i,
-                                                  e.target.checked,
-                                                  child["კატეგორია"],
-                                                  child["სამუშაოები"],
-                                                  m
-                                                )
-                                              }
-                                            ></input>
-                                          </div>
-                                        )}
-                                      </For>
-                                    </div>
-                                  </div>
-                                )}
-                              </For>
-                            </Show>
-                          </div>
+    <MetaProvider>
+      <Link
+        href="https://cdn.maptiler.com/maptiler-sdk-js/v3.0.1/maptiler-sdk.css"
+        rel="stylesheet"
+      />
+      <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.0.1/maptiler-sdk.umd.min.js"></script>
+      <section class="bg-gray-50 min-h-screen">
+        <Header />
+        <Switch>
+          <Match when={response() && response() === 401}>
+            <NotAuthorized />
+          </Match>
+          <Match when={response() && response() !== 401}>
+            <Show when={imageToPreviewUrl()}>
+              <ImagePreview
+                setImageToPreviewUrl={setImageToPreviewUrl}
+                imageToPreviewUrl={imageToPreviewUrl}
+              />
+            </Show>
+
+            <h1 class="text-center font-bold text-2xl my-5 text-gray-800">
+              {isEditing() ? "გაანახლე სერვისი" : "დაამატე სერვისი"}
+            </h1>
+
+            <div class="flex w-full justify-center">
+              <div class="flex flex-col md:flex-row w-[90%] mt-2 space-y-4 md:space-y-0 md:space-x-6">
+                {/* Left Side – Form and Modals */}
+                <div class="flex-1">
+                  <Show when={jobs && showCategoryModal()}>
+                    <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[500]">
+                      <div class="bg-white rounded-lg p-8 w-[950px] max-h-[480px] overflow-auto">
+                        <div class="flex items-center justify-between mb-4">
+                          <h3 class="font-bold text-xl">აირჩიე სპეციალობა</h3>
+                          <img
+                            src={closeIcon}
+                            alt="close"
+                            class="cursor-pointer"
+                            onClick={() => setShowCategoryModal(false)}
+                          />
                         </div>
-                      )}
-                    </For>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setShowCategoryModal(false);
-                      navigate(`${props.location.pathname + props.location.search}#serviceWrapper`);
-                    }}
-                    class="border mt-4 border-gray-300 rounded-[16px] p-1 px-4 w-full text-center font-semibold cursor-pointer text-gray-200 bg-dark-green"
-                  >
-                    დადასტურება
-                  </button>
-                </div>
-              </Show>
-              <form
-                onSubmit={createPost}
-                class="editor mx-auto flex-1 flex flex-col text-gray-800 p-4 shadow-lg "
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCategoryModal(true);
-                  }}
-                  class="bg-gray-800 px-4 py-2 mb-4 font-[thin-font] text-md font-bold hover:bg-gray-700 transition ease-in delay-20 text-white text-center rounded-[16px]"
-                >
-                  დაამატე სპეციალობა
-                </button>
-                <input
-                  class="bg-gray-100 font-[bolder-font] border border-gray-300 p-2 mb-2 outline-none"
-                  spellcheck="false"
-                  placeholder="სათაური"
-                  onInput={(e) => setTitle(e.target.value)}
-                  id="title"
-                  value={title()}
-                  maxLength={60}
-                  name="title"
-                  type="text"
-                />
-                <div class="flex mb-2 items-center text-gray-500 justify-between">
-                  <Show when={error()?.some((a) => a.field === "title")}>
-                    <p class="text-xs text-red-500 font-[thin-font] font-bold">
-                      {error().find((a) => a.field === "title").message}
-                    </p>
-                  </Show>
-                  <div class="ml-auto text-gray-400 text-xs font-[thin-font]">
-                  </div>
-                </div>
-                <textarea
-                  class="font-[bolder-font] text-sm bg-gray-100 p-3 h-60 border border-gray-300 outline-none"
-                  spellcheck="false"
-                  name="description"
-                  value={input()}
-                  onInput={(e) => setInput(e.target.value)}
-                  maxlength={300}
-                  id="desc"
-                  placeholder="თქვენი სერვისის მიმოხილვა"
-                ></textarea>
-                <div class="icons flex items-center text-gray-500 justify-between m-2">
-                  <Show when={error()?.some((a) => a.field === "description")}>
-                    <p class="text-xs text-red-500 font-[thin-font] font-bold">
-                      {error().find((a) => a.field === "description").message}
-                    </p>
-                  </Show>
-                  <div class="count ml-auto text-gray-400 text-xs font-[thin-font]">
-                  </div>
-                </div>
-                <div class="flex items-center justify-between">
-                  <div class="flex items-end gap-x-1">
-                    <input
-                      class="bg-gray-100 font-[boldest-font] w-3/4 font-bold border border-gray-300 p-2 outline-none"
-                      placeholder="ფასი"
-                      min={1}
-                      id="price"
-                      name="price"
-                      type="number"
-                    />
-                    <span class="text-2xl font-[bolder-font]">₾</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowSchedule(true)}
-                    class="bg-gray-800 px-4 py-2 font-bold font-[thin-font] text-xs hover:bg-gray-700 transition ease-in delay-20 text-white text-center rounded-[16px]"
-                  >
-                    დაამატე განრიგი (სურვილისამებრ)
-                  </button>
-                </div>
-                <Show when={error()?.some((a) => a.field === "price")}>
-                  <p class="text-xs text-red-500 font-[thin-font] font-bold mt-1">
-                    {error().find((a) => a.field === "price").message}
-                  </p>
-                </Show>
-
-                <ul class="relative flex flex-col md:flex-row gap-2 mt-4">
-                  <li class="md:shrink md:basis-0 flex-1 group flex gap-x-2 md:block">
-                    <div class="min-w-7 min-h-7 flex flex-col items-center md:w-full md:inline-flex md:flex-wrap md:flex-row text-xs align-middle">
-                      <div
-                        class={`${
-                          currentStep() === "thumbnail" &&
-                          "bg-green-100 rounded-full"
-                        } p-2`}
-                      >
-                        <img
-                          src={thumnail}
-                          onClick={() => setCurrentStep("thumbnail")}
-                        ></img>
-                      </div>
-                      <div
-                        class={`${
-                          currentStep() === "thumbnail"
-                            ? "bg-dark-green-hover"
-                            : "bg-gray-200"
-                        } mt-2 w-px h-full md:mt-0 md:ms-2 md:w-full md:h-px md:flex-1 group-last:hidden`}
-                      ></div>
-                    </div>
-                    <button
-                      onClick={() => setCurrentStep("thumbnail")}
-                      type="button"
-                      class={`${
-                        currentStep() === "thumbnail" &&
-                        "bg-gray-100 border border-dark-green-hover"
-                      } grow md:grow-0 pt-3 mt-1 w-full rounded-[16px] p-2 pb-5 text-left`}
-                    >
-                      <span class="block text-sm font-bold font-[font-medium] text-gray-800">
-                        თამბნეილი
-                      </span>
-                      <p class="text-sm text-gray-500 font-bold font-[thin-font]">
-                        სურათი გამოჩნდება წინა გვერდზე.
-                      </p>
-                    </button>
-                  </li>
-
-                  <li class="md:shrink md:basis-0 flex-1 group flex gap-x-2 md:block">
-                    <div class="min-w-7 min-h-7 flex flex-col items-center md:w-full md:inline-flex md:flex-wrap md:flex-row text-xs align-middle">
-                      <div
-                        class={`${
-                          currentStep() === "gallery" &&
-                          "bg-green-100 rounded-full"
-                        } p-2`}
-                      >
-                        <img
-                          src={gallery}
-                          onClick={() => setCurrentStep("gallery")}
-                        ></img>
-                      </div>
-                      <div
-                        class={`${
-                          currentStep() === "gallery"
-                            ? "bg-dark-green-hover"
-                            : "bg-gray-200"
-                        } mt-2 w-px h-full md:mt-0 md:ms-2 md:w-full md:h-px md:flex-1`}
-                      ></div>
-                    </div>
-                    <button
-                      onClick={() => setCurrentStep("gallery")}
-                      type="button"
-                      class={`${
-                        currentStep() === "gallery" &&
-                        "bg-gray-100 border border-dark-green-hover"
-                      } grow md:grow-0 pt-3 w-full mt-1 rounded-[16px] p-2 pb-5 text-left`}
-                    >
-                      <span class="block text-sm font-bold font-[font-medium] text-gray-800">
-                        გალერეა
-                      </span>
-                      <p class="text-sm font-[thin-font] font-bold text-gray-500">
-                        სხვადასხვა ფოტოები.
-                      </p>
-                    </button>
-                  </li>
-                </ul>
-                <div class="flex mt-3 mb-2 items-center justify-center w-full">
-                  <label
-                    for="dropzone-file"
-                    class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50"
-                  >
-                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                      <img src={uploadIcon}></img>
-                      <p class="mb-2 text-sm text-gray-500">
-                        <span class="font-[bolder-font]">
-                          ასატვირთად დააჭირე
-                        </span>
-                      </p>
-                      <p class="text-xs text-gray-500">
-                        PNG, JPEG, WEBP. (მაქს. 5MB)
-                      </p>
-                    </div>
-                    <input
-                      onChange={(e) => handleFileChange(e)}
-                      name="files[]"
-                      multiple={currentStep() === "thumbnail" ? false : true}
-                      accept="image/jpeg, image/png, image/webp, image/avif"
-                      id="dropzone-file"
-                      type="file"
-                      class="hidden"
-                    />
-                  </label>
-                </div>
-                <Show when={thumbNail()}>
-                  <p class="text-md font-[normal-font] font-bold">თამბნეილი</p>
-                  <div class="bg-[#F5F7FB] h-[70px] rounded-[16px] w-full py-2 px-8">
-                    <div class="flex items-center justify-between">
-                      <span class="truncate pr-3 text-base font-[normal-font] text-[#07074D]">
-                        {thumbNail().name}
-                      </span>
-                      <div class="flex gap-x-2">
-                        <Show when={isEditing() && !thumbNail().is_user_added}>
-                          <button type="button" onClick={() => setImageToPreviewUrl(`http://localhost:5555/static/images/xelosani/${response().profId}/services/${response().serviceId}/thumbnail/${thumbNail().name}`)}>
-                            <img src={eyeFillSVG} width={18} height={18}></img>
-                          </button>
-                        </Show>
+                        <div class="grid grid-cols-2 gap-x-5">
+                          <For each={jobs.flatMap((obj) => Object.keys(obj))}>
+                            {(m, Parentindex) => (
+                              <div class="mb-4">
+                                <div
+                                  onClick={() =>
+                                    toggleParentAccordion(Parentindex())
+                                  }
+                                  class="flex justify-between items-center py-5 text-slate-800 cursor-pointer"
+                                >
+                                  <span class="text-md font-bold">{m}</span>
+                                  <span
+                                    class={`transition-transform duration-300 ${
+                                      activeParentIndex() === Parentindex()
+                                        ? "rotate-180"
+                                        : ""
+                                    }`}
+                                  >
+                                    <img
+                                      src={dropdownSVG}
+                                      alt="dropdown icon"
+                                      class="transform transition-transform duration-300"
+                                    />
+                                  </span>
+                                </div>
+                                <div
+                                  class={`overflow-hidden transition-all duration-300 ease-in-out ${
+                                    activeParentIndex() === Parentindex()
+                                      ? "max-h-screen"
+                                      : "max-h-0"
+                                  }`}
+                                >
+                                  <Show
+                                    when={activeParentIndex() === Parentindex()}
+                                  >
+                                    <For each={jobs[0][m]}>
+                                      {(child, index) => (
+                                        <div>
+                                          <div class="flex justify-between items-center py-1 px-2 text-slate-800">
+                                            <span class="text-sm font-bold">
+                                              {child["კატეგორია"]}
+                                            </span>
+                                            <div class="flex items-center gap-x-2">
+                                              <input
+                                                type="checkbox"
+                                                checked={
+                                                  parentChecked() ===
+                                                  child["კატეგორია"]
+                                                }
+                                                onChange={(e) =>
+                                                  handleParentChange(
+                                                    e.target.checked,
+                                                    child["კატეგორია"],
+                                                    child["სამუშაოები"],
+                                                    index(),
+                                                    m
+                                                  )
+                                                }
+                                                class="accent-green-600"
+                                              />
+                                              <span
+                                                onClick={() =>
+                                                  toggleChildAccordion(index())
+                                                }
+                                                class={`transition-transform duration-300 cursor-pointer ${
+                                                  activeChildIndex() === index()
+                                                    ? "rotate-180"
+                                                    : ""
+                                                }`}
+                                              >
+                                                <img
+                                                  src={dropdownSVG}
+                                                  alt="dropdown icon"
+                                                  class="transform transition-transform duration-300"
+                                                />
+                                              </span>
+                                            </div>
+                                          </div>
+                                          <div
+                                            class={`overflow-hidden px-4 transition-all duration-300 ease-in-out ${
+                                              activeChildIndex() === index()
+                                                ? "max-h-screen"
+                                                : "max-h-0"
+                                            }`}
+                                          >
+                                            <For each={child["სამუშაოები"]}>
+                                              {(j, i) => (
+                                                <div class="flex items-center justify-between text-xs text-slate-800 py-1">
+                                                  <p class="font-bold">{j}</p>
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={childChecked().includes(
+                                                      j
+                                                    )}
+                                                    class="accent-green-600"
+                                                    onChange={(e) =>
+                                                      handleGrandChange(
+                                                        j,
+                                                        i,
+                                                        e.target.checked,
+                                                        child["კატეგორია"],
+                                                        child["სამუშაოები"],
+                                                        m
+                                                      )
+                                                    }
+                                                  />
+                                                </div>
+                                              )}
+                                            </For>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </For>
+                                  </Show>
+                                </div>
+                              </div>
+                            )}
+                          </For>
+                        </div>
                         <button
-                          type="button"
-                          onClick={() => handle_file_delete("thumbnail", thumbNail().name, thumbNail().is_user_added)}
-                          class="text-[#07074D]"
+                          onClick={() => {
+                            setShowCategoryModal(false);
+                            navigate(
+                              `${
+                                props.location.pathname + props.location.search
+                              }#serviceWrapper`
+                            );
+                          }}
+                          class="mt-4 w-full bg-green-600 text-white rounded-lg py-2 hover:bg-green-700 transition"
                         >
-                          <img src={closeIcon} width={18} height={18}></img>
+                          დადასტურება
                         </button>
                       </div>
                     </div>
-                    <div class="flex flex-col relative h-[6px] w-full rounded-lg bg-[#E2E5EF]">
-                      <div class="w-full z-10 absolute h-full flex-1 rounded-lg bg-dark-green"></div>
-                      <span class="mt-2">
-                        {(thumbNail().size / (1024 * 1024)).toFixed(2)}MB
-                      </span>
-                    </div>
-                  </div>
-                </Show>
-                <Show when={image() && image().length}>
-                  <div class="flex flex-col gap-y-2 mt-4 w-full">
-                    <p class="text-md font-[normal-font] font-bold">გალერეა</p>
-                    <For each={image()}>
-                      {(l, index) => (
-                        <>
-                          <div class="bg-[#F5F7FB] h-[70px] rounded-[16px] w-full py-2 px-8">
-                            <div class="flex items-center justify-between">
-                              <span class="truncate pr-3 text-base font-[normal-font] text-[#07074D]">
-                                {l.name}
-                              </span>
-                              <div class="flex gap-x-2">
-                              <Show when={isEditing() && !l.is_user_added}>
-                          <button type="button" onClick={() => setImageToPreviewUrl(`http://localhost:5555/static/images/xelosani/${response().profId}/services/${response().serviceId}/gallery/${l.name}`)}>
-                            <img src={eyeFillSVG} width={18} height={18}></img>
-                          </button>
-                        </Show>
-                              <button
-                              type="button"
-                              onClick={() => handle_file_delete("gallery", l.name, l.is_user_added, index())}
-                                class="text-[#07074D]"
-                              >
-                                <img
-                                  src={closeIcon}
-                                  width={18}
-                                  height={18}
-                                ></img>
-                              </button>
-                              </div>
-                            </div>
-                            <div class="flex flex-col relative h-[6px] w-full rounded-lg bg-[#E2E5EF]">
-                              <div class="w-full z-10 absolute h-full flex-1 rounded-lg bg-dark-green"></div>
-                              <span class="mt-2">
-                                {(l.size / (1024 * 1024)).toFixed(2)}MB
-                              </span>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </For>
-                  </div>
-                </Show>
-                <div class="buttons flex items-center w-full mt-3">
-                  {isSendingRequest() ? (
+                  </Show>
+
+                  <form
+                    onSubmit={createPost}
+                    class="mx-auto flex flex-col text-gray-800 p-6 bg-white rounded-lg shadow-md"
+                  >
                     <button
                       type="button"
-                      onClick={() => abort()}
-                      class="border border-gray-300 rounded-[16px] p-1 px-4 w-full cursor-pointer ml-2 bg-dark-green"
+                      onClick={() => setShowCategoryModal(true)}
+                      class="bg-green-600 text-white font-bold px-4 py-2 mb-4 rounded-lg hover:bg-green-700 transition"
                     >
-                      <div class="flex items-center justify-center">
-                        <img
-                          src={spinner}
-                          class="animate-spin mr-2"
-                          alt="იტვირთება..."
+                      დაამატე სპეციალობა
+                    </button>
+
+                    <input
+                      class="bg-gray-50 p-2 mb-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                      placeholder="სათაური"
+                      onInput={(e) => setTitle(e.target.value)}
+                      id="title"
+                      value={title()}
+                      maxLength={60}
+                      name="title"
+                      type="text"
+                    />
+                    <Show when={error()?.some((a) => a.field === "title")}>
+                      <p class="text-xs text-red-500 font-bold mb-2">
+                        {error().find((a) => a.field === "title").message}
+                      </p>
+                    </Show>
+
+                    <textarea
+                      class="bg-gray-50 p-3 h-60 mb-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                      spellcheck="false"
+                      name="description"
+                      value={input()}
+                      onInput={(e) => setInput(e.target.value)}
+                      maxlength={300}
+                      id="desc"
+                      placeholder="თქვენი სერვისის მიმოხილვა"
+                    ></textarea>
+                    <Show
+                      when={error()?.some((a) => a.field === "description")}
+                    >
+                      <p class="text-xs text-red-500 font-bold mb-2">
+                        {error().find((a) => a.field === "description").message}
+                      </p>
+                    </Show>
+
+                    <div class="flex items-center justify-between mb-4">
+                      <div class="flex items-end gap-x-1">
+                        <input
+                          class="bg-gray-50 p-2 w-3/4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                          placeholder="ფასი"
+                          min={1}
+                          id="price"
+                          name="price"
+                          type="number"
                         />
-                        <p class="font-[normal-font] font-bold text-base text-gray-200">
-                          გაუქმება
-                        </p>
+                        <span class="text-2xl font-[normal-font] font-bold">₾</span>
                       </div>
-                    </button>
-                  ) : (
-                    <button
-                      type="submit"
-                      class="border border-gray-300 rounded-[16px] p-1 px-4 w-full text-center text-base font-bold font-[normal-font] cursor-pointer text-gray-200 ml-2 bg-dark-green"
-                    >
-                      სერვისის {isEditing() ? "განახლება" : "გამოქვეყნება"}
-                    </button>
-                  )}
+                      <button
+                        type="button"
+                        onClick={() => setShowSchedule(true)}
+                        class="bg-green-600 text-white px-4 py-2 font-bold text-xs rounded-lg hover:bg-green-700 transition"
+                      >
+                        დაამატე განრიგი (სურვილისამებრ)
+                      </button>
+                    </div>
+                    <Show when={error()?.some((a) => a.field === "price")}>
+                      <p class="text-xs text-red-500 font-bold mb-2">
+                        {error().find((a) => a.field === "price").message}
+                      </p>
+                    </Show>
+
+                    <ul class="flex flex-col md:flex-row gap-2 mt-4">
+                      <li class="flex-1">
+                        <button
+                          onClick={() => setCurrentStep("thumbnail")}
+                          type="button"
+                          class={`w-full p-4 text-left rounded-lg ${
+                            currentStep() === "thumbnail"
+                              ? "bg-green-50 border border-green-600"
+                              : "bg-gray-50"
+                          }`}
+                        >
+                          <span class="block text-sm font-bold text-gray-800">
+                            თამბნეილი
+                          </span>
+                          <p class="text-sm text-gray-500">
+                            სურათი გამოჩნდება წინა გვერდზე.
+                          </p>
+                        </button>
+                      </li>
+                      <li class="flex-1">
+                        <button
+                          onClick={() => setCurrentStep("gallery")}
+                          type="button"
+                          class={`w-full p-4 text-left rounded-lg ${
+                            currentStep() === "gallery"
+                              ? "bg-green-50 border border-green-600"
+                              : "bg-gray-50"
+                          }`}
+                        >
+                          <span class="block text-sm font-bold text-gray-800">
+                            გალერეა
+                          </span>
+                          <p class="text-sm text-gray-500">
+                            სხვადასხვა ფოტოები.
+                          </p>
+                        </button>
+                      </li>
+                    </ul>
+
+                    <div class="flex flex-col items-center mt-4">
+                      <label
+                        htmlFor="dropzone-file"
+                        class="flex flex-col items-center justify-center w-full h-64 rounded-lg cursor-pointer bg-gray-100 hover:bg-gray-200 transition"
+                      >
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                          <img src={uploadIcon} alt="upload" class="mb-2" />
+                          <p class="mb-2 text-sm text-gray-500">
+                            <span class="font-bold">ასატვირთად დააჭირე</span>
+                          </p>
+                          <p class="text-xs text-gray-500">
+                            PNG, JPEG, WEBP. (მაქს. 5MB)
+                          </p>
+                        </div>
+                        <input
+                          onChange={(e) => handleFileChange(e)}
+                          name="files[]"
+                          multiple={
+                            currentStep() === "thumbnail" ? false : true
+                          }
+                          accept="image/jpeg, image/png, image/webp, image/avif"
+                          id="dropzone-file"
+                          type="file"
+                          class="hidden"
+                        />
+                      </label>
+                    </div>
+
+                    <Show when={thumbNail()}>
+                      <div class="mt-4">
+                        <p class="font-bold mb-2">თამბნეილი</p>
+                        <div class="bg-gray-100 rounded-lg p-4 flex items-center justify-between">
+                          <span class="truncate text-base font-medium text-gray-800">
+                            {thumbNail().name}
+                          </span>
+                          <div class="flex items-center gap-x-2">
+                            <Show
+                              when={isEditing() && !thumbNail().is_user_added}
+                            >
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setImageToPreviewUrl(
+                                    `http://localhost:5555/static/images/xelosani/${
+                                      response().profId
+                                    }/services/${
+                                      response().serviceId
+                                    }/thumbnail/medium/${thumbNail().name}`
+                                  )
+                                }
+                              >
+                                <img
+                                  src={eyeFillSVG}
+                                  width={18}
+                                  height={18}
+                                  alt="preview"
+                                />
+                              </button>
+                            </Show>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handle_file_delete(
+                                  "thumbnail/medium",
+                                  thumbNail().name,
+                                  thumbNail().is_user_added
+                                )
+                              }
+                              class="text-gray-800"
+                            >
+                              <img
+                                src={closeIcon}
+                                width={18}
+                                height={18}
+                                alt="delete"
+                              />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </Show>
+
+                    <Show when={image() && image().length}>
+                      <div class="flex flex-col gap-y-2 mt-4">
+                        <p class="font-bold mb-2">გალერეა</p>
+                        <For each={image()}>
+                          {(l, index) => (
+                            <>
+                            <div class="bg-gray-100 rounded-lg p-4 flex items-center justify-between">
+                              <span class="truncate text-base font-medium text-gray-800">
+                                {l.name}
+                              </span>
+                              <div class="flex items-center gap-x-2">
+                                <Show when={isEditing() && !l.is_user_added}>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setImageToPreviewUrl(
+                                        `http://localhost:5555/static/images/xelosani/${
+                                          response().profId
+                                        }/services/${
+                                          response().serviceId
+                                        }/gallery/medium/${l.name}`
+                                      )
+                                    }
+                                  >
+                                    <img
+                                      src={eyeFillSVG}
+                                      width={18}
+                                      height={18}
+                                      alt="preview"
+                                    />
+                                  </button>
+                                </Show>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handle_file_delete(
+                                      "gallery/medium",
+                                      l.name,
+                                      l.is_user_added,
+                                      index()
+                                    )
+                                  }
+                                  class="text-gray-800"
+                                >
+                                  <img
+                                    src={closeIcon}
+                                    width={18}
+                                    height={18}
+                                    alt="delete"
+                                  />
+                                </button>
+                              </div>
+                            </div>
+                            </>
+                          )}
+                        </For>
+                      </div>
+                    </Show>
+
+                    <div class="flex items-center justify-between mt-4">
+                      {isSendingRequest() ? (
+                        <button
+                          type="button"
+                          onClick={() => abort()}
+                          class="w-full bg-green-600 text-white py-2 rounded-lg flex items-center justify-center hover:bg-green-700 transition"
+                        >
+                          <img
+                            src={spinner}
+                            class="animate-spin mr-2"
+                            alt="იტვირთება..."
+                          />
+                          <span>გაუქმება</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="submit"
+                          class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
+                        >
+                          სერვისის {isEditing() ? "განახლება" : "გამოქვეყნება"}
+                        </button>
+                      )}
+                    </div>
+                    <Show when={service() && service().length}>
+                      <ServicesModal
+                        error={error}
+                        removeService={removeService}
+                        service={service}
+                        setService={setService}
+                      />
+                    </Show>
+                    <Show when={showSchedule()}>
+                      <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                        <div class="bg-white rounded-lg p-6 shadow-lg">
+                          <ServiceSchedule
+                            setSchedule={setSchedule}
+                            schedule={schedule}
+                            setToast={setToast}
+                            setShowSchedule={setShowSchedule}
+                          />
+                        </div>
+                      </div>
+                    </Show>
+                  </form>
                 </div>
-                <Show when={showSchedule()}>
-                  <div class="bg-white shadow-2xl z-[10] top-1/2 transform -translate-y-1/2 -translate-x-1/2 left-1/2  border fixed p-4">
-                    <ServiceSchedule
-                      setSchedule={setSchedule}
-                      schedule={schedule}
-                      setToast={setToast}
-                      setShowSchedule={setShowSchedule}
-                    ></ServiceSchedule>
-                  </div>
-                </Show>
-              </form>
-              <MapRenderer
-                markedLocation={markedLocation}
-                setMarkedLocation={setMarkedLocation}
-                longitude={response().longitude}
-                latitude={response().latitude}
-                center={response().center}
-                place_name_ka={response().place_name_ka}
-                height={"100%"}
-                width={"800px"}
-              ></MapRenderer>
+
+                {/* Right Side – Map */}
+                <div class="flex-shrink-0">
+                  <MapRenderer
+                    markedLocation={markedLocation}
+                    setMarkedLocation={setMarkedLocation}
+                    longitude={response().longitude}
+                    latitude={response().latitude}
+                    center={response().center}
+                    place_name_ka={response().place_name_ka}
+                    height={"100%"}
+                    width={"800px"}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        </Match>
-      </Switch>
-      <Show when={toast()}>
-        <Toast
-          toast={toast}
-          setToast={setToast}
-          isExiting={isExiting}
-          setIsExiting={setIsExiting}
-        ></Toast>
-      </Show>
-      <Show when={service() && service().length}>
-        <ServicesModal
-          error={error}
-          removeService={removeService}
-          service={service}
-          setService={setService}
-        ></ServicesModal>
-      </Show>
-      <div class="w-[80%] mx-auto my-4">
-        <SmallFooter></SmallFooter>
-      </div>
-    </section>
+          </Match>
+        </Switch>
+
+        <Show when={toast()}>
+          <Toast
+            toast={toast}
+            setToast={setToast}
+            isExiting={isExiting}
+            setIsExiting={setIsExiting}
+          />
+        </Show>
+
+        <div class="w-[80%] mx-auto my-4">
+          <SmallFooter />
+        </div>
+      </section>
+    </MetaProvider>
   );
 };
 

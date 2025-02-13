@@ -6,13 +6,13 @@ export const SignleServiceRenderer = (props) => {
 
   return (
     <div key={i()} class="w-full mx-auto p-2">
-      <div class="bg-white shadow-md rounded-lg overflow-hidden min-h-80 flex flex-col md:flex-row">
-        <A class="w-[351px] h-[351px]" href={`/service/${s.publicId}`}>
+      <div class="bg-white shadow-md rounded-lg overflow-hidden h-[300px] flex flex-col md:flex-row">
+        <A class="w-[300px] h-[300px]" href={`/service/${s.publicId}`}>
           <img
-            class="object-cover w-full h-full"
+            class="w-full h-full"
             src={s.thumbnail_src}
             alt="Service"
-            loading="lazy"
+            fetchpriority="high"
           />
         </A>
 
@@ -21,7 +21,7 @@ export const SignleServiceRenderer = (props) => {
             <div class="flex justify-between items-start">
               <A href={`/service/${s.publicId}`}>
                 <h2 class="text-lg font-bold text-gray-800">
-                  {s.main_title}
+                  {s.main_title.slice(0, 50)}...
                 </h2>
               </A>
               {s.place_name_ka && (
@@ -33,7 +33,7 @@ export const SignleServiceRenderer = (props) => {
 
             <A href={`/service/${s.publicId}`}>
               <p class="mt-2 text-xs font-[normal-font] text-gray-600">
-                {s.main_description}
+                {s.main_description.slice(0, 250)}...
               </p>
             </A>
             <p class="mt-2 text-gray-800 font-[bolder-font] text-xs">
@@ -41,7 +41,7 @@ export const SignleServiceRenderer = (props) => {
             </p>
 
             <div class="mt-1 flex flex-wrap gap-1">
-              <For each={s.categories}>
+              <For each={s.categories.filter((_, i) => i < 3)}>
                 {(sc) => (
                   <span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs font-[thin-font] font-semibold">
                     {sc.slice(0, 20)}...
@@ -81,7 +81,7 @@ export const SignleServiceRenderer = (props) => {
               class="flex items-center bg-green-500 hover:bg-green-600 transition-colors text-white px-3 py-2 rounded-lg"
             >
               <img
-                class="w-12 h-12 rounded-full object-cover mr-3"
+                class="w-12 h-12 rounded-full mr-3"
                 src={s.prof_pic_src}
                 alt="Professional"
               />

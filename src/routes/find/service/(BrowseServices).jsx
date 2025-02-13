@@ -5,7 +5,6 @@ import { Show } from "solid-js";
 import { ServiceFilters } from "./Components/Filters";
 import { SortServices } from "./Components/SortServices";
 import { ServicePagination } from "./Components/ServicePagination";
-import { Footer } from "~/Components/Footer";
 
 const BrowseServices = (props) => {
   const services = createAsync(async () => (await fetch(`http://localhost:3000/api/services/services${props?.location?.search}`)).json(), {deferStream: true})
@@ -67,7 +66,6 @@ const BrowseServices = (props) => {
           </div>
         </Show>
       </div>
-      <Footer></Footer>
     </div>
   );
 };

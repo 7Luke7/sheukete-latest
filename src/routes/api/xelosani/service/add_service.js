@@ -79,7 +79,7 @@ export async function POST({request}) {
             `სერვისის ფასი სავალდებულოა.`
           ).ExntendToErrorName("ValidationError");
         }
-    
+
         if (service && service.length) {
           for (let i = 0; i < service.length; i++) {
               if (service[i].title.length < 5) {
@@ -121,7 +121,6 @@ export async function POST({request}) {
 
         const tags = ["mock"]
 
-        console.log(location)
         const response = await postgresql_server_request(
           "POST",
           "xelosani/service",

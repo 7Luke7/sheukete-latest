@@ -49,8 +49,8 @@ export const handle_contact = async (formData, contact) => {
       throw new Error(401);
     }
 
-    const user = await postgresql_server_request("PUT", `xelosani/update_${contact}`, {
-      body: JSON.stringify({[contact]: inputText, userId: session.userId}),
+    const user = await postgresql_server_request("PUT", `${session.role}/update_${contact}/${session.userId}`, {
+      body: JSON.stringify({[contact]: inputText}),
       headers: {
         "Content-Type": "application/json",
       },
@@ -93,7 +93,7 @@ export const check_contact = async () => {
       throw new Error(401);
     }
 
-    const user = await postgresql_server_request("GET", `xelosani/check_contact/${session.profId}`, {
+    const user = await postgresql_server_request("GET", `${session.role}/check_contact/${session.profId}`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -123,13 +123,12 @@ export const check_about = async () => {
       throw new Error(401);
     }
 
-    const user = await postgresql_server_request("GET", `xelosani/about/${session.profId}`, {
+    const user = await postgresql_server_request("GET", `${session.role}/about/${session.profId}`, {
       headers: {
         "Content-Type": "application/json",
       },
     });
 
-    console.log("about: ", user)
     if (user.status === 400) {
       return 400
     }
@@ -148,7 +147,6 @@ export const handle_about = async (formData) => {
     const event = getRequestEvent();
     const session = await verify_user(event);
 
-    console.log(about.length)
     if (session === 401) {
       throw new Error(401);
     }
@@ -160,14 +158,14 @@ export const handle_about = async (formData) => {
       throw new CustomError("about", "აღწერა უნდა შეიცავდეს მაქსიმუმ 600 ასოს.")
     }
 
-    const user = await postgresql_server_request("PUT", `xelosani/about/${session.profId}`, {
+    const user = await postgresql_server_request("PUT", `${session.role}/about/${session.profId}`, {
       body: JSON.stringify({about}),
       headers: {
         "Content-Type": "application/json",
       },
     });      
 
-    return { ...user, status: 200 };
+    return { ...user, prof_id: session.profId, status: 200 };
   } catch (error) {
     console.log(error)
     const handled_error = new HandleError(error).validation_error();
@@ -184,7 +182,7 @@ export const check_user_age = async () => {
       throw new Error(401);
     }
 
-    const user = await postgresql_server_request("GET", `xelosani/check_date/${session.profId}`, {
+    const user = await postgresql_server_request("GET", `${session.role}/check_date/${session.profId}`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -211,7 +209,7 @@ export const handle_date_select = async (date) => {
       throw new Error(401);
     }
 
-    const user = await postgresql_server_request("PUT", `xelosani/update_date/${session.profId}`, {
+    const user = await postgresql_server_request("PUT", `${session.role}/update_date/${session.profId}`, {
       body: JSON.stringify({
         date
       }),
@@ -292,7 +290,7 @@ export const handle_user_gender = async (gender) => {
       throw new Error(401);
     }
 
-    const user = await postgresql_server_request("PUT", `xelosani/update_gender/${session.profId}`, {
+    const user = await postgresql_server_request("PUT", `${session.role}/update_gender/${session.profId}`, {
       body: JSON.stringify({
         gender
       }),
@@ -318,7 +316,7 @@ export const check_user_gender = async () => {
       throw new Error(401);
     }
 
-    const user = await postgresql_server_request("GET", `xelosani/check_gender/${session.profId}`, {
+    const user = await postgresql_server_request("GET", `${session.role}/check_gender/${session.profId}`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -348,7 +346,7 @@ export const handle_location = async (location) => {
       throw new Error("აირჩიე ლოკაცია");
     }
 
-    const user = await postgresql_server_request("POST", `xelosani/handle_location/${session.userId}`, {
+    const user = await postgresql_server_request("POST", `${session.role}/handle_location/${session.userId}`, {
       body: JSON.stringify({
         location
       }),
@@ -377,7 +375,7 @@ export const check_location = async () => {
       throw new Error(401);
     }
 
-    const user = await postgresql_server_request("GET", `xelosani/check_location/${session.userId}`, {
+    const user = await postgresql_server_request("GET", `${session.role}/check_location/${session.userId}`, {
       headers: {
         "Content-Type": "application/json",
       },

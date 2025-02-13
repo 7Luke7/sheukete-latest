@@ -1,10 +1,11 @@
-import { createSignal, Show, Switch, Match, createEffect } from "solid-js";
+import { createSignal, Show, Switch, Match } from "solid-js";
 import { createAsync, A, useNavigate } from "@solidjs/router";
 import {
   handle_location,
   check_location,
 } from "../../../api/xelosani/setup/setup";
 import { MapRenderer } from "~/routes/map/MapRenderer";
+import { Link, MetaProvider, Title } from "@solidjs/meta";
 
 const Location = () => {
   const location = createAsync(check_location);
@@ -18,7 +19,7 @@ const Location = () => {
       const response = await handle_location(markedLocation());
       if (response.status !== 200) throw new Error(response);
       if (response.stepPercent === 100) {
-        return navigate(`/xelosani/${response.profId}`); //ჩანიშვნა
+        return navigate(`/xelosani/${response.profId}`); // ჩანიშვნა
       }
       setSubmitted(true);
     } catch (error) {
@@ -31,6 +32,10 @@ const Location = () => {
   };
 
   return (
+    <MetaProvider>
+    <Link href="https://cdn.maptiler.com/maptiler-sdk-js/v3.0.1/maptiler-sdk.css" rel="stylesheet"></Link>
+    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.0.1/maptiler-sdk.umd.min.js"></script>
+    <Title>სეტაპი | ლოკაცია</Title>
     <Show when={location()}>
       <div class="h-[500px] w-full">
         <Switch>
@@ -71,6 +76,7 @@ const Location = () => {
         </Switch>
       </div>
     </Show>
+    </MetaProvider>
   );
 };
 

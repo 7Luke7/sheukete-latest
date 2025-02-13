@@ -20,14 +20,7 @@ export const get_user_service = async (publicId) => {
         const sp = new URLSearchParams(publicId)
         const service_public_id = sp.get("id")
 
-        const response = await postgresql_server_request("POST", "xelosani_service", {
-            body: JSON.stringify({
-                service_public_id
-            }),
-            headers: {
-                "Content-Type": "application/json"
-            }
-        })
+        const response = await postgresql_server_request("GET", `xelosani_service/${service_public_id}`)
 
         if (response.status === 200) {
             const image_response = await fileserver_request("GET", `get_all_service_image_names_and_paths/${session.profId}/${service_public_id}`)

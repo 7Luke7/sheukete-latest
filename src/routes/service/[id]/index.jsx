@@ -6,11 +6,14 @@ import ChevronLeftBlack from "../../../svg-images/ChevronLeftBlack.svg";
 import ChevronRightBlack from "../../../svg-images/ChevronRightBlack.svg";
 import Swiper from "swiper";
 import { Navigation, Pagination } from "swiper/modules";
+import { register } from "swiper/element/bundle";
+import 'swiper/css/bundle';
+import { Base, Meta, MetaProvider, Title } from "@solidjs/meta";
 
+register()
 const TAB = {
   EXTRAS: 0,
   AVAILABILITY: 1,
-  DESCRIPTION: 2,
   REVIEWS: 3,
 };
 
@@ -38,13 +41,19 @@ const Service = (props) => {
   });
 
   return (
-    <>
-      <Header />
+    <MetaProvider>
+    <Meta name="title" content={`Sheukete.ge: ${service()?.main_title} : ${service()?.categories[service()?.categories.length - 1]}`}></Meta>
+      <Title>
+      {`Sheukete.ge: ${service()?.main_title} : ${service()?.categories[service()?.categories.length - 1]}`}
+    </Title>
+    <Meta name="description" content={`Sheukete.ge: ${service()?.main_title} : ${service()?.categories[service()?.categories.length - 1]}`}></Meta>
+    <Base target="_blank" href={`http://localhost:3000/service/${service()?.public_id}`} />
+    <Header />
       <Show when={service()} fallback={<div>Loading...</div>}>
         <div class="container mx-auto mt-[50px] max-w-[90%]">
           <div class="flex flex-col md:flex-row gap-6">
-            <div class="w-full md:w-1/4 flex flex-col items-center">
-              <div class="relative w-full max-w-[351px] h-[351px] mx-auto">
+            <div class="w-full md:w-[460px] flex flex-col items-center">
+              <div class="relative h-[460px] w-[460px] flex mx-auto">
                 <img
                   src={
                     currentImageView()
@@ -53,27 +62,23 @@ const Service = (props) => {
                           service().prof_id
                         }/services/${
                           service().public_id
-                        }/thumbnail/thumbnail.webp`
+                        }/thumbnail/medium/thumbnail.webp`
                   }
                   alt={service().main_title}
-                  class="object-cover w-full h-full rounded-lg border"
-                  loading="lazy"
+                  class=" h-[460px] w-[460px] rounded-lg border"
+                  fetchpriority="high"
                 />
-                {service().place_name_ka && (
-                  <span class="absolute top-2 right-2 bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded-full opacity-90 shadow">
-                    {service().place_name_ka.slice(0, 50)}...
-                  </span>
-                )}
+           
               </div>
 
               {/* Thumbnail Gallery with Swiper */}
-              <section class="relative mt-4 w-full max-w-[351px] mx-auto">
+              <section class="relative mt-4 max-w-[] mx-auto">
                 <div
                   ref={(el) => (swiperGalleryEl = el)}
-                  class="swiper h-[60px]"
+                  class="swiper h-[60px] max-w-[460px]"
                 >
                   <div
-                    class="swiper-wrapper"
+                    class="swiper-wrapper max-w-[460px]"
                     style={{ display: "flex", flexWrap: "wrap" }}
                   >
                     <img
@@ -81,12 +86,12 @@ const Service = (props) => {
                         currentImageView() &&
                         currentImageView().index === 0 &&
                         "border-dark-green-hover"
-                      } object-cover w-[75px] h-[75px] rounded-lg`}
+                      }  w-[60px] h-[60px] rounded-lg`}
                       src={`http://localhost:5555/static/images/xelosani/${
                         service().prof_id
                       }/services/${
                         service().public_id
-                      }/thumbnail/thumbnail.webp`}
+                      }/thumbnail/small/thumbnail.webp`}
                       loading="lazy"
                       alt={service().main_title}
                       onClick={() =>
@@ -96,24 +101,24 @@ const Service = (props) => {
                             service().prof_id
                           }/services/${
                             service().public_id
-                          }/thumbnail/thumbnail.webp`,
+                          }/thumbnail/medium/thumbnail.webp`,
                         })
                       }
                     ></img>
-                    <For each={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]}>
+                    <For each={new Array(service().gallery_count)}>
                       {(_, i) => (
                         <img
                           src={`http://localhost:5555/static/images/xelosani/${
                             service().prof_id
                           }/services/${
                             service().public_id
-                          }/gallery/service-${i()}-gallery-image.webp`}
+                          }/gallery/small/service-${i()}-gallery-image.webp`}
                           alt={service().main_title}
                           class={`swiper-slide border ${
                             currentImageView() &&
                             currentImageView().index === i() + 1 &&
                             "border-dark-green-hover"
-                          } object-cover w-[75px] h-[75px] rounded-lg`}
+                          }   rounded-lg object-cover`}
                           loading="lazy"
                           onClick={() =>
                             setCurrentImageView({
@@ -122,7 +127,7 @@ const Service = (props) => {
                                 service().prof_id
                               }/services/${
                                 service().public_id
-                              }/gallery/service-${i()}-gallery-image.webp`,
+                              }/gallery/medium/service-${i()}-gallery-image.webp`,
                             })
                           }
                         />
@@ -170,11 +175,11 @@ const Service = (props) => {
                   class="flex items-center bg-green-500 hover:bg-green-600 transition-colors text-white px-4 py-2 rounded shadow"
                 >
                   <img
-                    src={`http://localhost:5555/static/images/xelosani/profile/${
+                    src={`http://localhost:5555/static/images/xelosani/profile/browse/${
                       service().prof_id
                     }.webp`}
                     alt={`${service().firstname} ${service().lastname}`}
-                    class="w-12 h-12 rounded-full object-cover mr-3"
+                    class="w-12 h-12 rounded-full mr-3"
                   />
                   <div class="flex flex-col">
                     <p class="text-sm font-semibold">
@@ -263,16 +268,6 @@ const Service = (props) => {
                 onClick={() => setActiveTab(TAB.EXTRAS)}
               >
                 დამატებითი სერვისები
-              </button>
-              <button
-                class={`pb-2 ${
-                  activeTab() === TAB.DESCRIPTION
-                    ? "border-b-2 border-green-600 text-green-700"
-                    : "text-gray-600"
-                }`}
-                onClick={() => setActiveTab(TAB.DESCRIPTION)}
-              >
-                აღწერა
               </button>
               <button
                 class={`pb-2 ${
@@ -415,7 +410,7 @@ const Service = (props) => {
           </div>
         </div>
       </Show>
-    </>
+    </MetaProvider>
   );
 };
 

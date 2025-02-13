@@ -21,7 +21,7 @@ import { WorkDropdown } from "./header-comps/WorkDropdown";
 import logoutSVG from "../svg-images/box-arrow-right.svg";
 import { logout_user } from "~/routes/api/user";
 import { header } from "~/routes/api/header";
-import threeDotsSVG from "../svg-images/three-dots.svg"
+import threeDotsSVG from "../svg-images/three-dots.svg";
 import { NotificationTools } from "./NotificationTools";
 
 export const Header = () => {
@@ -30,9 +30,9 @@ export const Header = () => {
   const [value, setValue] = createSignal("");
   const [display, setDisplay] = createSignal(null);
   const [notifications, setNoifications] = createSignal();
-  const [isUnseenNotif, setIsUnseenNotif] = createSignal()
-  const [isUnseenMessage, setIsUnseenMessage] = createSignal()
-  const [notificationTools, setNotificationTools] = createSignal()
+  const [isUnseenNotif, setIsUnseenNotif] = createSignal();
+  const [isUnseenMessage, setIsUnseenMessage] = createSignal();
+  const [notificationTools, setNotificationTools] = createSignal();
 
   onMount(async () => {
     // we should just check for unseen notifications and apply red dot on notification icon
@@ -70,27 +70,6 @@ export const Header = () => {
     }
   };
 
-  createEffect(async () => {
-    try {
-      if (display() === "notif") {
-        const response = await fetch(
-          `http://localhost:4321/notifications`,
-          {
-            method: "GET",
-            credentials: "include",
-          }
-        );
-  
-        const data = await response.json();
-        if (response.status === 200) {
-          setNoifications(data);
-        }  
-      }
-    } catch (error) {
-      console.log(error)
-    }
-  })
-
   const handleBodyClick = (event) => {
     if (
       (event.target.id !== "options-menu" && display() === "searchops") ||
@@ -122,59 +101,67 @@ export const Header = () => {
 
   const accept_request = async (id, friend_request_id) => {
     try {
-      const response = await fetch(`http://localhost:4321/xelosani/friend/accept`, {
-        method: "POST",
-        body: JSON.stringify({
-          friend_request_id: friend_request_id,
-          notification_id: id
-        }),
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include"
-      })
-
-      if (response.status === 200) {       
-        // we could make an animation of adding people to friends later 
-        setNoifications(prev => {
-          return prev.filter(n => n.id !== id)
-        });      
-      } else {
-        throw new Error("დაფიქსირდა შეცდომა მეგობრობის მოთხოვნის უარყოფისას.")
-      }
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const reject_request = async (friend_request_id) => {
-    // we could make an animation of rejecting people friend requests later 
-    try {
-      const response = await fetch(`http://localhost:4321/xelosani/friend/cancel`, {
-        method: "POST",
-        body: JSON.stringify({
-          friend_request_id: friend_request_id,
-        }),
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include"
-      })
+      const response = await fetch(
+        `http://localhost:4321/xelosani/friend/accept`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            friend_request_id: friend_request_id,
+            notification_id: id,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
 
       if (response.status === 200) {
-        setNoifications(prev => {
-          return {
-            count: prev.count - 1,
-            notifications: prev.notifications.filter(n => n.id !== id),
-          };
-        });      
+        // we could make an animation of adding people to friends later
+        setNoifications((prev) => {
+          return prev.filter((n) => n.id !== id);
+        });
       } else {
-        throw new Error("დაფიქსირდა შეცდომა მეგობრობის მოთხოვნის უარყოფისას.")
+        throw new Error("დაფიქსირდა შეცდომა მეგობრობის მოთხოვნის უარყოფისას.");
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
+
+  console.log(notifications());
+  const reject_request = async (friend_request_id) => {
+    // we could make an animation of rejecting people friend requests later
+    try {
+      const response = await fetch(
+        `http://localhost:4321/xelosani/friend/cancel`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            friend_request_id: friend_request_id,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (response.status === 200) {
+        setNoifications((prev) => {
+          return {
+            count: prev.count - 1,
+            notifications: prev.notifications.filter((n) => n.id !== id),
+          };
+        });
+      } else {
+        throw new Error("დაფიქსირდა შეცდომა მეგობრობის მოთხოვნის უარყოფისას.");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <header class="border-b sticky top-0 left-0 right-0 z-50 bg-white border-slate-300">
       <div class="flex h-[45px] itmes-center mx-auto w-[90%]">
@@ -234,10 +221,28 @@ export const Header = () => {
             <Switch>
               <Match when={user() !== 401}>
                 <div class="flex items-center gap-x-3">
-                  <button onClick={() => setDisplay("notif")} class="relative">
-                    <img
-                      src={bellSVG}
-                    ></img>
+                  <button
+                    onClick={async () => {
+                      setDisplay("notif");
+                      const response = await fetch(
+                        `http://localhost:4321/notifications`,
+                        {
+                          method: "GET",
+                          credentials: "include",
+                        }
+                      );
+
+                      const data = await response.json();
+                      if (response.status === 200) {
+                        setNoifications(data);
+                        console.log(data)
+                      } else if (response.status === 400) {
+                        setNoifications(data.message)
+                      }
+                    }}
+                    class="relative"
+                  >
+                    <img alt="" src={bellSVG}></img>
                     <Show when={isUnseenNotif()}>
                       <div class="bg-dark-green-hover pointer-events-none absolute top-3 right-0 w-[8px] h-[8px] text-white font-thin text-xs font-[thin-font] rounded-[50%]"></div>
                     </Show>
@@ -246,7 +251,7 @@ export const Header = () => {
                     class="relative"
                     onClick={() => setDisplay("message")}
                   >
-                    <img src={envelopeSVG}></img>
+                    <img alt="" src={envelopeSVG}></img>
                     <Show when={isUnseenMessage()}>
                       <div class="bg-dark-green-hover pointer-events-none absolute top-3 right-0 w-[8px] h-[8px] text-white font-thin text-xs font-[thin-font] rounded-[50%]"></div>
                     </Show>
@@ -257,7 +262,7 @@ export const Header = () => {
                       alt="პროფილის ფოტო სათავე"
                       src={`http://localhost:5555/static/images/${
                         user()?.role
-                      }/profile/${user()?.profId}.webp`}
+                      }/profile/small/${user()?.profId}.webp`}
                     ></img>
                   </button>
                 </div>
@@ -453,7 +458,9 @@ export const Header = () => {
           <h2 id="notification-menu" class="font-[bolder-font] text-gray-800">
             შეტყობინებები
           </h2>
-          <div id="notification-menu" class="flex flex-col gap-y-1">
+          <Switch>
+            <Match when={notifications()}>
+            <div id="notification-menu" class="flex flex-col gap-y-1">
             <For each={notifications()}>
               {(n, i) => {
                 return (
@@ -464,78 +471,98 @@ export const Header = () => {
                           {n.created_at}
                         </p>
                         <div class="flex items-center w-[360px]">
-                        <img
-                          src={n.image_url}
-                          class="w-[60px] h-[60px] rounded-full border border-indigo-100"
-                        ></img>
-                        <div
-                          id="notification-menu"
-                          class="flex flex-col px-2 text-xs"
-                        >
-                          <p class="text-sm font-[bolder-font]">
-                            {n.firstname} {n.lastname}
-                          </p>
-                          <p class="font-[thin-font] text-gr">
-                            {n.message}
-                          </p>
-                          <Show when={n.type === "FRIEND_REQUEST"}>
-                          <div class="flex gap-x-2 mt-2 items-center">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                accept_request(n.id, n.friend_request_id)
-                              }}
-                              id="notification-menu"
-                              class="font-bold px-2 py-1 rounded bg-gray-200 break-all cursor-default text-gr text-xs font-[thin-font]"
-                            >
-                              თანხმობა
-                            </button>
-                            <button
-                              onClick={e => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                reject_request(n.friend_request_id);
-                              }}
-                              id="notification-menu"
-                              class="font-bold px-2 py-1 rounded bg-gray-200 cursor-default break-all text-gr text-xs font-[thin-font]"
-                            >
-                              უარყოფა
-                            </button>
+                          <img
+                            src={n.image_url}
+                            class="w-[60px] flex-[2] object-cover h-[60px] rounded-full border border-indigo-100"
+                          ></img>
+                          <div
+                            id="notification-menu"
+                            class="flex flex-col flex-[10] px-2 text-xs"
+                          >
+                            <p class="text-sm font-[bolder-font]">
+                              {n.firstname} {n.lastname}
+                            </p>
+                            <p class="font-[thin-font] text-gr">{n.message}</p>
+                            <Show when={n.type === "FRIEND_REQUEST"}>
+                              <div class="flex gap-x-2 mt-2 items-center">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    accept_request(n.id, n.friend_request_id);
+                                  }}
+                                  id="notification-menu"
+                                  class="font-bold px-2 py-1 rounded bg-gray-200 break-all cursor-default text-gr text-xs font-[thin-font]"
+                                >
+                                  თანხმობა
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    reject_request(n.friend_request_id);
+                                  }}
+                                  id="notification-menu"
+                                  class="font-bold px-2 py-1 rounded bg-gray-200 cursor-default break-all text-gr text-xs font-[thin-font]"
+                                >
+                                  უარყოფა
+                                </button>
+                              </div>
+                            </Show>
                           </div>
-                          </Show>
-
                         </div>
-                        </div>
-                        <button id="notification-menu" onClick={e => {
-                          e.stopPropagation();
-                          e.preventDefault(); 
-                          setNotificationTools((prev) => {
-                            if (prev) {
-                              return null
-                            } else {
-                              return {
-                                type: n.type,
-                                id: n.id
+                        <button
+                          id="notification-menu"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            setNotificationTools((prev) => {
+                              if (prev) {
+                                return null;
+                              } else {
+                                return {
+                                  type: n.type,
+                                  id: n.id,
+                                };
                               }
-                            }
-                          });
-                        }}>
-                          <img id="notification-menu" class={`${notificationTools()?.id === n.id ? "block" : "hidden group-hover:block"} bg-gray-200 p-1 rounded-full`} src={threeDotsSVG} width={30} height={30}></img>
+                            });
+                          }}
+                        >
+                          <img
+                            id="notification-menu"
+                            class={`${
+                              notificationTools()?.id === n.id
+                                ? "block"
+                                : "hidden group-hover:block"
+                            } bg-gray-200 p-1 rounded-full`}
+                            src={threeDotsSVG}
+                            width={30}
+                            height={30}
+                          ></img>
                           <Show when={notificationTools()?.id === n.id}>
-                          <NotificationTools setNoifications={setNoifications} seen={n.seen} notificationTools={notificationTools} setNotificationTools={setNotificationTools}></NotificationTools>
-                        </Show>
-                        </button>
-                          <Show when={!n.seen}>
-                            <div class="bg-dark-green-hover pointer-events-none w-[11px] h-[11px] text-white text-xs font-[thin-font] rounded-[50%]"></div>
+                            <NotificationTools
+                              setNoifications={setNoifications}
+                              seen={n.seen}
+                              notificationTools={notificationTools}
+                              setNotificationTools={setNotificationTools}
+                            ></NotificationTools>
                           </Show>
-                        </div>
+                        </button>
+                        <Show when={!n.seen}>
+                          <div class="bg-dark-green-hover pointer-events-none w-[11px] h-[11px] text-white text-xs font-[thin-font] rounded-[50%]"></div>
+                        </Show>
+                      </div>
                     </A>
                   </div>
                 );
               }}
             </For>
           </div>
+            </Match>
+            <Match when={!notifications()}>
+              <p class="font-[thin-font] text-gr font-bold text-xs text-center" id="notification-menu">შეტყობინებები ცარიელია</p>
+            </Match>
+          </Switch>
         </div>
       )}
     </header>

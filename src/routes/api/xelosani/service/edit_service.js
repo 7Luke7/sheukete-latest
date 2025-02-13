@@ -122,7 +122,6 @@ export async function POST({request}) {
         const tags = ["mock"]
 
         const public_id = formData.get("public_id")
-        console.log("public_id", public_id)
         const response = await postgresql_server_request(
           "PUT",
           "xelosani/service",
@@ -153,6 +152,7 @@ export async function POST({request}) {
 
           for (let i = 0; i < imageLength; i++) {
             const current_image = formData.get(`service-${i}-gallery-image`)
+            console.log(current_image)
             if (current_image.size > MAX_SINGLE_FILE_SIZE) {
               throw Error(`${current_image.name}, ფაილის ზომა აჭარბებს 2მბ ლიმიტს.`);
             }

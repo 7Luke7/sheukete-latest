@@ -1,7 +1,6 @@
 import { Header } from "~/Components/Header";
 import { get_xelosani } from "../../api/user";
 import { createAsync, useNavigate } from "@solidjs/router";
-import { Footer } from "~/Components/Footer";
 import checkedGreen from "../../../svg-images/checkedGreen.svg"
 import {
   Show,
@@ -16,7 +15,7 @@ import { ProfileRight } from "./ProfileRight";
 import { navigateToStep } from "~/routes/api/xelosani/setup/step";
 import { ModifyWorkSchedule } from "../modals/ModifyWorkSchedule";
 import { ModifyAge } from "../modals/ModifyAge";
-import { MetaProvider } from "@solidjs/meta";
+import { Base, Meta, MetaProvider, Title } from "@solidjs/meta";
 import { ModifySkill } from "../modals/ModifySkills";
 import { FireworkConfetti } from "~/Components/FireworkConfetti";
 import airPlane from "../../../svg-images/airplane.svg";
@@ -83,9 +82,14 @@ const Xelosani = (props) => {
 
   return (
     <MetaProvider>
+      <Title>
+      {`Sheukete.ge: ${user()?.firstname} ${user()?.lastname}`}
+    </Title>
+    <Meta name="description" content={`Sheukete.ge: ${user()?.firstname} ${user()?.lastname} ხელოსანი`}></Meta>
+    <Base target="_blank" href={`http://localhost:3000/service/${user()?.profId}`} />
         <Header />
       <div class="relative">
-        <div class="w-[90%] mx-auto relative mt-8">
+        <div class="w-[90%] mx-auto relative my-8">
           <Show when={user()}>
             <Show when={modal()}>
               <div
@@ -192,9 +196,6 @@ const Xelosani = (props) => {
                 </div>
             </Show>
           </Show>
-          <div class={`${modal() && "pointer-events-none blur-[0.8px]"}`}>
-            <Footer />
-          </div>
         </div>
         <Show when={toast()}>
         <div

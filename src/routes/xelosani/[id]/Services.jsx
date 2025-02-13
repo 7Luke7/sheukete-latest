@@ -1,174 +1,129 @@
 import { A } from "@solidjs/router";
 import { For, Index, Match, onMount, Switch, Show } from "solid-js";
 import EditSVG from "../../../svg-images/edit_icon.svg";
-import ExternalLinkSVG from "../../../svg-images/external_link.svg";
-import Swiper from "swiper";
-import { Navigation, Pagination } from "swiper/modules";
-import ChevronLeftBlack from "../../../svg-images/ChevronLeftBlack.svg";
-import ChevronRightBlack from "../../../svg-images/ChevronRightBlack.svg";
 import emptyStar from "../../../svg-images/svgexport-24.svg";
 import fullStar from "../../../svg-images/svgexport-19.svg";
-import avialabilityIcon from "../../../svg-images/accessibility-availability-custom-svgrepo-com.svg"
-import { createStore } from "solid-js/store";
+import avialabilityIcon from "../../../svg-images/accessibility-availability-custom-svgrepo-com.svg";
 
 export const Services = (props) => {
-  let swiperServiceEl;
-  let navigateRightService;
-  let navigateLeftService;
-  const [services, setServices] = createStore(props.services);
-
-  onMount(async () => {
-    // here we might be able to get thumbnails without doing this request at all
-    const response = await fetch(`http://localhost:5555/service/frontpage/thumbnails/${props.profId}`, {
-      method: "POST",
-      body: JSON.stringify({
-        services: services.map(s => s.publicId)
-      }),
-      headers: {
-        'Content-Type': "application/json",
-      }
-    })
-    
-    const { thumbnails } = await response.json();
-
-    setServices(
-      services.map((service) => {
-        const thumbnail = thumbnails.find((t) => t.serviceId === service.publicId);
-        return thumbnail ? { ...service, thumbnail_url: thumbnail.url } : service;
-      })
-    );
-
-    new Swiper(swiperServiceEl, {
-      modules: [Navigation, Pagination],
-      spaceBetween: 10,
-      slidesPerView: 4,
-      navigation: {
-        nextEl: navigateRightService,
-        prevEl: navigateLeftService,
-      },
-    })
+  onMount(() => {
     const banners = document.querySelectorAll('.banner');
-
     banners.forEach((banner) => {
       const bannerWidth = banner.offsetWidth;
       const wrapperWidth = banner.parentElement.offsetWidth;
-      
       const duration = (bannerWidth + wrapperWidth) / 75;
-      
       banner.style.animationDuration = `${duration}s`;
     });
   });
 
   return (
-    <div class="relative w-full max-w-[1440px] mx-auto">
-      <div ref={swiperServiceEl} class="swiper w-full">
-        <div class="swiper-wrapper">
-          <For each={services}>
-            {(a) => (
-              <div class="swiper-slide h-[630px]">
-                <div class="flex border h-[630px] w-[351px] rounded-t-[16px] overflow-hidden flex-col">
-                  <div class="relative">
-                    <img src={`http://localhost:5555${a.thumbnail_url}`} loading="lazy" class="w-[351px] h-[351px]" />
-                    <span class="absolute z-10 bg-dark-green text-white py-2 px-2 text-xs font-[thin-font] font-bold rounded-tl-[16px] top-0 left-0">
-                      {a.main_category}
-                    </span>
-                      <img loading="lazy" title="სერვისი ხელმისაწვდომია" class="absolute z-20 bg-dark-green text-white py-2 px-4 text-xs font-[thin-font] font-bold rounded-bl-[16px] top-0 right-0" src={avialabilityIcon}></img>
-                    <span class="absolute z-10 bg-dark-green text-white py-2 px-2 text-xs font-[thin-font] font-bold rounded-l-[16px] bottom-4 right-0">
-                      თქვენთან ახლოს
-                    </span>
-                    <div class="banner-wrapper absolute bottom-0 right-0 left-0 z-10 bg-dark-green-hover h-[18px] flex items-center overflow-hidden w-full">
-                      <div class="banner flex">
-                        <For each={a.categories}>
-                          {(cc) => (
-                            <span class="text-xs text-white font-[thin-font] font-bold mr-4">
-                              {cc}
-                            </span>
-                          )}
-                        </For>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="p-2 h-full justify-between gap-y-2 flex flex-col">
-                    <div>
-                    <h2 class="border-b min-h-[55px] pb-1 font-[normal-font] text-gray-900 break-all text-md font-bold">
-                      {a.main_title}
-                    </h2>
-                    <p class="font-[thin-font] text-gr break-all text-xs font-bold">
-                      {a.main_description}
-                    </p>
-                    </div>
-                    <div>
-                    <div class="flex items-center justify-between">
-                      <p class="my-1 font-[normal-font] font-bold text-dark-green text-sm">
-                        ფასი: {a.main_price}₾
-                      </p>
-                      <Show when={a.ratings}>
-                        <div class="flex">
-                          <Index each={new Array(a.ratings)}>
-                            {() => (
-                              <img loading="lazy" src={fullStar} width={18} height={18}></img>
-                            )}
-                          </Index>
-                          <Index each={new Array(5 - a.ratings)}>
-                            {() => (
-                              <img loading="lazy" src={emptyStar} width={18} height={18}></img>
-                            )}
-                          </Index>
-                        </div>
-                      </Show>
-                    </div>
-                    <div class="flex justify-between gap-x-2 font-[thin-font] text-sm font-bold">
-                      <A
-                        href={`/service/${a.publicId}`}
-                        class="border flex items-center gap-x-1 text-gray-700 justify-center border-dark-green py-1 w-1/2 rounded-[16px] text-center"
-                      >
-                        იხილე მეტი
-                        <img loading="lazy" src={ExternalLinkSVG} />
-                      </A>
-                      <Switch>
-                        <Match when={props.status === 401}>
-                          <A 
-                          href="#"
-                            class="bg-dark-green w-1/2 py-1 hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
-                          >
-                            შეუკვეთე
-                          </A>
-                        </Match>
-                        <Match when={props.status === 200}>
-                          <A
-                            href={`/xelosani/services?id=${a.publicId}`}
-                            class="bg-dark-green flex items-center gap-x-1 justify-center w-1/2 py-1 hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
-                          >
-                            <img loading="lazy" src={EditSVG} />
-                            შეასწორე
-                          </A>
-                        </Match>
-                      </Switch>
-                    </div>
-                    </div>
+    <div class="relative grid grid-cols-4 w-full max-w-[1440px] mx-auto">
+      <For each={props.services}>
+        {(a) => (
+          <div class="h-[530px]">
+            <div class="flex flex-col h-[560px] w-[300px] bg-white shadow-md rounded-lg overflow-hidden">
+              <A href={`/service/${a.publicId}`} class="relative">
+                <img
+                  src={`http://localhost:5555/static/images/xelosani/${props.profId}/services/${a.publicId}/thumbnail/browse/thumbnail.webp`} 
+                  loading="lazy"
+                  class="w-full h-[300px] object-cover"
+                  alt="Service Thumbnail"
+                />
+                <span class="absolute z-10 bg-dark-green text-white py-2 px-2 text-xs font-[thin-font] font-bold top-0 left-0">
+                  {a.main_category}
+                </span>
+                <img 
+                  loading="lazy"
+                  title="სერვისი ხელმისაწვდომია"
+                  class="absolute z-20 bg-dark-green text-white py-2 px-4 text-xs font-[thin-font] font-bold rounded-bl-[16px] top-0 right-0"
+                  src={avialabilityIcon}
+                  alt="Availability Icon"
+                />
+                <span class="absolute z-10 bg-dark-green text-white py-2 px-2 text-xs font-[thin-font] font-bold rounded-l-[16px] bottom-4 right-0">
+                  თქვენთან ახლოს
+                </span>
+                <div class="banner-wrapper absolute bottom-0 right-0 left-0 z-10 bg-dark-green-hover h-[18px] flex items-center overflow-hidden w-full">
+                  <div class="banner flex">
+                    <For each={a.categories}>
+                      {(cc) => (
+                        <span class="text-xs text-white font-[thin-font] font-bold mr-4">
+                          {cc}
+                        </span>
+                      )}
+                    </For>
                   </div>
                 </div>
+              </A>
+              <div class="p-4 flex flex-col justify-between h-full gap-y-2">
+                <div>
+                  <A href={`/service/${a.publicId}`}>
+                  <h2 class="border-b border-gray-200 min-h-[55px] pb-1 font-[normal-font] text-gray-900 break-all text-md font-bold">
+                    {a.main_title}
+                  </h2>
+                  </A>
+                  <A href={`/service/${a.publicId}`}>
+                  <p class="font-[thin-font] text-gr break-all text-xs font-bold">
+                    {a.main_description}
+                  </p>
+                  </A>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between">
+                    <p class="my-1 font-[normal-font] font-bold text-dark-green text-sm">
+                      ფასი: {a.main_price}₾
+                    </p>
+                    <Show when={a.ratings}>
+                      <div class="flex">
+                        <Index each={new Array(a.ratings)}>
+                          {() => (
+                            <img
+                              loading="lazy"
+                              src={fullStar}
+                              width={18}
+                              height={18}
+                              alt="Full Star"
+                            />
+                          )}
+                        </Index>
+                        <Index each={new Array(5 - a.ratings)}>
+                          {() => (
+                            <img
+                              loading="lazy"
+                              src={emptyStar}
+                              width={18}
+                              height={18}
+                              alt="Empty Star"
+                            />
+                          )}
+                        </Index>
+                      </div>
+                    </Show>
+                  </div>
+                    <Switch>
+                      <Match when={props.status === 401}>
+                        <A 
+                          href="#"
+                          class="bg-dark-green font-[thin-font] text-sm font-bold py-1 hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
+                        >
+                          შეუკვეთე
+                        </A>
+                      </Match>
+                      <Match when={props.status === 200}>
+                        <A
+                          href={`/xelosani/services?id=${a.publicId}`}
+                          class="bg-dark-green font-[thin-font] text-sm font-bold flex items-center gap-x-1 justify-center py-1 hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
+                        >
+                          <img loading="lazy" src={EditSVG} alt="Edit" />
+                          შეასწორე
+                        </A>
+                      </Match>
+                    </Switch>
+                </div>
               </div>
-            )}
-          </For>
-        </div>
-      </div>
-      <div class="absolute top-1/2 left-2 -translate-y-1/2 z-[10] flex items-center">
-        <button
-          ref={(el) => (navigateLeftService = el)}
-          class="cursor-pointer bg-white rounded-full p-2 shadow hover:bg-gray-200 transition"
-        >
-          <img loading="lazy" src={ChevronLeftBlack} width={36} />
-        </button>
-      </div>
-      <div class="absolute top-1/2 right-2 -translate-y-1/2 z-[10] flex items-center">
-        <button
-          ref={(el) => (navigateRightService = el)}
-          class="cursor-pointer bg-white rounded-full p-2 shadow hover:bg-gray-200 transition"
-        >
-          <img loading="lazy" src={ChevronRightBlack} width={36} />
-        </button>
-      </div>
+            </div>
+          </div>
+        )}
+      </For>
     </div>
   );
 };

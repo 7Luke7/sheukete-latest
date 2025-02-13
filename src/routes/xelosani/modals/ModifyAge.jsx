@@ -139,7 +139,7 @@ export const ModifyAge = (props) => {
           <img src={closeIcon} />
         </button>
       </div>
-      <div className="w-full flex flex-col justify-between h-[400px] p-3 border border-gray-300 rounded-2xl">
+      <div className="w-full flex flex-col justify-between h-[400px] p-3 rounded-2xl">
         <div className="flex items-center justify-between gap-2 mb-2">
           <div className="flex items-center justify-between w-full gap-8 border border-gray-300 rounded-md py-0.5 px-0.5 text-xs font-medium text-gray-900">
             <button

@@ -194,15 +194,15 @@ export async function GET({ request }) {
       ).toLocaleDateString();
       postgresql_response.services[i][
         "thumbnail_src"
-      ] = `${process.env.FILESERVER_SERVER_DOMAIN}:${process.env.FILESERVER_SERVER_PORT}/static/images/xelosani/${postgresql_response.services[i].profId}/services/${postgresql_response.services[i].publicId}/thumbnail/thumbnail.webp`;
+      ] = `${process.env.FILESERVER_SERVER_DOMAIN}:${process.env.FILESERVER_SERVER_PORT}/static/images/xelosani/${postgresql_response.services[i].profId}/services/${postgresql_response.services[i].publicId}/thumbnail/browse/thumbnail.webp`;
       postgresql_response.services[i][
         "prof_pic_src"
-      ] = `${process.env.FILESERVER_SERVER_DOMAIN}:${process.env.FILESERVER_SERVER_PORT}/static/images/xelosani/profile/${postgresql_response.services[i].profId}.webp`;
+      ] = `${process.env.FILESERVER_SERVER_DOMAIN}:${process.env.FILESERVER_SERVER_PORT}/static/images/xelosani/profile/browse/${postgresql_response.services[i].profId}.webp`;
     }
 
     let pageCount;
     if (postgresql_response.total_count) {
-      pageCount = Math.ceil(Number(postgresql_response.total_count) / 4);
+      pageCount = Math.ceil(Number(postgresql_response.total_count) / 16);
     }
 
     const { main, parent } = {
