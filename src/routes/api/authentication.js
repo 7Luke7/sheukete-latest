@@ -167,7 +167,8 @@ export const RegisterUser = async (formData, role) => {
             status: 200,
             headers: {
                 'Set-Cookie': `sessionId=${sessionId}; Path=/; SameSite=strict; Max-Age=${7 * 24 * 60 * 60}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                
             }
         });
     } catch (error) {

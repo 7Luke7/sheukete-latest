@@ -9,7 +9,6 @@ const Privacy = () => {
   const [toast, setToast] = createSignal();
   const [isExiting, setIsExiting] = createSignal(false);
 
-  console.log(privacy())
   const handlePrivacyChange = async (e) => {
     try {
       const response = await fetch("/api/privacy", {

@@ -12,7 +12,7 @@ export const modify_user_date = async (date) => {
             throw new Error(401);
         }
 
-        const data = await postgresql_server_request("PUT", `xelosani/modify_xelosani_age/${session.profId}`, {
+        const data = await postgresql_server_request("PUT", `${session.role}/modify_age/${session.profId}`, {
             body: JSON.stringify({
                 date
             }),

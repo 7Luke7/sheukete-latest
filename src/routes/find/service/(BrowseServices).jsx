@@ -5,6 +5,7 @@ import { Show } from "solid-js";
 import { ServiceFilters } from "./Components/Filters";
 import { SortServices } from "./Components/SortServices";
 import { ServicePagination } from "./Components/ServicePagination";
+import { MetaProvider, Title } from "@solidjs/meta";
 
 const BrowseServices = (props) => {
   const services = createAsync(async () => (await fetch(`http://localhost:3000/api/services/services${props?.location?.search}`)).json(), {deferStream: true})
@@ -14,7 +15,8 @@ const BrowseServices = (props) => {
     so it fits well withing the hydration target code
   */
     return (
-    <div>
+    <MetaProvider>
+      <Title>Sheukete.ge: {services()?.main}. {services()?.parent}</Title>
       <Header></Header>
       <div class="w-full flex">
         <Show when={services()}>
@@ -66,7 +68,7 @@ const BrowseServices = (props) => {
           </div>
         </Show>
       </div>
-    </div>
+    </MetaProvider>
   );
 };
 

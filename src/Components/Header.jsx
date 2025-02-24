@@ -21,21 +21,17 @@ import { WorkDropdown } from "./header-comps/WorkDropdown";
 import logoutSVG from "../svg-images/box-arrow-right.svg";
 import { logout_user } from "~/routes/api/user";
 import { header } from "~/routes/api/header";
-import threeDotsSVG from "../svg-images/three-dots.svg";
-import { NotificationTools } from "./NotificationTools";
+import { Notifications } from "./header_modals/Notifications";
 
 export const Header = () => {
   const user = createAsync(() => header());
   const [chosenQuery, setChosenQuery] = createSignal("ხელოსანი");
   const [value, setValue] = createSignal("");
   const [display, setDisplay] = createSignal(null);
-  const [notifications, setNoifications] = createSignal();
   const [isUnseenNotif, setIsUnseenNotif] = createSignal();
   const [isUnseenMessage, setIsUnseenMessage] = createSignal();
-  const [notificationTools, setNotificationTools] = createSignal();
 
   onMount(async () => {
-    // we should just check for unseen notifications and apply red dot on notification icon
     if (user() === 401) {
       return;
     }
@@ -93,69 +89,6 @@ export const Header = () => {
       const result = await logout_user();
       if (result === "success") {
         location.href = "/login";
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const accept_request = async (id, friend_request_id) => {
-    try {
-      const response = await fetch(
-        `http://localhost:4321/xelosani/friend/accept`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            friend_request_id: friend_request_id,
-            notification_id: id,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        }
-      );
-
-      if (response.status === 200) {
-        // we could make an animation of adding people to friends later
-        setNoifications((prev) => {
-          return prev.filter((n) => n.id !== id);
-        });
-      } else {
-        throw new Error("დაფიქსირდა შეცდომა მეგობრობის მოთხოვნის უარყოფისას.");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  console.log(notifications());
-  const reject_request = async (friend_request_id) => {
-    // we could make an animation of rejecting people friend requests later
-    try {
-      const response = await fetch(
-        `http://localhost:4321/xelosani/friend/cancel`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            friend_request_id: friend_request_id,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        }
-      );
-
-      if (response.status === 200) {
-        setNoifications((prev) => {
-          return {
-            count: prev.count - 1,
-            notifications: prev.notifications.filter((n) => n.id !== id),
-          };
-        });
-      } else {
-        throw new Error("დაფიქსირდა შეცდომა მეგობრობის მოთხოვნის უარყოფისას.");
       }
     } catch (error) {
       console.log(error);
@@ -222,24 +155,7 @@ export const Header = () => {
               <Match when={user() !== 401}>
                 <div class="flex items-center gap-x-3">
                   <button
-                    onClick={async () => {
-                      setDisplay("notif");
-                      const response = await fetch(
-                        `http://localhost:4321/notifications`,
-                        {
-                          method: "GET",
-                          credentials: "include",
-                        }
-                      );
-
-                      const data = await response.json();
-                      if (response.status === 200) {
-                        setNoifications(data);
-                        console.log(data)
-                      } else if (response.status === 400) {
-                        setNoifications(data.message)
-                      }
-                    }}
+                    onClick={() => setDisplay("notif")}
                     class="relative"
                   >
                     <img alt="" src={bellSVG}></img>
@@ -451,119 +367,7 @@ export const Header = () => {
         </div>
       )}
       {display() === "notif" && (
-        <div
-          id="notification-menu"
-          class="absolute shadow-2xl flex flex-col gap-y-2 rounded-b-lg px-4 py-3 border-t border-slate-300 right-[1%] z-50 bg-white opacity-100 w-[490px]"
-        >
-          <h2 id="notification-menu" class="font-[bolder-font] text-gray-800">
-            შეტყობინებები
-          </h2>
-          <Switch>
-            <Match when={notifications()}>
-            <div id="notification-menu" class="flex flex-col gap-y-1">
-            <For each={notifications()}>
-              {(n, i) => {
-                return (
-                  <div class="p-2 font-[thin-font] font-bold shadow-lg hover:bg-[rgb(243,244,246)] rounded-3xl w-full border-b">
-                    <A href={`/${n.role}/${n.prof_id}`} id="notification-menu">
-                      <div class="flex relative items-center justify-between px-2 group">
-                        <p class="absolute right-0 top-0 font-[thin-font] text-gr text-xs">
-                          {n.created_at}
-                        </p>
-                        <div class="flex items-center w-[360px]">
-                          <img
-                            src={n.image_url}
-                            class="w-[60px] flex-[2] object-cover h-[60px] rounded-full border border-indigo-100"
-                          ></img>
-                          <div
-                            id="notification-menu"
-                            class="flex flex-col flex-[10] px-2 text-xs"
-                          >
-                            <p class="text-sm font-[bolder-font]">
-                              {n.firstname} {n.lastname}
-                            </p>
-                            <p class="font-[thin-font] text-gr">{n.message}</p>
-                            <Show when={n.type === "FRIEND_REQUEST"}>
-                              <div class="flex gap-x-2 mt-2 items-center">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    accept_request(n.id, n.friend_request_id);
-                                  }}
-                                  id="notification-menu"
-                                  class="font-bold px-2 py-1 rounded bg-gray-200 break-all cursor-default text-gr text-xs font-[thin-font]"
-                                >
-                                  თანხმობა
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    reject_request(n.friend_request_id);
-                                  }}
-                                  id="notification-menu"
-                                  class="font-bold px-2 py-1 rounded bg-gray-200 cursor-default break-all text-gr text-xs font-[thin-font]"
-                                >
-                                  უარყოფა
-                                </button>
-                              </div>
-                            </Show>
-                          </div>
-                        </div>
-                        <button
-                          id="notification-menu"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            setNotificationTools((prev) => {
-                              if (prev) {
-                                return null;
-                              } else {
-                                return {
-                                  type: n.type,
-                                  id: n.id,
-                                };
-                              }
-                            });
-                          }}
-                        >
-                          <img
-                            id="notification-menu"
-                            class={`${
-                              notificationTools()?.id === n.id
-                                ? "block"
-                                : "hidden group-hover:block"
-                            } bg-gray-200 p-1 rounded-full`}
-                            src={threeDotsSVG}
-                            width={30}
-                            height={30}
-                          ></img>
-                          <Show when={notificationTools()?.id === n.id}>
-                            <NotificationTools
-                              setNoifications={setNoifications}
-                              seen={n.seen}
-                              notificationTools={notificationTools}
-                              setNotificationTools={setNotificationTools}
-                            ></NotificationTools>
-                          </Show>
-                        </button>
-                        <Show when={!n.seen}>
-                          <div class="bg-dark-green-hover pointer-events-none w-[11px] h-[11px] text-white text-xs font-[thin-font] rounded-[50%]"></div>
-                        </Show>
-                      </div>
-                    </A>
-                  </div>
-                );
-              }}
-            </For>
-          </div>
-            </Match>
-            <Match when={!notifications()}>
-              <p class="font-[thin-font] text-gr font-bold text-xs text-center" id="notification-menu">შეტყობინებები ცარიელია</p>
-            </Match>
-          </Switch>
-        </div>
+        <Notifications></Notifications>
       )}
     </header>
   );

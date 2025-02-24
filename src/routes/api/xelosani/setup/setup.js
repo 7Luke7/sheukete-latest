@@ -14,7 +14,7 @@ export const get_xelosani_step = async () => {
       throw new Error(401);
     }
 
-    const user = await postgresql_server_request("GET", `xelosani/step_percent/${session.profId}`, {
+    const user = await postgresql_server_request("GET", `${session.role}/step_percent/${session.profId}`, {
       headers: {
         "Content-Type": "application/json",
       },

@@ -15,24 +15,15 @@ export async function POST({request}) {
         const privacyData = body.split("-")
         const field = privacyData[0]
         const value = privacyData[1]
-        
-        if (user.role === "damkveti") {
-            await Damkveti.findByIdAndUpdate(user.userId, {
-                $set: { [`privacy.${field}`]: value } 
-            }, {$new: false})
-
-            return json("ოპერაცია წარმატებით შესრულდა.", {
-                status: 200
-            })
-        }
 
         const privacy = await postgresql_server_request(
             "PUT",
-            `xelosani/privacy`,
+            `privacy`,
             {
                 body: JSON.stringify({
                     userId: user.userId,
                     field,
+                    role: user.role,
                     value
                 }),
                 headers: {
@@ -57,29 +48,13 @@ export const get_privacy = async () => {
         if (user === 401) {
              return 401
         }
-
-        if (user.role === "damkveti") {
-            const privacy = await postgresql_server_request(
-                "POST",
-                `xelosani/privacy`,
-                {
-                    body: JSON.stringify({
-                        userId: user.userId,
-                    }),
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
-                }
-            )
-
-            return privacy
-        }
         const privacy = await postgresql_server_request(
             "POST",
-            `xelosani/privacy`,
+            `privacy`,
             {
                 body: JSON.stringify({
-                    userId: user.userId,
+                    role: user.role,
+                    userId: user.userId,    
                 }),
                 headers: {
                     "Content-Type": "application/json"

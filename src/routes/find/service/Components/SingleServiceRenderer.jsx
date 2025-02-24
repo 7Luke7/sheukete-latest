@@ -4,14 +4,24 @@ import { For } from "solid-js";
 export const SignleServiceRenderer = (props) => {
   const { s, i } = props;
 
+  /*
+   
+    -- About Alignment of category breadcrumbs with description --
+      
+      We should track length of description and based on that render certain amount of total
+      categories and each category should be certain length based on other dependencies 
+  
+  */
   return (
     <div key={i()} class="w-full mx-auto p-2">
       <div class="bg-white shadow-md rounded-lg overflow-hidden h-[300px] flex flex-col md:flex-row">
         <A class="w-[300px] h-[300px]" href={`/service/${s.publicId}`}>
           <img
             class="w-full h-full"
+            width={300}
+            height={300}
             src={s.thumbnail_src}
-            alt="Service"
+            alt={s.main_title}
             fetchpriority="high"
           />
         </A>
@@ -41,7 +51,7 @@ export const SignleServiceRenderer = (props) => {
             </p>
 
             <div class="mt-1 flex flex-wrap gap-1">
-              <For each={s.categories.filter((_, i) => i < 3)}>
+              <For each={s.categories.filter((_, i) => i < 6)}>
                 {(sc) => (
                   <span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs font-[thin-font] font-semibold">
                     {sc.slice(0, 20)}...
@@ -55,8 +65,9 @@ export const SignleServiceRenderer = (props) => {
             <div class="flex gap-x-2">
               <div class="flex flex-col items-start p-2 bg-gray-50 rounded-lg shadow-sm">
                 <A href={`/service/${s.publicId}`}>
-                  <p class="text-lg font-bold text-gray-900">
-                    ₾{s.main_price}
+                  <p class="text-lg font-[normal-font] font-semibold text-gray-900">
+                    ₾
+                    {s.main_price}
                   </p>
                 </A>
                 <p class="mt-1 text-xs font-[normal-font] text-gray-500">
@@ -83,6 +94,7 @@ export const SignleServiceRenderer = (props) => {
               <img
                 class="w-12 h-12 rounded-full mr-3"
                 src={s.prof_pic_src}
+                loading="lazy"
                 alt="Professional"
               />
               <div class="flex flex-col">

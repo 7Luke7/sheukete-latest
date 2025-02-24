@@ -47,7 +47,7 @@ export const ProfileRight = (props) => {
         <h2 class="font-[bolder-font] font-bold text-gray-900 text-lg">
           ხელობა/სპეციალობა
         </h2>
-        <Show when={props.user().status === 200 && props.user().skillset.length}>
+        <Show when={props.user().status === 200 && props.user().skillset?.skills && props.user().skillset?.skills.length}>
           <button onClick={() => startTransition(() => props.setModal("სპეციალობა"))}>
             <img loading="lazy" id="locationButton" src={pen} />
           </button>
@@ -57,7 +57,7 @@ export const ProfileRight = (props) => {
       <Switch>
         <Match when={props.user().skillset.skills}>
         <div class="mt-2">
-          <section class="max-w-[1400px] gap-2 grid grid-cols-4">
+          <section class="gap-2 grid grid-cols-4">
             <SkillCarousel skills={props.user().skillset.skills}></SkillCarousel>
           </section>
         </div>

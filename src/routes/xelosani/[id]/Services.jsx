@@ -17,15 +17,16 @@ export const Services = (props) => {
   });
 
   return (
-    <div class="relative grid grid-cols-4 w-full max-w-[1440px] mx-auto">
+    <div class="flex justify-between">
       <For each={props.services}>
-        {(a) => (
-          <div class="h-[530px]">
-            <div class="flex flex-col h-[560px] w-[300px] bg-white shadow-md rounded-lg overflow-hidden">
+        {(a, i) => (
+            <div class="flex flex-col w-[340px] bg-white shadow-md rounded-lg overflow-hidden">
               <A href={`/service/${a.publicId}`} class="relative">
                 <img
                   src={`http://localhost:5555/static/images/xelosani/${props.profId}/services/${a.publicId}/thumbnail/browse/thumbnail.webp`} 
-                  loading="lazy"
+                  fetchpriority="high"
+                  height={300}
+                  width={340}
                   class="w-full h-[300px] object-cover"
                   alt="Service Thumbnail"
                 />
@@ -121,7 +122,6 @@ export const Services = (props) => {
                 </div>
               </div>
             </div>
-          </div>
         )}
       </For>
     </div>

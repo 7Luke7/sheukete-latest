@@ -2,8 +2,6 @@
 import { getRequestEvent } from "solid-js/web";
 import { json } from "@solidjs/router";
 import { verify_user } from "./session_management";
-import { CustomError } from "./utils/errors/custom_errors";
-import { HandleError } from "./utils/errors/handle_errors";
 import { hide_email, hide_mobile_number } from "./utils/hide/mail";
 import { memcached_server_request } from "./utils/ext_requests/memcached_server_request";
 import { postgresql_server_request } from "./utils/ext_requests/posgresql_server_request";
@@ -18,9 +16,10 @@ export const get_account = async () => {
     }
 
     if (session.role === "xelosani") {
-      const data = await postgresql_server_request("POST", `xelosani/account`, {
+      const data = await postgresql_server_request("POST", `account`, {
         body: JSON.stringify({
           userId: session.userId,
+          role: session.role
         }),
         headers: {
           "Content-Type": "application/json",
@@ -195,10 +194,11 @@ export const toggle_notification = async (target) => {
 
     await postgresql_server_request(
       "PUT",
-      `xelosani/notification_targets`,
+      `notification_targets`,
       {
           body: JSON.stringify({
               target,
+              role: session.role,
               userId: session.userId
           }),
           headers: {
@@ -220,9 +220,10 @@ export const get_notification_targets = async () => {
       throw new Error(401);
     }
 
-    const data = await postgresql_server_request("POST", `xelosani/notification_targets`, {
+    const data = await postgresql_server_request("POST", `notification_targets`, {
       body: JSON.stringify({
         userId: session.userId,
+        role: session.role
       }),
       headers: {
         "Content-Type": "application/json",
@@ -231,84 +232,6 @@ export const get_notification_targets = async () => {
     return data.notificationdevices;
   } catch (error) {
     console.log(error);
-  }
-};
-
-const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-const phoneRegex = /^\d{9}$/;
-
-export const modify_user = async (firstname, lastname, email, phone) => {
-  try {
-    const event = getRequestEvent();
-    const session = await verify_user(event);
-
-    if (session === 401) {
-      throw new Error(401);
-    }
-
-    if (!firstname.length) {
-      throw new CustomError(
-        "სახელი",
-        "სახელი უნდა შეიცავდეს მინიმუმ 1 ასოს."
-      )
-    }
-
-    if (!lastname.length) {
-      throw new CustomError(
-        "გვარი",
-        "გვარი უნდა შეიცავდეს მინიმუმ 1 ასოს."
-      )
-    }
-
-    if (email && !emailRegex.test(email)) {
-      throw new CustomError("მეილი", "მეილი არასწორია.")
-    }
-
-    if (phone && !phoneRegex.test(phone)) {
-      throw new CustomError(
-        "მობილური",
-        "მობილურის ნომერი არასწორია."
-      )
-    }
-
-    const data = await postgresql_server_request("PUT", `${session.role}/account`, {
-      body: JSON.stringify({
-        userId: session.userId,
-        firstname,
-        lastname,
-        ...(email && {email}),
-        ...(phone && {phone})
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (data.status === 400) {
-      throw new CustomError(data.message.split('-')[1], data.message.split('-')[0], 11000)
-    }
-
-    return data
-  } catch (error) {
-    if (error.name === "ValidationError") {
-      const errors = new HandleError(error).validation_error();
-      return {
-        errors,
-        status: 400,
-      };
-    }
-    if (error.code === 11000) {
-      console.log("FIELDNAME: ", error.fieldName, "MESSAGE: ", error.message)
-      const errors = new HandleError({
-        fieldName: error.fieldName,
-        message: error.message,
-      }).validation_error();
-      console.log(errors)
-      return {
-        errors,
-        status: 400,
-      };
-    }
   }
 };
 

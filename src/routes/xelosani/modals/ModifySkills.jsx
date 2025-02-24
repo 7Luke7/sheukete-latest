@@ -169,6 +169,12 @@ export const ModifySkill = (props) => {
     if (mainChecked() === props.main && parentChecked() === props.parent && childChecked() === props.child) {
       return props.setModal(null)
     }
+    if (!mainChecked().length) {
+      return props.setToast({
+        type: false,
+        message: "მინიმუმ ერთი სპეციალობა უნდა გქონდეთ არჩეული."
+      })
+    }
     const displayableSkills = parentChecked().map((parent, i) => {
         if (props.skills.some(a => a.displaySkills === parent)) {
           return {

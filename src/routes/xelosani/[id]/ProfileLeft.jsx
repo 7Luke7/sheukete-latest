@@ -23,7 +23,7 @@ export const ProfileLeft = (props) => {
       return
     }
     try {
-      const response = await fetch(`http://localhost:4321/xelosani/friend/request/${props.user().profId}/status`, {
+      const response = await fetch(`http://localhost:4321/friend/request/${props.user().profId}/status`, {
         method: "GET",
         credentials: "include"
       })
@@ -31,7 +31,6 @@ export const ProfileLeft = (props) => {
       if (response.status === 200) {
         const data = await response.json()
         
-        console.log(data)
         if (data.status === "accepted" || data.status === "pending") {
           setFriendRequestId({
             status: data.status,
@@ -167,7 +166,7 @@ export const ProfileLeft = (props) => {
       if (!friendRequestId()) {
         throw new Error("მეგობრობის მოთხოვნა არ არის გაგზავნილი.")
       }
-      const response = await fetch(`http://localhost:4321/xelosani/friend/cancel`, {
+      const response = await fetch(`http://localhost:4321/friend/${friendRequestId().status}`, {
         method: "POST",
         body: JSON.stringify({
           friend_request_id: friendRequestId().id,
@@ -254,6 +253,12 @@ export const ProfileLeft = (props) => {
                 იტვირთება...
               </p>
             </div>
+            <button
+            onClick={() => abort()}
+            class="mb-2 bg-gray-600 hover:bg-gray-500 w-[150px] text-white py-1 px-4 rounded-[16px] text-sm font-bold transition-all duration-300"
+          >
+            გაუქმება
+          </button>
           </Match>
         </Switch>
         <Show when={file() && !imageLoading()}>
@@ -262,14 +267,6 @@ export const ProfileLeft = (props) => {
             class="mb-2 bg-dark-green hover:bg-dark-green-hover w-[150px] text-white py-1 px-4 rounded-[16px] text-sm font-bold transition-all duration-300"
           >
             ფოტოს დაყენება
-          </button>
-        </Show>
-        <Show when={imageLoading()}>
-          <button
-            onClick={() => abort()}
-            class="mb-2 bg-gray-600 hover:bg-gray-500 w-[150px] text-white py-1 px-4 rounded-[16px] text-sm font-bold transition-all duration-300"
-          >
-            გაუქმება
           </button>
         </Show>
       </Match>

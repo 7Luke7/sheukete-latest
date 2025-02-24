@@ -15,8 +15,6 @@ import closeIcon from "../../../svg-images/svgexport-12.svg";
 import uploadIcon from "../../../svg-images/uploadIcon.svg";
 import jobs from "../../../Components/header-comps/jobs_list.json";
 import dropdownSVG from "../../../svg-images/svgexport-8.svg";
-import gallery from "../../../svg-images/images.svg";
-import thumnail from "../../../svg-images/thumbnails-svgrepo-com.svg";
 import { SmallFooter } from "~/Components/SmallFooter";
 import { ServicesModal } from "./ServicesModal";
 import { ServiceSchedule } from "./ServiceSchedule";

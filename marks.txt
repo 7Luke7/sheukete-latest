@@ -154,3 +154,22 @@
 		-- დამკვეთი --
 			შეტყობინება როცა
 				- ხელოსანი პოსტს დადებს
+
+---- Modifications to private info ----
+
+	-- User shouldn't be able to change nor "phone"|"email"|"firstname"|"lastname"
+	-- 4 of these stays as it is that's it.
+
+---- QUERY PERFORMANCE ----
+
+	-- when we update stuff in notifications we could utilize existing partitions
+	-- and just use WHERE statement to skip unnessecary queries.
+
+---- Profile Location modification ----
+
+	-- Have a cooldown of around 30 days on location modification 
+
+---- Profile page rebranding ----
+
+	-- we can have popular services and popular skills on rightProfileside
+	-- on left we can have some of them and see all button

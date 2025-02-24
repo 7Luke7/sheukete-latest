@@ -100,7 +100,7 @@ const ProfilePictureStep = () => {
                       id="setup_image"
                       src={imageUrl() ? imageUrl() : `http://localhost:5555/static/images/xelosani/profile/${userImage()?.profId}.webp`}
                       alt="Profile"
-                      class="object-cover w-[140px] border-2 h-[140px] rounded-full mb-4"
+                      class="w-[180px] border-2 h-[180px] rounded-full mb-4"
                     />
                   </Suspense>
                   <img
@@ -119,7 +119,7 @@ const ProfilePictureStep = () => {
               />
             </Match>
             <Match when={imageLoading()}>
-              <div class="w-[140px] flex flex-col justify-center mb-4 items-center h-[140px] rounded-[50%] bg-[#E5E7EB]">
+              <div class="w-[180px] flex flex-col justify-center mb-4 items-center h-[180px] rounded-[50%] bg-[#E5E7EB]">
                 <img
                   class="animate-spin"
                   src={spinnerSVG}

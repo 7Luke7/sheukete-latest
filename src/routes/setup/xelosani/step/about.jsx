@@ -12,8 +12,15 @@ const About = () => {
 
     const textTest = async (e) => {
         e.preventDefault()
+        const formData = new FormData(e.target)
+        const about = formData.get("about")
+        if (about.length < 75) {
+            return setMessage("აღწერა უნდა შეიცავდეს მინიმუმ 75 ასოს.")
+        }
+        if (about.length > 600) {
+            return setMessage("აღწერა უნდა შეიცავდეს მაქსიმუმ 600 ასოს.")
+        }
         try {
-            const formData = new FormData(e.target)
             const response = await handle_about(formData)
             if (response.status === 400) {
                 return setMessage(response.message)
@@ -41,7 +48,7 @@ const About = () => {
                             name="about"
                             onInput={(e) => setInput(e.target.value)}
                             class="w-full resize rounded-lg p-3 pb-5 text-sm text-gr font-bold font-[thin-font] placeholder-gray-400 outline-none transition-colors duration-300 ease-in-out scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar scrollbar-thin scrollbar-track-transparent scrollbar-thumb-blue-700 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400 disabled:placeholder-gray-400 focus:border-[#108a00] border-2 border-[#108a00] focus:ring-0 focus:ring-offset-0"
-                            maxlength="600" id="with-avatar-focused" placeholder="აღწერეთ თქვენი უნარები, გამოცდილებები..." rows="5" cols="50"></textarea>
+                            maxlength={600} minLength={75} id="with-avatar-focused" placeholder="აღწერეთ თქვენი უნარები, გამოცდილებები..." rows="5" cols="50"></textarea>
                         <p class="flex w-full items-center justify-between text-xs">
                             <span class="font-[thin-font] text-gray-700 font-bold">თქვენს შესახებ</span>
                             <span id="with-avatar-focused-character-count" class="text-slate-500 transition-colors duration-300 ease-in-out">{input().trim().length}/600</span>

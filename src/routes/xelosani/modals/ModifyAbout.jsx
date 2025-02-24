@@ -7,22 +7,42 @@ export const ModifyAbout = (props) => {
 
     const modify_about_handler = async (e) => {
         e.preventDefault()
+        const formData = new FormData(e.target)
+        const about = formData.get("about")
+        if (input() === props.about) {
+            return props.setModal(null);
+        }
+        if (about.length < 75) {
+            return props.setToast({
+                type: false,
+                message: "აღწერა უნდა შეიცავდეს მინიმუმ 75 ასოს."
+            })
+        }
+        if (about.length > 600) {
+            return props.setToast({
+                type: false,
+                message: "აღწერა უნდა შეიცავდეს მაქსიმუმ 600 ასოს."
+            })
+        }
         try {
-            const formData = new FormData(e.target)
-            if (input() === props.about) {
-                return props.setModal(null);
-            }
             const response = await modify_about(formData)
-            if (response !== 200) throw new Error(response)
-            batch(async () => {
-                props.setToast({
-                    message: "აღწერა წარმატებით განახლდა.",
-                    type: true,
-                });
-                props.setModal(null);
-            });
+            if (response.status === 400) {
+                return props.setToast({
+                    type: false,
+                    message: response.message
+                })
+            } else if (response.status === 200) {
+                batch(async () => {
+                    props.setToast({
+                        message: "აღწერა წარმატებით განახლდა.",
+                        type: true,
+                    });
+                    props.setModal(null);
+                });    
+            } else {
+                throw new Error("Unexpected Error")
+            }
         } catch (error) {
-            console.log(error)
             if (error.message === "401") {
                 return alert("მომხმარებელი არ არის შესული სისტემაში.")
             }
@@ -43,7 +63,7 @@ export const ModifyAbout = (props) => {
                     value={props.about}
                     onInput={(e) => setInput(e.target.value)}
                     class="w-full h-full resize rounded-lg p-3 pb-5 text-sm text-gr font-bold font-[thin-font] placeholder-gray-400 outline-none transition-colors duration-300 ease-in-out scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar scrollbar-thin scrollbar-track-transparent scrollbar-thumb-blue-700 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400 disabled:placeholder-gray-400 focus:border-[#108a00] border-2 border-[#108a00] focus:ring-0 focus:ring-offset-0"
-                    maxlength="600" id="with-avatar-focused" placeholder="აღწერეთ თქვენი უნარები, გამოცდილებები..." rows="5" cols="50"></textarea>
+                    maxLength={600} minLength={75} id="with-avatar-focused" placeholder="აღწერეთ თქვენი უნარები, გამოცდილებები..." rows="5" cols="50"></textarea>
                 <p class="flex w-full items-center justify-between text-xs">
                     <span class="font-[thin-font] text-gray-700 font-bold">თქვენს შესახებ</span>
                     <span id="with-avatar-focused-character-count" class="text-slate-500 transition-colors duration-300 ease-in-out">{input().trim()?.length}/600</span>
