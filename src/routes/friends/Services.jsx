@@ -1,9 +1,9 @@
 import { A } from "@solidjs/router";
 import { For, Index, Match, onMount, Switch, Show } from "solid-js";
-import EditSVG from "../../../svg-images/edit_icon.svg";
-import emptyStar from "../../../svg-images/svgexport-24.svg";
-import fullStar from "../../../svg-images/svgexport-19.svg";
-import avialabilityIcon from "../../../svg-images/accessibility-availability-custom-svgrepo-com.svg";
+import EditSVG from "../../svg-images/edit_icon.svg";
+import emptyStar from "../../svg-images/svgexport-24.svg";
+import fullStar from "../../svg-images/svgexport-19.svg";
+import avialabilityIcon from "../../svg-images/accessibility-availability-custom-svgrepo-com.svg";
 
 export const Services = (props) => {
   onMount(() => {

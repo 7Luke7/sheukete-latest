@@ -6,15 +6,17 @@ import { fileserver_request } from "../../utils/ext_requests/fileserver_request"
 
 export const get_user_service = async (publicId) => {
     try {
-        const event = getRequestEvent()
-        const session = await verify_user(event);
+        const {request} = getRequestEvent()
+        const session = await verify_user({request});
+        const url = new URL(request.url)
+        const prof_id = url.pathname.split("/")[2]
 
-        if (!publicId.length && session === 401) {
-            return {status: 401, isEditing: false}
+        if (session === 401) {
+            return {status: 401}
+        } else if (session.profId !== prof_id) {
+            return {status: 401}
         } else if (!publicId.length) {
             return {status: 200, isEditing: false}
-        } else if(session === 401 && publicId.length) {
-            return {status: 401}
         }
 
         const sp = new URLSearchParams(publicId)

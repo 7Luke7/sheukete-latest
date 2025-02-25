@@ -139,7 +139,7 @@ export const Header = () => {
             </Show>
             <Show when={user() && user().role === "xelosani"}>
               <A
-                href={`/xelosani/services`}
+                href={`/xelosani/services/create`}
                 class="bg-dark-green hover:bg-dark-green-hover text-white py-1 px-4  rounded-[16px] text-sm font-bold transition-all duration-300"
               >
                 სერვისის დამატება

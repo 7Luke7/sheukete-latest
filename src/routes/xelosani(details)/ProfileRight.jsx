@@ -2,7 +2,7 @@ import { A } from "@solidjs/router";
 import { Match, Switch, Suspense, Show, startTransition } from "solid-js";
 import { Services } from "./Services";
 import { SkillCarousel } from "./SkillCarousel";
-import pen from "../../../svg-images/pen.svg";
+import pen from "../../svg-images/pen.svg";
   
 export const ProfileRight = (props) => {
   return (
@@ -43,15 +43,18 @@ export const ProfileRight = (props) => {
         </Match>
       </Switch>
       
-      <div class="flex items-center gap-x-1 mt-5">
-        <h2 class="font-[bolder-font] font-bold text-gray-900 text-lg">
-          ხელობა/სპეციალობა
-        </h2>
-        <Show when={props.user().status === 200 && props.user().skillset?.skills && props.user().skillset?.skills.length}>
-          <button onClick={() => startTransition(() => props.setModal("სპეციალობა"))}>
-            <img loading="lazy" id="locationButton" src={pen} />
-          </button>
-        </Show>
+      <div class="flex items-end justify-between">
+        <div class="flex items-center gap-x-1 mt-5">
+          <h2 class="font-[bolder-font] font-bold text-gray-900 text-lg">
+            ხელობა/სპეციალობა
+          </h2>
+          <Show when={props.user().status === 200 && props.user().skillset?.skills && props.user().skillset?.skills.length}>
+            <button onClick={() => startTransition(() => props.setModal("სპეციალობა"))}>
+              <img loading="lazy" id="locationButton" src={pen} />
+            </button>
+          </Show>
+        </div>
+        <A href="skills" class="underline text-blue-500 font-[thin-font] font-bold text-xs">ნახე ყველა</A>
       </div>
 
       <Switch>
@@ -75,10 +78,11 @@ export const ProfileRight = (props) => {
         </Match>
       </Switch>
       
-      <div class="flex items-center gap-x-1 mt-5">
+      <div class="flex items-end justify-between gap-x-1 mt-5">
         <h2 class="font-[bolder-font] font-bold text-gray-900 text-lg">
           სერვისები
         </h2>
+        <A href="services" class="underline text-blue-500 font-[thin-font] font-bold text-xs">ნახე ყველა</A>
       </div>
       <div class="mt-2">
         <Suspense fallback={<div>Loading Services...</div>}>

@@ -15,10 +15,10 @@ export const SignleServiceRenderer = (props) => {
   return (
     <div key={i()} class="w-full mx-auto p-2">
       <div class="bg-white shadow-md rounded-lg overflow-hidden h-[300px] flex flex-col md:flex-row">
-        <A class="w-[300px] h-[300px]" href={`/service/${s.publicId}`}>
+        <A class="w-[340px] h-[300px]" href={`/service/${s.publicId}`}>
           <img
             class="w-full h-full"
-            width={300}
+            width={340}
             height={300}
             src={s.thumbnail_src}
             alt={s.main_title}

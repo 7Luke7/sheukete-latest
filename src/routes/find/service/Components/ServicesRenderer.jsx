@@ -8,8 +8,6 @@ export const ServicesRenderer = (props) => {
         {(s, i) => {
           return (
             <SignleServiceRenderer
-              serviceOnMapContent={props.serviceOnMapContent}
-              setServiceOnMapContent={props.setServiceOnMapContent}
               s={s}
               i={i}
             ></SignleServiceRenderer>

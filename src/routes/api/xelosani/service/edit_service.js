@@ -11,7 +11,10 @@ const MAX_TOTAL_SIZE = 15 * 1024 * 1024;
 export async function POST({request}) {
     try {
         const user = await verify_user({request});
-        if (user === 401 || user.role === "damkveti") {
+        const url = new URL(request.url)
+        const prof_id = url.pathname.split("/")[2]
+
+        if (user === 401 || user.profId !== prof_id || user.role === "damkveti") {
           return 401;
         }
 

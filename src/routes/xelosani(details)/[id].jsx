@@ -1,7 +1,7 @@
 import { Header } from "~/Components/Header";
-import { get_xelosani } from "../../api/user";
+import { get_xelosani } from "../api/user";
 import { createAsync, useNavigate } from "@solidjs/router";
-import checkedGreen from "../../../svg-images/checkedGreen.svg"
+import checkedGreen from "../../svg-images/checkedGreen.svg"
 import {
   Show,
   createEffect,
@@ -13,15 +13,15 @@ import {
 import { ProfileLeft } from "./ProfileLeft";
 import { ProfileRight } from "./ProfileRight";
 import { navigateToStep } from "~/routes/api/xelosani/setup/step";
-import { ModifyWorkSchedule } from "../modals/ModifyWorkSchedule";
-import { ModifyAge } from "../modals/ModifyAge";
+import { ModifyWorkSchedule } from "./modals/ModifyWorkSchedule";
+import { ModifyAge } from "./modals/ModifyAge";
 import { Base, Meta, MetaProvider, Title } from "@solidjs/meta";
-import { ModifySkill } from "../modals/ModifySkills";
+import { ModifySkill } from "./modals/ModifySkills";
 import { FireworkConfetti } from "~/Components/FireworkConfetti";
-import airPlane from "../../../svg-images/airplane.svg";
-import closeIcon from "../../../svg-images/svgexport-12.svg";
-import exclamationWhite from "../../../svg-images/exclamationWhite.svg";
-import {ModifyAbout} from "../modals/ModifyAbout";
+import airPlane from "../../svg-images/airplane.svg";
+import closeIcon from "../../svg-images/svgexport-12.svg";
+import exclamationWhite from "../../svg-images/exclamationWhite.svg";
+import {ModifyAbout} from "./modals/ModifyAbout";
 
 const Xelosani = (props) => {
   const user = createAsync(() => get_xelosani(props.params.id), {deferStream: true});

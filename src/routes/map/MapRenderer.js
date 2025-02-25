@@ -1,7 +1,7 @@
 import { createEffect, onCleanup } from "solid-js";
-import maplibre from "maplibre-gl";
-import * as maptilersdk from "@maptiler/sdk";
+import {geocoding, config} from "@maptiler/sdk";
 import roadStyles from "./styles/roads.json";
+import maplibre from "maplibre-gl";
 
 export const MapRenderer = (props) => {
   let mapContainer;
@@ -12,7 +12,7 @@ export const MapRenderer = (props) => {
     For now I don't really care about styles
     as long as functionality works.
   */
-  maptilersdk.config.apiKey = "SYnPa7w6ED7a5SoPa4Pm";
+  config.apiKey = "SYnPa7w6ED7a5SoPa4Pm";
   createEffect(() => {
     if (!mapContainer) return;
 
@@ -24,7 +24,7 @@ export const MapRenderer = (props) => {
       maxZoom: 18,
     });
 
-    const marker = new maptilersdk.Marker({
+    const marker = new maplibre.Marker({
       color: "red",
       scale: 1,
       draggable: true,
@@ -55,7 +55,7 @@ export const MapRenderer = (props) => {
           ];
           map.setCenter(userCoords);
           marker.setLngLat(userCoords);
-          const results = await maptilersdk.geocoding.reverse(userCoords);
+          const results = await geocoding.reverse(userCoords);
           console.log("result-not-parse: ", results)
           
           const parsed = parseGeocodeResult(results);

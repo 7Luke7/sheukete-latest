@@ -24,7 +24,7 @@ import { Toast } from "~/Components/ToastComponent";
 import { get_user_service } from "~/routes/api/xelosani/service/service";
 import eyeFillSVG from "../../../svg-images/eye-fill.svg";
 import ImagePreview from "./ImagePreview";
-import { MapRenderer } from "../../map/MapRenderer";
+import { MapRenderer } from "../../../../map/MapRenderer";
 import { Link, MetaProvider } from "@solidjs/meta";
 
 /*
@@ -40,7 +40,7 @@ import { Link, MetaProvider } from "@solidjs/meta";
 
 */
 
-const Services = (props) => {
+const CreateServices = (props) => {
   const response = createAsync(
     () => get_user_service(props?.location?.search),
     { deferStream: true }
@@ -1063,4 +1063,4 @@ const Services = (props) => {
   );
 };
 
-export default Services;
+export default CreateServices;
