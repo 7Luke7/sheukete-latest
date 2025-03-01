@@ -3,6 +3,7 @@ import threeDotsSVG from "../../svg-images/three-dots.svg";
 import { NotificationTools } from "../NotificationTools";
 import { A } from "@solidjs/router";
 import { MainNotificationTools } from "./MainNotificationTools";
+import { accept_request, reject_request } from "~/routes/notifications/utils";
 
 export const Notifications = () => {
     const [notificationTools, setNotificationTools] = createSignal();
@@ -10,86 +11,27 @@ export const Notifications = () => {
     const [notifications, setNotifications] = createSignal()
     const [mainNotificationTools, setMainNotificationTools] = createSignal(false)
 
-    createEffect(
-          async () => {
-            try {
-              const response = await fetch(
-                `http://localhost:4321/notifications/get/${active()}`,
-                {
-                  method: "GET",
-                  credentials: "include",
-                }
-              );
-              const data = await response.json();
-              if (response.status === 200) {
-                setNotifications(data);
-              } else if (response.status === 400) {
-                setNotifications(data.message);
+  createEffect(
+        async () => {
+          try {
+            const response = await fetch(
+              `http://localhost:4321/notifications/get/${active()}`,
+              {
+                method: "GET",
+                credentials: "include",
               }
-            } catch (error) {
-              console.error(error);
+            );
+            const data = await response.json();
+            if (response.status === 200) {
+              setNotifications(data);
+            } else if (response.status === 400) {
+              setNotifications(data.message);
             }
-          },
-      );
-    
-    const accept_request = async (id, friend_request_id) => {
-        try {
-          const response = await fetch(
-            `http://localhost:4321/accept/friend`,
-            {
-              method: "POST",
-              body: JSON.stringify({
-                friend_request_id: friend_request_id,
-                notification_id: id,
-              }),
-              headers: {
-                "Content-Type": "application/json",
-              },
-              credentials: "include",
-            }
-          );
-    
-          if (response.status === 200) {
-            // we could make an animation of adding people to friends later
-            setNotifications((prev) => {
-              return prev.filter((n) => n.id !== id);
-            });
-          } else {
-            throw new Error("დაფიქსირდა შეცდომა მეგობრობის დამატებისას.");
+          } catch (error) {
+            console.error(error);
           }
-        } catch (error) {
-          console.log(error);
-        }
-      };
-    
-      const reject_request = async (friend_request_id) => {
-        // we could make an animation of rejecting people friend requests later
-        try {
-          const response = await fetch(`http://localhost:4321/friend/cancel`, {
-            method: "POST",
-            body: JSON.stringify({
-              friend_request_id: friend_request_id,
-            }),
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-          });
-    
-          if (response.status === 200) {
-            setNotifications((prev) => {
-              return {
-                count: prev.count - 1,
-                notifications: prev.notifications.filter((n) => n.id !== id),
-              };
-            });
-          } else {
-            throw new Error("დაფიქსირდა შეცდომა მეგობრობის მოთხოვნის უარყოფისას.");
-          }
-        } catch (error) {
-          console.log(error);
-        }
-      };
+        },
+    );
 
     return <div
     id="notification-menu"
@@ -194,7 +136,7 @@ export const Notifications = () => {
                             id="notification-menu"
                             class="text-sm font-[thin-font]"
                           >
-                            {n.firstname} {n.lastname}
+                            {n.type === "offer" ? "შეუკეთე" : n.firstname + " " + n.lastname}
                           </p>
                           <p
                             id="notification-menu"
@@ -208,13 +150,20 @@ export const Notifications = () => {
                               class="flex gap-x-2 mt-2 items-center"
                             >
                               <button
-                                onClick={(e) => {
+                                onClick={async (e) => {
                                   e.stopPropagation();
                                   e.preventDefault();
-                                  accept_request(
+                                  const response = await accept_request(
                                     n.id,
                                     n.friend_request_id
-                                  );
+                                  )
+                                  if (response === 200) {
+                                    setNotifications((prev) => {
+                                      return prev.filter((p) => p.id !== n.id);
+                                    });
+                                  } else {
+                                    alert("got an error!")
+                                  }
                                 }}
                                 id="notification-menu"
                                 class="font-bold px-2 py-1 rounded bg-gray-200 cursor-default text-gr text-xs font-[thin-font]"
@@ -223,10 +172,20 @@ export const Notifications = () => {
                               </button>
                               <button
                                 id="notification-menu"
-                                onClick={(e) => {
+                                onClick={async (e) => {
                                   e.stopPropagation();
                                   e.preventDefault();
-                                  reject_request(n.friend_request_id);
+                                  const response = await reject_request(n.friend_request_id);
+                                  if (response === 200){
+                                    setNotifications((prev) => {
+                                      return {
+                                        count: prev.count - 1,
+                                        notifications: prev.notifications.filter((n) => p.id !== n.id),
+                                      };
+                                    });
+                                  } else {
+                                    alert("Got an error.")
+                                  }
                                 }}
                                 class="font-bold px-2 py-1 rounded bg-gray-200 cursor-default text-gr text-xs font-[thin-font]"
                               >

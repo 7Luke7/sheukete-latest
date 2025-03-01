@@ -26,7 +26,7 @@ export const Services = (props) => {
                   src={`http://localhost:5555/static/images/xelosani/${props.profId}/services/${a.publicId}/thumbnail/browse/thumbnail.webp`} 
                   fetchpriority="high"
                   height={300}
-                  width={340}
+                  width={300}
                   class="w-full h-[300px] object-cover"
                   alt="Service Thumbnail"
                 />

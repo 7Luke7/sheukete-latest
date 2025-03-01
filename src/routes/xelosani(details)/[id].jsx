@@ -29,7 +29,7 @@ const Xelosani = (props) => {
   const [modal, setModal] = createSignal(null);
   const [toast, setToast] = createSignal();
   const [isExiting, setIsExiting] = createSignal(false);
-
+  
   const handlenavigateToStep = async () => {
     try {
       const response = await navigateToStep();

@@ -1,6 +1,6 @@
 import { batch } from "solid-js"
-import closeIcon from "../../../svg-images/svgexport-12.svg"
-import "../../assets/inputTime.css"
+import closeIcon from "../../../../../svg-images/svgexport-12.svg"
+import "../../../../assets/inputTime.css"
 
 export const ServiceSchedule = (props) => {    
     const week_days = [

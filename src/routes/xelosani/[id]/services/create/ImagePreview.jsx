@@ -1,5 +1,3 @@
-import { Show } from "solid-js";
-
 export const ImagePreview = (props) => {
   const closePopup = () => {
     props.setImageToPreviewUrl(null);

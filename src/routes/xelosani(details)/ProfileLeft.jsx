@@ -104,7 +104,7 @@ export const ProfileLeft = (props) => {
     setImageLoading(true)
     try {
       const worker = new Worker(
-        new URL("../../../Components/readImagesWorker.js", import.meta.url)
+        new URL("../../Components/readImagesWorker.js", import.meta.url)
       );
 
       worker.onmessage = async (e) => {
@@ -276,7 +276,7 @@ export const ProfileLeft = (props) => {
             loading="lazy"
             id="prof_pic"
             class="h-[180px] w-[180px] rounded-full my-2"
-            src={`http://localhost:5555/static/images/xelosani/profile/${props.user()?.profId}.webp`}
+            src={`http://localhost:5555/static/images/xelosani/profile/medium/${props.user()?.profId}.webp`}
             onError={(e) => {
               e.currentTarget.src =
                 "http://localhost:5555/static/images/default_profile.png";
@@ -542,7 +542,5 @@ export const ProfileLeft = (props) => {
     </Switch>
   </div>
 </div>
-
-
   );
 };

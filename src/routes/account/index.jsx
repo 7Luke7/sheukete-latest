@@ -2,7 +2,7 @@ import { createAsync } from "@solidjs/router";
 import { get_account} from "~/routes/api/user";
 
 const Account = () => {
-  const user = createAsync(get_account);  
+  const user = createAsync(get_account);
 
   return (
     <div class="flex px-10 items-start gap-x-2">

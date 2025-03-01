@@ -14,11 +14,11 @@ export const SignleServiceRenderer = (props) => {
   */
   return (
     <div key={i()} class="w-full mx-auto p-2">
-      <div class="bg-white shadow-md rounded-lg overflow-hidden h-[300px] flex flex-col md:flex-row">
-        <A class="w-[340px] h-[300px]" href={`/service/${s.publicId}`}>
+      <div class="bg-white shadow-md w-full rounded-lg overflow-hidden h-[300px] flex flex-col md:flex-row">
+        <A class="w-[300px] h-[300px] flex-shrink-0" href={`/service/${s.publicId}`}>
           <img
-            class="w-full h-full"
-            width={340}
+            class="w-[300px] h-[300px]"
+            width={300}
             height={300}
             src={s.thumbnail_src}
             alt={s.main_title}
@@ -26,12 +26,12 @@ export const SignleServiceRenderer = (props) => {
           />
         </A>
 
-        <div class="md:w-11/12 p-2 flex flex-col relative justify-between">
+        <div class="p-2 flex w-full flex-col relative justify-between">
           <div>
             <div class="flex justify-between items-start">
               <A href={`/service/${s.publicId}`}>
                 <h2 class="text-lg font-bold text-gray-800">
-                  {s.main_title.slice(0, 50)}...
+                  {s.main_title}
                 </h2>
               </A>
               {s.place_name_ka && (
@@ -43,7 +43,7 @@ export const SignleServiceRenderer = (props) => {
 
             <A href={`/service/${s.publicId}`}>
               <p class="mt-2 text-xs font-[normal-font] text-gray-600">
-                {s.main_description.slice(0, 250)}...
+                {s.main_description}
               </p>
             </A>
             <p class="mt-2 text-gray-800 font-[bolder-font] text-xs">
@@ -51,10 +51,10 @@ export const SignleServiceRenderer = (props) => {
             </p>
 
             <div class="mt-1 flex flex-wrap gap-1">
-              <For each={s.categories.filter((_, i) => i < 6)}>
+              <For each={s.categories}>
                 {(sc) => (
                   <span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs font-[thin-font] font-semibold">
-                    {sc.slice(0, 20)}...
+                    {sc}
                   </span>
                 )}
               </For>

@@ -11,22 +11,21 @@ import {
 } from "solid-js";
 import { createAsync, useNavigate } from "@solidjs/router";
 import { NotAuthorized } from "~/Components/NotAuthorized";
-import closeIcon from "../../../svg-images/svgexport-12.svg";
-import uploadIcon from "../../../svg-images/uploadIcon.svg";
-import jobs from "../../../Components/header-comps/jobs_list.json";
-import dropdownSVG from "../../../svg-images/svgexport-8.svg";
+import closeIcon from "../../../../../svg-images/svgexport-12.svg";
+import uploadIcon from "../../../../../svg-images/uploadIcon.svg";
+import jobs from "../../../../../Components/header-comps/jobs_list.json";
+import dropdownSVG from "../../../../../svg-images/svgexport-8.svg";
 import { SmallFooter } from "~/Components/SmallFooter";
 import { ServicesModal } from "./ServicesModal";
 import { ServiceSchedule } from "./ServiceSchedule";
 import { makeAbortable } from "@solid-primitives/resource";
-import spinner from "../../../svg-images/spinner.svg";
+import spinner from "../../../../../svg-images/spinner.svg";
 import { Toast } from "~/Components/ToastComponent";
 import { get_user_service } from "~/routes/api/xelosani/service/service";
-import eyeFillSVG from "../../../svg-images/eye-fill.svg";
+import eyeFillSVG from "../../../../../svg-images/eye-fill.svg";
 import ImagePreview from "./ImagePreview";
 import { MapRenderer } from "../../../../map/MapRenderer";
 import { Link, MetaProvider } from "@solidjs/meta";
-
 /*
 
   ასევე აჩვენე შეუძლია თუ არა მომხმარებელს ახლა სერვისის შესრულება schedule გაქვს სერვისის ამიტომ მარტივი იქნება

@@ -54,7 +54,8 @@ export const ProfileRight = (props) => {
             </button>
           </Show>
         </div>
-        <A href="skills" class="underline text-blue-500 font-[thin-font] font-bold text-xs">ნახე ყველა</A>
+        {props.user().skillset.skills && <A href="skills" class="underline text-blue-500 font-[thin-font] font-bold text-xs">ნახე ყველა</A>}
+
       </div>
 
       <Switch>
@@ -82,7 +83,7 @@ export const ProfileRight = (props) => {
         <h2 class="font-[bolder-font] font-bold text-gray-900 text-lg">
           სერვისები
         </h2>
-        <A href="services" class="underline text-blue-500 font-[thin-font] font-bold text-xs">ნახე ყველა</A>
+        {props.user().services.length && <A href="services/all" class="underline text-blue-500 font-[thin-font] font-bold text-xs">ნახე ყველა</A>}
       </div>
       <div class="mt-2">
         <Suspense fallback={<div>Loading Services...</div>}>
