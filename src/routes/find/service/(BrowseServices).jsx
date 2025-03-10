@@ -18,7 +18,7 @@ const BrowseServices = (props) => {
     <MetaProvider>
       <Title>Sheukete.ge: {services()?.main}. {services()?.parent}</Title>
       <Header></Header>
-      <div class="w-full flex">
+      <div class="flex">
         <Show when={services()}>
           <ServiceFilters
             parent={services().parent}

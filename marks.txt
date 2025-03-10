@@ -173,3 +173,5 @@
 
 	-- we can have popular services and popular skills on rightProfileside
 	-- on left we can have some of them and see all button
+
+For non premium users when they create service/job put 10 map load limit

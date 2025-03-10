@@ -1,6 +1,6 @@
 import { For, Index } from "solid-js";
-import emptyStar from "../../svg-images/svgexport-24.svg";
-import fullStar from "../../svg-images/svgexport-19.svg";
+import emptyStar from "../../../svg-images/svgexport-24.svg";
+import fullStar from "../../../svg-images/svgexport-19.svg";
 
 export const SkillCarousel = (props) => {
   return (

@@ -1,5 +1,5 @@
 import { batch } from "solid-js";
-import closeIcon from "../../../svg-images/svgexport-12.svg";
+import closeIcon from "../../../../svg-images/svgexport-12.svg";
 import { modify_user_schedule } from "~/routes/api/xelosani/modify/schedule";
 
 export const ModifyWorkSchedule = (props) => {

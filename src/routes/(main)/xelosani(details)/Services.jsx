@@ -1,9 +1,9 @@
 import { A } from "@solidjs/router";
 import { For, Index, Match, onMount, Switch, Show } from "solid-js";
-import EditSVG from "../../svg-images/edit_icon.svg";
-import emptyStar from "../../svg-images/svgexport-24.svg";
-import fullStar from "../../svg-images/svgexport-19.svg";
-import avialabilityIcon from "../../svg-images/accessibility-availability-custom-svgrepo-com.svg";
+import EditSVG from "../../../svg-images/edit_icon.svg";
+import emptyStar from "../../../svg-images/svgexport-24.svg";
+import fullStar from "../../../svg-images/svgexport-19.svg";
+import avialabilityIcon from "../../../svg-images/accessibility-availability-custom-svgrepo-com.svg";
 
 export const Services = (props) => {
   onMount(() => {
@@ -111,7 +111,7 @@ export const Services = (props) => {
                       </Match>
                       <Match when={props.status === 200}>
                         <A
-                          href={`/xelosani/services?id=${a.publicId}`}
+                          href={`/xelosani/${props.profId}/services/create?id=${a.publicId}`}
                           class="bg-dark-green font-[thin-font] text-sm font-bold flex items-center gap-x-1 justify-center py-1 hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
                         >
                           <img loading="lazy" src={EditSVG} alt="Edit" />

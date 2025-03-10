@@ -1,4 +1,4 @@
-import { createSignal, For, Match, createEffect, Switch } from "solid-js";
+import { createSignal, For, Match, createEffect, Switch, createMemo } from "solid-js";
 import threeDotsSVG from "../../svg-images/three-dots.svg";
 import { NotificationTools } from "../NotificationTools";
 import { A } from "@solidjs/router";
@@ -32,6 +32,14 @@ export const Notifications = () => {
           }
         },
     );
+
+    const memoizedNotifications = createMemo(() => {
+      if (notifications() && notifications().length > 0 && (active() === "unread" && !notifications().some(n => n.seen)) || active() === "all") {
+        return notifications()
+      } else {
+        return []
+      }
+    })
 
     return <div
     id="notification-menu"
@@ -91,9 +99,9 @@ export const Notifications = () => {
         <A href="/notifications" id="notification-menu" class="font-[thin-font] font-bold text-xs text-blue-500 underline">ყველას ნახვა</A>
     </div>
     <Switch>
-      <Match when={notifications()}>
+      <Match when={memoizedNotifications() && memoizedNotifications().length}>
         <div id="notification-menu" class="flex items-center flex-col gap-y-1">
-          <For each={notifications()}>
+          <For each={memoizedNotifications()}>
             {(n, i) => {
               return (
                 <div
@@ -151,11 +159,11 @@ export const Notifications = () => {
                             >
                               <button
                                 onClick={async (e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
+                                  e.preventDefault()
                                   const response = await accept_request(
                                     n.id,
-                                    n.friend_request_id
+                                    n.friend_request_id,
+                                    n.role
                                   )
                                   if (response === 200) {
                                     setNotifications((prev) => {
@@ -173,15 +181,11 @@ export const Notifications = () => {
                               <button
                                 id="notification-menu"
                                 onClick={async (e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                  const response = await reject_request(n.friend_request_id);
+                                  e.preventDefault()
+                                  const response = await reject_request(n.friend_request_id, n.role);
                                   if (response === 200){
                                     setNotifications((prev) => {
-                                      return {
-                                        count: prev.count - 1,
-                                        notifications: prev.notifications.filter((n) => p.id !== n.id),
-                                      };
+                                      return prev.filter((p) => p.id !== n.id)
                                     });
                                   } else {
                                     alert("Got an error.")
@@ -232,6 +236,7 @@ export const Notifications = () => {
                           <NotificationTools
                             setNotifications={setNotifications}
                             seen={n.seen}
+                            role={n.role}
                             notificationTools={notificationTools}
                             setNotificationTools={setNotificationTools}
                           />
@@ -245,12 +250,12 @@ export const Notifications = () => {
           </For>
         </div>
       </Match>
-      <Match when={!notifications()}>
+      <Match when={!memoizedNotifications()?.length}>
         <p
           class="font-[thin-font] text-gr font-bold text-xs text-center"
           id="notification-menu"
         >
-          შეტყობინებები ცარიელია
+          შეტყობინებები ცარიელია.
         </p>
       </Match>
     </Switch>

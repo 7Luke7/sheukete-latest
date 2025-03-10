@@ -13,13 +13,16 @@ export const MainNotificationTools = (props) => {
             if (response.status === 200) {
                 batch(() => {
                     props.setNotifications((prev) => {
-                        return prev.map(n => ({...n, seen: true}))
+                        return prev.map((p) => {
+                            return {...p, seen: true}
+                        })
                     })
-                    props.setMainNotificationTools(false)
                 })
             }
         } catch (error) {
             console.log(error)
+        } finally {
+            props.setMainNotificationTools(false)
         }
     }
     return <div id="notification-menu" class="absolute top-full mt-2 -right-2 z-[50] flex flex-col gap-y-2 items-start w-2/3 px-2 py-4 bg-white rounded shadow-xl border border-gray-200">

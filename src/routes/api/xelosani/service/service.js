@@ -4,12 +4,11 @@ import { verify_user } from "../../session_management";
 import { postgresql_server_request } from "../../utils/ext_requests/posgresql_server_request";
 import { fileserver_request } from "../../utils/ext_requests/fileserver_request";
 
-export const get_user_service = async (publicId) => {
+export const get_user_service = async (publicId, prof_id) => {
     try {
         const {request} = getRequestEvent()
         const session = await verify_user({request});
         const url = new URL(request.url)
-        const prof_id = url.pathname.split("/")[2]
 
         if (session === 401) {
             return {status: 401}

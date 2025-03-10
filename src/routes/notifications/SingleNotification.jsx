@@ -4,15 +4,15 @@ import threeDotsSVG from "../../svg-images/three-dots.svg";
 import { accept_request, getTimeAgo, reject_request } from "./utils";
 
 export const SingleNotification = (props) => {
-  const { n, i, isLast, notificationTools, setNotificationTools, setNotifications } = props;
+  const { n, isLast, notificationTools, setNotificationTools, setNotifications } = props;
   return (
     <div
     id={isLast ? isLast : undefined}
     class="p-4 m-2 font-bold shadow-lg hover:bg-[rgb(243,244,246)] rounded-3xl w-full border-b"
   >
-    <div class="flex relative items-center justify-between px-3 group">
+    <div class="flex relative h-full items-center justify-between px-3 group">
       <p class="absolute right-0 top-0 font-[thin-font] pr-4 text-base">
-        {isLast ? getTimeAgo(n.created_at) : n.created_at}
+        {getTimeAgo(n.created_at)}
       </p>
       <div class="flex items-center">
         <img
@@ -35,11 +35,11 @@ export const SingleNotification = (props) => {
             <div class="flex gap-x-3 mt-3 items-center">
               <button
                 onClick={async (e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
+                  e.preventDefault()
                   const response = await accept_request(
                     n.id,
-                    n.friend_request_id
+                    n.friend_request_id,
+                    n.role
                   )
                   if (response === 200) {
                     setNotifications((prev) => {
@@ -55,9 +55,8 @@ export const SingleNotification = (props) => {
               </button>
               <button
                 onClick={async (e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  const response = await reject_request(n.friend_request_id);
+                  e.preventDefault()
+                  const response = await reject_request(n.friend_request_id, n.role);
                   if (response === 200){
                     setNotifications((prev) => {
                       return {
@@ -80,9 +79,7 @@ export const SingleNotification = (props) => {
       <div class="flex items-center gap-x-3">
         <button
           type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
+          onClick={() => {
             setNotificationTools((prev) =>
               prev && prev.id === n.id ? null : { type: n.type, id: n.id }
             );
@@ -107,6 +104,7 @@ export const SingleNotification = (props) => {
           <NotificationTools
             setNotifications={setNotifications}
             seen={n.seen}
+            role={n.role}
             notificationTools={notificationTools}
             setNotificationTools={setNotificationTools}
           />

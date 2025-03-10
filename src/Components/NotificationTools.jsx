@@ -11,7 +11,8 @@ export const NotificationTools = (props) => {
                 body: JSON.stringify({
                     notification_id: props.notificationTools().id,
                     notification_type: props.notificationTools().type,
-                    seen: props.seen
+                    seen: props.seen,
+                    role: props.role
                 }),
                 headers: {
                     "Content-Type": "application/json"
@@ -20,15 +21,17 @@ export const NotificationTools = (props) => {
             })
 
             if (response.status === 200) {
-                props.setNotifications((prev) =>
-                    prev.map((n) =>
-                      n.id === props.notificationTools().id ? { ...n, seen: !n.seen } : n
+                props.setNotifications((prev) => {                    
+                    return prev.map((n) =>
+                        n.id === props.notificationTools().id ? { ...n, seen: !n.seen } : n
                     )
+                }
                   );          
-                props.setNotificationTools(null)
             }
         } catch (error) {
             console.log(error)            
+        } finally {
+            props.setNotificationTools(null)
         }
     }
 
@@ -41,6 +44,8 @@ export const NotificationTools = (props) => {
                 body: JSON.stringify({
                     notification_id: props.notificationTools().id,
                     notification_type: props.notificationTools().type,
+                    seen: props.seen,
+                    role: props.role
                 }),
                 headers: {
                     "Content-Type": "application/json"
@@ -56,6 +61,8 @@ export const NotificationTools = (props) => {
             }
         } catch (error) {
             console.log(error)            
+        } finally {
+            props.setNotificationTools(null)
         }
     }
 

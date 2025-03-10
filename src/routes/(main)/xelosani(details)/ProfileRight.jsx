@@ -2,7 +2,7 @@ import { A } from "@solidjs/router";
 import { Match, Switch, Suspense, Show, startTransition } from "solid-js";
 import { Services } from "./Services";
 import { SkillCarousel } from "./SkillCarousel";
-import pen from "../../svg-images/pen.svg";
+import pen from "../../../svg-images/pen.svg";
   
 export const ProfileRight = (props) => {
   return (
@@ -31,7 +31,7 @@ export const ProfileRight = (props) => {
         </p>
         </Match>
         <Match when={!props.user().about && props.user().status !== 200}>
-          <p class="text-sm mt-2 font-[thin-font] break-all text-gr font-bold">აღწერა არ არის დამატებული.</p>
+          <p class="text-xs mt-2 font-[thin-font] break-all text-gr font-bold">აღწერა არ არის დამატებული.</p>
         </Match>
         <Match when={!props.user().about && props.user().status === 200}>
             <A
@@ -54,8 +54,9 @@ export const ProfileRight = (props) => {
             </button>
           </Show>
         </div>
-        {props.user().skillset.skills && <A href="skills" class="underline text-blue-500 font-[thin-font] font-bold text-xs">ნახე ყველა</A>}
-
+        <Show when={props.user().skillset.skills}>
+          <A href="skills" class="underline text-blue-500 font-[thin-font] font-bold text-xs">ნახე ყველა</A>
+        </Show>
       </div>
 
       <Switch>
@@ -67,7 +68,7 @@ export const ProfileRight = (props) => {
         </div>
         </Match>
         <Match when={!props.user().skillset.length && props.user().status !== 200}>
-          <p class="text-sm mt-2 font-[thin-font] break-all text-gr font-bold">სპეციალობა არ არის დამატებული.</p>
+          <p class="text-xs mt-2 font-[thin-font] break-all text-gr font-bold">სპეციალობა არ არის დამატებული.</p>
         </Match>
         <Match when={!props.user().skillset.length && props.user().status === 200}>
             <A
@@ -83,7 +84,9 @@ export const ProfileRight = (props) => {
         <h2 class="font-[bolder-font] font-bold text-gray-900 text-lg">
           სერვისები
         </h2>
-        {props.user().services.length && <A href="services/all" class="underline text-blue-500 font-[thin-font] font-bold text-xs">ნახე ყველა</A>}
+        <Show when={props.user().services.length}>
+          <A href="services/all" class="underline text-blue-500 font-[thin-font] font-bold text-xs">ნახე ყველა</A>
+        </Show>
       </div>
       <div class="mt-2">
         <Suspense fallback={<div>Loading Services...</div>}>
@@ -99,7 +102,7 @@ export const ProfileRight = (props) => {
             </Match>
             <Match when={props.user().status === 200}>
               <A
-                href="/xelosani/services"
+                href={`/xelosani/${props.user().profId}/services/create`}
                 class="px-4 py-2 mt-2 bg-dark-green font-[thin-font] text-sm font-bold hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
               >
                 დაამატე სერვისები

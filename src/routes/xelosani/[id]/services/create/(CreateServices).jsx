@@ -40,8 +40,9 @@ import { Link, MetaProvider } from "@solidjs/meta";
 */
 
 const CreateServices = (props) => {
+  console.log(props?.location?.search)
   const response = createAsync(
-    () => get_user_service(props?.location?.search),
+    () => get_user_service(props?.location?.search, props?.location?.pathname.split("/")[2]),
     { deferStream: true }
   );
   const [image, setImage] = createSignal([]);

@@ -4,22 +4,29 @@ import { getRequestEvent } from "solid-js/web"
 import { verify_user } from "../session_management";
 import { postgresql_server_request } from "../utils/ext_requests/posgresql_server_request";
 
-export const get_all_friends = async () => {
-    const event = getRequestEvent()
-    const session = await verify_user(event);
+export const get_friends_home = async () => {
+    try {
+        const event = getRequestEvent()
+        const session = await verify_user(event);
 
-    console.log(event)
+        if (session === 401) {
+            throw new Error("user is not logged in")
+        }
 
-    if (session === 401) {
-        throw new Error("user is not logged in")
-    }
-
-    const response = await postgresql_server_request("POST", "/all_friends", {
-        body: JSON.stringify({
-            cursor: "",
-            role: session.role
+        const response = await postgresql_server_request("POST", "friends/get_friends_home", {
+            body: JSON.stringify({
+                userId: session.userId,
+            }),
+            headers: {
+                "Content-Type": "application/json"
+            }
         })
-    })
 
-    return "hello world"
+        if (response.status === 200) {
+            return response
+        }
+        return "hello world"
+    } catch (error) {
+        console.log(error)
+    }
 }

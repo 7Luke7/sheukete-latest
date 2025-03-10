@@ -1,39 +1,69 @@
-import { createEffect, createSignal, For, onMount } from "solid-js";
+import { batch, createEffect, createMemo, createSignal, For, on} from "solid-js";
 import { SingleNotification } from "../../SingleNotification";
-import { getTimeAgo } from "../../utils";
+import { get_all_user_notifications } from "~/routes/api/notifications/users";
+import { createAsync } from "@solidjs/router";
 
 const AllUserNotifications = () => {
-  const [notifications, setNotifications] = createSignal([]);
+  const initialNotifications = createAsync(get_all_user_notifications, {
+    deferStream: true,
+  });
+  const [notifications, setNotifications] = createSignal({
+    hasMore: null,
+    notifications: []
+  });
   const [notificationTools, setNotificationTools] = createSignal(null);
   const [loading, setLoading] = createSignal(false);
-  const [filterRole, setFilterRole] = createSignal("all");
-
-  let observer;
-  let lastNotification = {
+  const [lastNotification, setLastNotification] = createSignal({
     id: null,
     created_at: null,
-  };
+  });
+  const [page, setPage] = createSignal(1)
+  const [filterRole, setFilterRole] = createSignal("")
+
+  let observer;
 
   const fetchData = async () => {
     if (loading()) return;
     setLoading(true);
 
+    let notificationId;
+    let notificationCreatedAt;
+
+    if (
+      !lastNotification().id &&
+      initialNotifications() &&
+      initialNotifications().notifications.length > 0
+    ) {
+      // If it's the initial load and we have initial notifications
+      const lastInitialNotification =
+        initialNotifications().notifications[initialNotifications().notifications.length - 1];
+      notificationId = lastInitialNotification.id;
+      notificationCreatedAt = lastInitialNotification.created_at;
+    } else {
+      // If it's not the initial load, use the last loaded notification
+      notificationId = lastNotification().id;
+      notificationCreatedAt = lastNotification().created_at;
+    }
+
     try {
-      const response = await fetch(
-        `http://localhost:4321/notifications/all/get/users?id=${lastNotification.id}&created_at=${lastNotification.created_at}&role=${filterRole()}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
+      const data = await get_all_user_notifications(
+        `&id=${notificationId}&created_at=${notificationCreatedAt}&role=${filterRole()}&page=${page()}&total_count=${initialNotifications()?.totalCount}`
       );
-      const data = await response.json();
-      for (let i = 0; i < data.length - 1; i++) {
-        data[i].created_at = getTimeAgo(data[i].created_at);
-      }
-      if (response.status === 200) {
-        setNotifications((prev) => prev[0] && filterRole() === prev[0].role ? data : [...prev, ...data]);
-      } else if (response.status === 400) {
-        console.error(data.message);
+
+      setNotifications((prev) => {
+        return {
+          hasMore: data.hasMore,
+          notifications: [...prev.notifications, ...data.notifications]
+        }
+      });
+
+      if (data.notifications.length > 0) {
+        const lastFetchedNotification = data.notifications[data.notifications.length - 1];
+        setLastNotification(() => ({
+          id: lastFetchedNotification.id,
+          created_at: lastFetchedNotification.created_at,
+        }));
+        setPage((prev) => prev + 1)
       }
     } catch (error) {
       console.error(error);
@@ -42,11 +72,16 @@ const AllUserNotifications = () => {
     }
   };
 
-  onMount(fetchData);
-
   createEffect(() => {
-    if (!notifications() || notifications().length === 0 && !loading()) return;
-
+    if (page() === 1 && !initialNotifications()?.hasMore || page() > 1 && !notifications().hasMore) {
+      if (observer) {
+        observer.disconnect()
+      }
+      return
+    }
+    if (observer) {
+      observer.disconnect();
+    }
     const options = {
       root: document.querySelector("#notificationsArea"),
       rootMargin: "0px",
@@ -64,81 +99,119 @@ const AllUserNotifications = () => {
       });
     };
 
-    if (observer) {
-      observer.disconnect();
-    }
-
     observer = new IntersectionObserver(callback, options);
+    const { id } =
+      initialNotifications() && !lastNotification().id ?
+      initialNotifications().notifications[initialNotifications().notifications.length - 1] : lastNotification();
 
-    const newLastNotification = notifications()[notifications().length - 1];
-    if (lastNotification && newLastNotification.id !== lastNotification.id) {
-      lastNotification.id = newLastNotification.id;
-      lastNotification.created_at = newLastNotification.created_at;
-      const target = document.querySelector(
-        `#${CSS.escape(lastNotification.id)}`
-      );
-      if (target) {
-        observer.observe(target);
-      }
+    const target = document.querySelector(`#${CSS.escape(id)}`);
+    if (target) {
+      observer.observe(target);
     }
   });
+
+  const MemoizedCombinedNotifications = createMemo(() => {
+    if (initialNotifications() && notifications().notifications && filterRole() === "") {
+      return [...initialNotifications().notifications, ...notifications().notifications];
+    } else if (initialNotifications() && filterRole() === "") {
+      return initialNotifications().notifications;
+    } else if (filterRole !== "") {
+      return notifications().notifications;
+    }
+    return [];
+  })
+
+  const isLast = (index, n) => {
+    const combined = MemoizedCombinedNotifications();
+    return combined.length === index + 1 && n.id;
+  };
+
+  createEffect(on(filterRole, async () => {
+    setNotifications([])
+    if (filterRole() === "") return
+    try {
+      const data = await get_all_user_notifications(
+        `&role=${filterRole()}`
+      );
+
+      // if data is empty then role has no notifiactions and we could just message or smth
+  
+      if (data.notifications.length > 0) {
+        const lastFetchedNotification = data.notifications[data.notifications.length - 1];
+        batch(() => {
+          setNotifications(() => {
+            return {
+              hasMore: data.hasMore,
+              notifications: data.notifications
+            }
+          });
+          setLastNotification(() => ({
+            id: lastFetchedNotification.id,
+            created_at: lastFetchedNotification.created_at,
+          }));
+          setPage(1)
+        })
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }, {defer: true}))
 
   return (
     <>
       <div class="flex items-center mb-4 justify-between">
-        <button
+      <button
           onClick={() => {
-            setFilterRole("all")
-            fetchData()
+            setFilterRole("")
         }}
           class={`px-4 py-2 w-full rounded-lg font-[normal-font] relative ${
-            filterRole() === "all" ? "text-green-500" : "text-gray-700"
+            filterRole() === "" ? "text-green-500" : "text-gray-700"
           }`}
         >
           ყველა
-          {filterRole() === "all" && (
-            <div class="absolute bottom-0 left-0 w-full h-1 bg-green-500 rounded-b-lg"></div>
+          {filterRole() === "" ? (
+            <div class="absolute bottom-0 left-0 w-full h-1 bg-green-500"></div>
+          ) : (
+            <div class="absolute bottom-0 left-0 w-full h-1 bg-green-800"></div>
           )}
         </button>
         <button
           onClick={() => {
             setFilterRole("xelosani")
-            fetchData()
           }}
           class={`px-4 w-full py-2 relative font-[normal-font] rounded-lg ${
             filterRole() === "xelosani" ? "text-green-500" : "text-gray-700"
           }`}
         >
           ხელოსანი
-          {filterRole() === "xelosani" && (
-            <div class="absolute bottom-0 left-0 w-full h-1 bg-green-500 rounded-b-lg"></div>
+          {filterRole() === "xelosani" ? (
+            <div class="absolute bottom-0 left-0 w-full h-1 bg-green-500"></div>
+          ) : (
+            <div class="absolute bottom-0 left-0 w-full h-1 bg-green-800"></div>
           )}
         </button>
         <button
           onClick={() => {
             setFilterRole("damkveti")
-            fetchData()
         }}
           class={`px-4 w-full py-2 relative rounded-lg font-[normal-font] ${
             filterRole() === "damkveti" ? "text-green-500" : "text-gray-700"
           }`}
         >
           დამკვეთი
-          {filterRole() === "damkveti" && (
-            <div class="absolute bottom-0 left-0 w-full h-1 bg-green-500 rounded-b-lg"></div>
+          {filterRole() === "damkveti" ? (
+            <div class="absolute bottom-0 left-0 w-full h-1 bg-green-500"></div>
+          ) : (
+            <div class="absolute bottom-0 left-0 w-full h-1 bg-green-800"></div>
           )}
         </button>
       </div>
-      <For each={notifications()}>
+      <For each={MemoizedCombinedNotifications()}>
         {(n, i) => {
           return (
             <SingleNotification
-              isLast={
-                notifications()[notifications().length - 1] ===
-                  notifications()[i()] && n.id
-              }
+              isLast={isLast(i(), n)}
               n={n}
-              i={i}
               notificationTools={notificationTools}
               setNotifications={setNotifications}
               setNotificationTools={setNotificationTools}

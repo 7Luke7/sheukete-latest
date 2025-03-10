@@ -24,7 +24,7 @@ import { header } from "~/routes/api/header";
 import { Notifications } from "./header_modals/Notifications";
 
 export const Header = () => {
-  const user = createAsync(() => header());
+  const user = createAsync(() => header(), {deferStream: true});
   const [chosenQuery, setChosenQuery] = createSignal("ხელოსანი");
   const [value, setValue] = createSignal("");
   const [display, setDisplay] = createSignal(null);
@@ -98,7 +98,7 @@ export const Header = () => {
   return (
     <header class="border-b sticky top-0 left-0 right-0 z-50 bg-white border-slate-300">
       <div class="flex h-[45px] itmes-center mx-auto w-[90%]">
-        <div class="flex w-full justify-between items-center font-[normal-font]">
+        <div class="flex w-full items-center font-[normal-font]">
           <nav class="flex font-[thin-font] font-bold text-sm gap-x-3 items-center">
             <A href="/" class="text-dark-green text-xl">
               შეუკეთე
@@ -124,10 +124,15 @@ export const Header = () => {
               </div>
               <WorkDropdown></WorkDropdown>
             </div>
-            <A href="/namushevari">გაყიდე ნამუშევარი</A>
-            <A href="/work">რატომ შეუკეთე</A>
-            <A href="/news">სიახლე</A>
           </nav>
+          <div class="flex-1 px-5">
+          <Search
+              value={value}
+              setValue={setValue}
+              chosenQuery={chosenQuery}
+              setDisplay={setDisplay}
+            ></Search>
+          </div>
           <div class="px-3 font-[thin-font] text-sm items-center font-bold flex gap-x-3">
             <Show when={user() && user().role === "damkveti"}>
               <A
@@ -145,12 +150,6 @@ export const Header = () => {
                 სერვისის დამატება
               </A>
             </Show>
-            <Search
-              value={value}
-              setValue={setValue}
-              chosenQuery={chosenQuery}
-              setDisplay={setDisplay}
-            ></Search>
             <Switch>
               <Match when={user() !== 401}>
                 <div class="flex items-center gap-x-3">
@@ -200,7 +199,7 @@ export const Header = () => {
         <div
           id="options-menu"
           class={`shadow-2xl rounded-b-lg p-3 absolute border-t border-slate-300 ${
-            user() !== 401 ? "right-[7%]" : "right-[12%]"
+            user() !== 401 ? "right-[18%]" : "right-[14%]"
           } z-50 bg-white opacity-100 w-[230px]`}
         >
           <button

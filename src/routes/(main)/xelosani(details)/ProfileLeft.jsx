@@ -1,48 +1,26 @@
-import { Index, Match, createSignal, onMount, Show, Switch, batch, startTransition } from "solid-js";
-import location from "../../svg-images/location.svg";
-import telephone from "../../svg-images/telephone.svg";
-import envelope from "../../svg-images/envelope.svg";
-import CameraSVG from "../../svg-images/camera.svg";
-import pen from "../../svg-images/pen.svg";
-import cake from "../../svg-images/cake.svg";
-import spinnerSVG from "../../svg-images/spinner.svg";
+import { Index, Match, createSignal, Show, Switch, batch, startTransition, createMemo } from "solid-js";
+import location from "../../../svg-images/location.svg";
+import telephone from "../../../svg-images/telephone.svg";
+import envelope from "../../../svg-images/envelope.svg";
+import CameraSVG from "../../../svg-images/camera.svg";
+import pen from "../../../svg-images/pen.svg";
+import cake from "../../../svg-images/cake.svg";
+import spinnerSVG from "../../../svg-images/spinner.svg";
 import { A } from "@solidjs/router";
 import { makeAbortable } from "@solid-primitives/resource";
 import {Buffer} from "buffer"
+import { accept_request, reject_request } from "../../notifications/utils";
  
 export const ProfileLeft = (props) => {
   const [imageLoading, setImageLoading] = createSignal(false);
   const [imageUrl, setImageUrl] = createSignal();
   const [file, setFile] = createSignal();
   const [signal,abort,filterErrors] = makeAbortable({timeout: 0, noAutoAbort: true});
-  const [friendRequestId, setFriendRequestId] = createSignal()
   const [sendingFriendRequest, setSendingFriendRequest] = createSignal()
-
-  onMount(async () => {
-    if (props.user().status === 200) {
-      return
-    }
-    try {
-      const response = await fetch(`http://localhost:4321/friend/request/${props.user().profId}/status`, {
-        method: "GET",
-        credentials: "include"
-      })
-
-      if (response.status === 200) {
-        const data = await response.json()
-        
-        if (data.status === "accepted" || data.status === "pending") {
-          setFriendRequestId({
-            status: data.status,
-            id: data.id
-          })          
-        }
-      } else {
-        throw new Error("დაფიქსირდა შეცდომა მეგობრობის მოთხოვნის გაგზავნისას.")
-      }
-    } catch (error) {
-      console.log(error)
-    }
+  const [friendRequest, setFriendRequest] = createSignal({
+    friend_request_id: props.user().friend_request_id,
+    friend_request_status: props.user().friend_request_status,
+    is_sender: props.user().is_request_sender
   })
 
   const handleProfileImageChange = async () => {
@@ -133,16 +111,15 @@ export const ProfileLeft = (props) => {
 
       const data = await response.json()
 
-      if (response.status === 200) {        
-        batch(() => {
-          props.setToast({
-            type: true,
-            message: data.message
-          })
-          setFriendRequestId({
-            status: "pending",
-            id: data.friend_request_id
-          })
+      if (response.status === 200) {    
+        props.setToast({
+          type: true,
+          message: data.message
+        })
+        setFriendRequest(() => {
+          return {
+            friend_request_id: data.friend_request_id , friend_request_status: "pending", is_sender: true
+          }
         })
       } else {
         props.setToast({
@@ -161,39 +138,81 @@ export const ProfileLeft = (props) => {
     }
   }
 
-  const unfriend_or_cancel_request = async () => {
-    try {
-      if (!friendRequestId()) {
-        throw new Error("მეგობრობის მოთხოვნა არ არის გაგზავნილი.")
+  const friend = createMemo(() => {
+    const object = {executable: sendFriendRequest, content: "მეგობრობის გაგზავნა"}
+    if (sendingFriendRequest()) {
+      object.executable = () => {
+        abort() 
+        setIsRequestSender(false)
       }
-      const response = await fetch(`http://localhost:4321/friend/${friendRequestId().status}`, {
-        method: "POST",
-        body: JSON.stringify({
-          friend_request_id: friendRequestId().id,
-        }),
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include"
-      })
-
-      if (response.status === 200) {
-        const data = await response.json()
-        
-        batch(() => {
-          props.setToast({
-            type: true,
-            message: data.message
-          })
-          setFriendRequestId(null)
-        })
-      } else {
-        throw new Error("დაფიქსირდა შეცდომა მეგობრობის მოთხოვნის გაგზავნისას.")
+      object.content = "გაუქმება"
+      return object
+    } else if (friendRequest().is_sender && friendRequest().friend_request_status === "pending") {
+      object.executable = async () => {
+        try {
+          const response = await reject_request(friendRequest().friend_request_id, props.user().viewer_role, friendRequest().friend_request_status)
+          if (response === 200) {
+              setFriendRequest((prev) => {
+                return {
+                  ...prev,
+                  friend_request_status: null,
+                  is_sender: false
+                }
+              })
+          } else {
+            throw new Error("მეგობრის დამატება ვერ მოხერხდა")
+          }
+        } catch (error) {
+          console.log(error)
+        }
       }
-    } catch (error) {
-      console.log(error)
+      object.content = "მოთხოვნის გაუქმება"
+      return object
+    } else if (!friendRequest().is_sender && friendRequest().friend_request_status === "pending") {
+      object.executable = async () => {
+        try {
+          const response = await accept_request(props.user().notification_id, friendRequest().friend_request_id, "xelosani")
+          if (response === 200) {
+              setFriendRequest((prev) => {
+                return {
+                  ...prev,
+                  friend_request_status: "accepted",
+                  is_sender: false
+                }
+              })
+          } else {
+            throw new Error("მეგობრის დამატება ვერ მოხერხდა")
+          }
+        } catch (error) {
+          console.log(error)
+        }
+      }
+      object.content = "მეგობრობის დადასტურება"  
+      return object    
+    } else if (friendRequest().friend_request_status === "accepted") {
+      object.content = "მეგობრობიდან წაშლა"
+      object.executable = async () => {
+        try {
+          const response = await reject_request(friendRequest().friend_request_id, props.user().viewer_role, friendRequest().friend_request_status)
+          if (response === 200) {
+              setFriendRequest((prev) => {
+                return {
+                  ...prev,
+                  friend_request_status: null,
+                  is_sender: false
+                }
+              })
+          } else {
+            throw new Error("მეგობრის დამატება ვერ მოხერხდა")
+          }
+        } catch (error) {
+          console.log(error)
+        }
+      }
+      return object
     }
-  }
+    return object
+  })
 
   return (
     <div class="flex sticky top-[50px] gap-y-3 flex-col">
@@ -275,15 +294,11 @@ export const ProfileLeft = (props) => {
           <img
             loading="lazy"
             id="prof_pic"
-            class="h-[180px] w-[180px] rounded-full my-2"
+            class="border-2 border-indigo-100 h-[180px] w-[180px] rounded-full my-2"
             src={`http://localhost:5555/static/images/xelosani/profile/medium/${props.user()?.profId}.webp`}
-            onError={(e) => {
-              e.currentTarget.src =
-                "http://localhost:5555/static/images/default_profile.png";
-            }}
             alt="profilis foto"
           />
-          <span class="absolute bottom-2 right-6 w-5 h-5 bg-[#14a800] rounded-full"></span>
+          <span class="absolute bottom-4 right-6 w-5 h-5 bg-[#14a800] border-2 border-indigo-100 rounded-full"></span>
         </div>
       </Match>
     </Switch>
@@ -444,22 +459,10 @@ export const ProfileLeft = (props) => {
       <Show when={props.user().status === 401}>
         <div class="flex pb-1 px-2 items-center gap-x-1">
           <button
-            onClick={
-              sendingFriendRequest()
-                ? () => abort()
-                : friendRequestId()
-                ? unfriend_or_cancel_request
-                : sendFriendRequest
-            }
-            class="bg-dark-green w-full py-1 font-[thin-font] text-sm font-bold hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
+            onClick={friend().executable}
+            class="bg-dark-green w-full py-1 px-2 font-[thin-font] text-sm font-bold hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
           >
-            {sendingFriendRequest()
-              ? "გაუქმება"
-              : friendRequestId()?.status === "pending"
-              ? "მოთხოვნის გაუქმება"
-              : friendRequestId()?.status === "accepted"
-              ? "მეგობრობიდან წაშლა"
-              : "მეგობრობის გაგზავნა"}
+            {friend().content}
           </button>
         </div>
       </Show>
@@ -508,11 +511,9 @@ export const ProfileLeft = (props) => {
         </ul>
       </Match>
       <Match when={props.user().status === 401}>
-        <div class="flex items-center justify-center pt-2">
-          <p class="text-sm font-[thin-font] font-bold text-gr">
+          <p class="text-xs font-[thin-font] font-bold text-gr pt-2">
             განრიგი ცარიელია
           </p>
-        </div>
       </Match>
       <Match when={props.user().status === 200}>
         <div class="flex items-center justify-center pt-2">
@@ -535,7 +536,7 @@ export const ProfileLeft = (props) => {
         {/* Optionally include detailed rating bars here */}
       </Match>
       <Match when={true}>
-        <p class="text-xs text-gr mt-2 text-center font-[thin-font] font-bold">
+        <p class="text-xs text-gr mt-2 font-[thin-font] font-bold">
           მომხმარებელი არ არის შეფასებული.
         </p>
       </Match>

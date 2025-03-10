@@ -48,7 +48,7 @@ export const get_xelosani = async (prof_id) => {
     const event = getRequestEvent();
     const session = await verify_user(event);
     if (session.profId !== prof_id) {
-      throw new Error(401);
+      throw new Error(`401%${session.userId}%${session.role}`); // temporary
     }
 
     const user = await postgresql_server_request("GET", `xelosani/${session.profId}`, {
@@ -90,8 +90,11 @@ export const get_xelosani = async (prof_id) => {
       status: 200,
     };
   } catch (error) {
-    if (error.message === "401") {
-      const user = await postgresql_server_request("GET", `xelosani/not_authorized/${prof_id}`, {
+    console.log(error)
+    if (error.message.split("%")[0] === "401") {
+      const viewer_id = error.message.split("%")[1]
+      const role = error.message.split("%")[2]
+      const user = await postgresql_server_request("GET", `xelosani/not_authorized/${prof_id}?viewer_id=${viewer_id || undefined}`, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -123,7 +126,9 @@ export const get_xelosani = async (prof_id) => {
   
       return {
         ...user,
+        viewer_role: role,
         skillset: user.skillset[0],
+        is_request_sender: user.request_sender_id === viewer_id ? true : null,
         profId: prof_id,
         displayBirthDate,
         creationDateDisplayable,

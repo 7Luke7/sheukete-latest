@@ -1,11 +1,11 @@
 import { createSignal, batch, Show, onMount } from "solid-js";
-import closeIcon from "../../../svg-images/svgexport-12.svg";
+import closeIcon from "../../../../svg-images/svgexport-12.svg";
 import jobs from "../../../Components/header-comps/jobs_list.json";
-import dropdownSVG from "../../../svg-images/svgexport-8.svg";
+import dropdownSVG from "../../../../svg-images/svgexport-8.svg";
 import { makeAbortable } from "@solid-primitives/resource";
 // import { CreateJobMap } from "~/routes/new/[id]/CreateJobMap";
-import CameraSVG from "../../../svg-images/camera.svg";
-import spinnerSVG from "../../../svg-images/spinner.svg";
+import CameraSVG from "../../../../svg-images/camera.svg";
+import spinnerSVG from "../../../../svg-images/spinner.svg";
 
 export const ModifyServiceFront = (props) => {
   const [markedLocation, setMarkedLocation] = createSignal();

@@ -1,8 +1,8 @@
 import { createEffect, createSignal, batch } from "solid-js";
-import ChevronRightBlackSVG from "../../../svg-images/ChevronRightBlack.svg";
-import ChevronLeftBlackSVG from "../../../svg-images/ChevronLeftBlack.svg";
-import dropdownSVG from "../../../svg-images/svgexport-8.svg";
-import closeIcon from "../../../svg-images/svgexport-12.svg";
+import ChevronRightBlackSVG from "../../../../svg-images/ChevronRightBlack.svg";
+import ChevronLeftBlackSVG from "../../../../svg-images/ChevronLeftBlack.svg";
+import dropdownSVG from "../../../../svg-images/svgexport-8.svg";
+import closeIcon from "../../../../svg-images/svgexport-12.svg";
 import { modify_user_date } from "~/routes/api/xelosani/modify/date";
 
 export const ModifyAge = (props) => {

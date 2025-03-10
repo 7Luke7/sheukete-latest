@@ -1,7 +1,7 @@
-import closeIcon from "../../../svg-images/svgexport-12.svg";
+import closeIcon from "../../../../svg-images/svgexport-12.svg";
 import { modify_user_skills } from "~/routes/api/xelosani/modify/skills";
-import dropdownSVG from "../../../svg-images/svgexport-8.svg";
-import jobs from "../../../Components/header-comps/jobs_list.json";
+import dropdownSVG from "../../../../svg-images/svgexport-8.svg";
+import jobs from "../../../../Components/header-comps/jobs_list.json";
 import { For, Show, batch, createSignal } from "solid-js";
 import { revalidate } from "@solidjs/router";
 

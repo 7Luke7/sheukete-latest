@@ -150,7 +150,7 @@ export async function GET({ request }) {
     sort: "created_at-DESC",
     page: 1,
     city: "ყველა",
-    update_count: true,
+    tsc: 0,
     avgrating: null,
     completeDJobFrom: null,
     distanceTo: null,
@@ -173,6 +173,7 @@ export async function GET({ request }) {
   const url = "get_browse_initial_services";
   const finalUrl = `${url}${search}`;
 
+  console.log(finalUrl)
   try {
     const postgresql_response = await postgresql_server_request(
       "GET",
@@ -214,12 +215,12 @@ export async function GET({ request }) {
           postgresql_response.services[0].categories.length - 1
         ],
     };
-
     const currentPage =
       Number(mergedParams["page"]) ||
       Number(mergedParams["page"].split("-")[1]) ||
       Number(mergedParams["page"].split("_")[1]);
 
+    mergedParams["tsc"] = postgresql_response.total_count
     const { displayCategories, paginateLinks } = {
       displayCategories: new ConstructBrowseLinks(req_url).categories(
         main,
@@ -230,7 +231,7 @@ export async function GET({ request }) {
         currentPage,
         mergedParams,
         postgresql_response,
-        pageCount
+        pageCount,
       ),
     };
 

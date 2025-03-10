@@ -1,5 +1,5 @@
 import { batch, createSignal } from "solid-js"
-import closeIcon from "../../../svg-images/svgexport-12.svg";
+import closeIcon from "../../../../svg-images/svgexport-12.svg";
 import { modify_about } from "~/routes/api/xelosani/modify/about";
 
 export const ModifyAbout = (props) => {

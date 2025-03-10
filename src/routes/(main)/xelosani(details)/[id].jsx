@@ -1,7 +1,7 @@
 import { Header } from "~/Components/Header";
-import { get_xelosani } from "../api/user";
+import { get_xelosani } from "../../api/user";
 import { createAsync, useNavigate } from "@solidjs/router";
-import checkedGreen from "../../svg-images/checkedGreen.svg"
+import checkedGreen from "../../../svg-images/checkedGreen.svg"
 import {
   Show,
   createEffect,
@@ -18,9 +18,9 @@ import { ModifyAge } from "./modals/ModifyAge";
 import { Base, Meta, MetaProvider, Title } from "@solidjs/meta";
 import { ModifySkill } from "./modals/ModifySkills";
 import { FireworkConfetti } from "~/Components/FireworkConfetti";
-import airPlane from "../../svg-images/airplane.svg";
-import closeIcon from "../../svg-images/svgexport-12.svg";
-import exclamationWhite from "../../svg-images/exclamationWhite.svg";
+import airPlane from "../../../svg-images/airplane.svg";
+import closeIcon from "../../../svg-images/svgexport-12.svg";
+import exclamationWhite from "../../../svg-images/exclamationWhite.svg";
 import {ModifyAbout} from "./modals/ModifyAbout";
 
 const Xelosani = (props) => {
