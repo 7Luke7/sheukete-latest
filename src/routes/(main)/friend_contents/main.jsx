@@ -1,4 +1,4 @@
-import dropdownGreenSVG from "../../svg-images/svgexport-13.svg"
+import dropdownGreenSVG from "../../../svg-images/svgexport-13.svg"
 import { A } from "@solidjs/router";
 
 export const MainFriends = () => {

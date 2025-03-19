@@ -1,7 +1,8 @@
-
 const Message = () => {
 	return (
-		<div>hello</div>
+		<div class="justify-center h-full items-center flex">
+			აირჩიეთ მომხმარებელი
+		</div>
 	);
 }
 

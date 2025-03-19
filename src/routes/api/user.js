@@ -3,7 +3,6 @@ import { getRequestEvent } from "solid-js/web";
 import { json } from "@solidjs/router";
 import { verify_user } from "./session_management";
 import { hide_email, hide_mobile_number } from "./utils/hide/mail";
-import { memcached_server_request } from "./utils/ext_requests/memcached_server_request";
 import { postgresql_server_request } from "./utils/ext_requests/posgresql_server_request";
 
 export const get_account = async () => {
@@ -170,12 +169,12 @@ export const logout_user = async () => {
     const event = getRequestEvent();
     const session = event.request.headers.get("cookie").split("sessionId=")[1];
 
-    await memcached_server_request("DELETE", "user_session", {
-      body: JSON.stringify({ session }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    // await memcached_server_request("DELETE", "user_session", {
+    //   body: JSON.stringify({ session }),
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    // });
     return json("success", {
       status: 200,
       headers: {

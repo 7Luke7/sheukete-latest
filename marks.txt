@@ -175,3 +175,73 @@
 	-- on left we can have some of them and see all button
 
 For non premium users when they create service/job put 10 map load limit
+
+--- Messaging ---
+
+	-- create convos 
+
+-- messaging/notifiactions/friends
+
+	-- be mindful that you will need endless scrolling as well
+
+
+
+-- WEBSOCKETS --
+
+	So when it comes to websockets we will have for now I am thinking 
+	
+	CHANNELS/TOPICS
+
+		||| CLIENT |||
+			-- type: {"online_status||status", "conversation", "typing", "seen", "sent"}
+			These channels/topics will be supplied by 
+
+			WebSocket.send({type: type})
+
+		||| SERVER |||
+
+			SERVER WILL have 
+
+			async handle_subscribe() {
+
+			}
+
+			async handle_unsubscribe() {
+				
+			}
+			
+			async message(peer, message) {
+				peer has the current user id and user specific things 
+				while message is in this case object that is being sent by user
+				from client
+
+				We would have switch in here which would have cases based on message type
+
+				switch(message.type) {
+					case "status": {}
+				} 
+			}
+	
+	Let's go over one of the feature so we can better understand the flow
+
+	at the path "/message" we have a sidebar and content on the right
+
+	this sidebar has users those users might be typing something how do we go about 
+	informing the current user that other user is typing something
+
+	So obviously we have to track <textarea>
+
+	I am thinking we going to have createEffect(on(value, () => {
+		
+		//whenever something changes in the value we going to inform current user
+		//that this user is typing something
+
+		say we have a function
+
+		const subscriptions = new Set()
+
+		ws.send(JSON.stringify({
+			"type": "typing"
+		}))
+		subscribe("typing")
+	}, {defer: true}))

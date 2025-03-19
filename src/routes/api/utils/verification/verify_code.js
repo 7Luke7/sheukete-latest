@@ -1,6 +1,5 @@
 "use server";
 import { json } from "@solidjs/router";
-import { memcached_server_request } from "../ext_requests/memcached_server_request";
 import { postgresql_server_request } from "../ext_requests/posgresql_server_request";
 
 const code_regex = /^\d{6}$/;
@@ -34,15 +33,15 @@ export async function POST({ request }) {
       });
     }
 
-    const vsession = await memcached_server_request(
-      "GET",
-      `validate_id/${profId}`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    // const vsession = await memcached_server_request(
+    //   "GET",
+    //   `validate_id/${profId}`,
+    //   {
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //   }
+    // );
 
     if (!vsession) {
       return json("კოდი არ არსებობს, გთხოვთ ხელახლა გაიგზავნოთ.", {

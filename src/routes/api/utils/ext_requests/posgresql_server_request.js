@@ -15,7 +15,7 @@ export const postgresql_server_request = async (method, params, headers) => {
         const data = await response.json()
         return {...data, status: response.status}
     } catch (error) {
-        console.log(error)
+        console.log("POSTGRESQL_ERROR: ", error)
         return {status: 400, ...error}
     }
 }

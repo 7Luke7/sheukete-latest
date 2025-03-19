@@ -1,7 +1,7 @@
 import { createEffect, createSignal, For, Match, Show, Switch } from "solid-js";
-import closeIcon from "../../svg-images/svgexport-12.svg";
+import closeIcon from "../../../svg-images/svgexport-12.svg";
 import { A } from "@solidjs/router";
-import { reject_request } from "../notifications/utils";
+import { reject_request } from "../../notifications/utils";
 import { MutualFriends } from "../friends/Components/MutualFriends";
 
 export const SentRequests = (props) => {

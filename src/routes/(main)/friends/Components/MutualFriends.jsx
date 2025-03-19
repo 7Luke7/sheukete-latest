@@ -1,6 +1,6 @@
 import { A } from "@solidjs/router"
 import { createEffect, createSignal, For, Match, Show, Switch } from "solid-js"
-import closeIcon from "../../../svg-images/svgexport-12.svg";
+import closeIcon from "../../../../svg-images/svgexport-12.svg";
 import { close_current_mutuals } from "./utils";
 
 export const MutualFriends = (props) => {

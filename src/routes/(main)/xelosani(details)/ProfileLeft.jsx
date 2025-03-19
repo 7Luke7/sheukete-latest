@@ -10,6 +10,7 @@ import { A } from "@solidjs/router";
 import { makeAbortable } from "@solid-primitives/resource";
 import {Buffer} from "buffer"
 import { accept_request, reject_request } from "../../notifications/utils";
+import { startConversation } from "./utils";
  
 export const ProfileLeft = (props) => {
   const [imageLoading, setImageLoading] = createSignal(false);
@@ -457,12 +458,18 @@ export const ProfileLeft = (props) => {
         </Switch>
       </div>
       <Show when={props.user().status === 401}>
-        <div class="flex pb-1 px-2 items-center gap-x-1">
+        <div class="flex flex-col gap-y-1 pb-1 px-2 items-center">
           <button
             onClick={friend().executable}
             class="bg-dark-green w-full py-1 px-2 font-[thin-font] text-sm font-bold hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
           >
             {friend().content}
+          </button>
+          <button
+            onClick={() => startConversation(props.url_prof_id, props.user().role)}
+            class="bg-dark-green w-full py-1 px-2 font-[thin-font] text-sm font-bold hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
+          >
+            მიწერა
           </button>
         </div>
       </Show>

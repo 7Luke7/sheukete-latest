@@ -1,7 +1,6 @@
 "use server"
 import { json } from "@solidjs/router"
 import { send_email } from "../mailer";
-import { memcached_server_request } from "../ext_requests/memcached_server_request";
 import { postgresql_server_request } from "../ext_requests/posgresql_server_request";
 import crypto from "crypto"
 
@@ -31,20 +30,20 @@ export async function POST({request}) {
         const random_id = crypto.randomUUID()
         const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
         
-        await memcached_server_request(
-            "POST",
-            "verify_code",
-            {
-                body: JSON.stringify({
-                    random_id, 
-                    profId,
-                    verificationCode,
-                }),
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            }
-        )
+        // await memcached_server_request(
+        //     "POST",
+        //     "verify_code",
+        //     {
+        //         body: JSON.stringify({
+        //             random_id, 
+        //             profId,
+        //             verificationCode,
+        //         }),
+        //         headers: {
+        //             "Content-Type": "application/json"
+        //         }
+        //     }
+        // )
         
         const data = await postgresql_server_request(
             "GET",

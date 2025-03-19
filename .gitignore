@@ -7,6 +7,10 @@ dist
 netlify
 .vinxi
 
+# Private Keys
+file-server-private.key
+postgresql-server-private.key
+
 # Environment
 .env
 .env*.local

@@ -26,7 +26,6 @@ import { Notifications } from "./header_modals/Notifications";
 export const Header = () => {
   const user = createAsync(() => header(), {deferStream: true});
   const [chosenQuery, setChosenQuery] = createSignal("ხელოსანი");
-  const [value, setValue] = createSignal("");
   const [display, setDisplay] = createSignal(null);
   const [isUnseenNotif, setIsUnseenNotif] = createSignal();
   const [isUnseenMessage, setIsUnseenMessage] = createSignal();
@@ -127,8 +126,6 @@ export const Header = () => {
           </nav>
           <div class="flex-1 px-5">
           <Search
-              value={value}
-              setValue={setValue}
               chosenQuery={chosenQuery}
               setDisplay={setDisplay}
             ></Search>

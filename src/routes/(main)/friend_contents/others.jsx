@@ -5,12 +5,12 @@ import {
   accept_request,
   getTimeAgo,
   reject_request,
-} from "../notifications/utils";
-import back from "../../svg-images/back.svg";
-import searchIcon from "../../svg-images/svgexport-5.svg";
-import clear from "../../svg-images/svgexport-12.svg";
+} from "../../notifications/utils";
+import back from "../../../svg-images/back.svg";
+import searchIcon from "../../../svg-images/svgexport-5.svg";
+import clear from "../../../svg-images/svgexport-12.svg";
 import { SentRequests } from "./SentRequests";
-import threeDotsSVG from "../../svg-images/three-dots.svg";
+import threeDotsSVG from "../../../svg-images/three-dots.svg";
 
 // the imports above might not be needed for some components
 // so we have to make fils for each components
@@ -157,23 +157,20 @@ export default class Others {
                 <For each={data().users}>
                   {(f) => {
                     return (
+                      <A state={{ fromFriends: "/friends/requests" }} href={`/${f.role}/${f.prof_id}`}>
                       <div class="flex border-t py-2 w-full gap-y-2 flex-col">
                         <div class="flex items-start gap-x-2 w-full">
-                          <A href={`/${f.role}/${f.prof_id}`}>
                             <img
                               width={50}
                               height={50}
                               src={`http://localhost:5555/static/images/${f.role}/profile/small/${f.prof_id}.webp`}
                               class="rounded-full border w-[50px] h-[50px]"
                             ></img>
-                          </A>
                           <div class="flex flex-col gap-y-1 w-full">
                             <div class="flex items-center justify-between">
-                              <A href={`/${f.role}/${f.prof_id}`}>
-                                <p class="font-[normal-font] text-sm">
-                                  {f.firstname} {f.lastname}
-                                </p>
-                              </A>
+                              <p class="font-[normal-font] text-sm">
+                                {f.firstname} {f.lastname}
+                              </p>
                               <p class="text-gr text-xs font-[thin-font] font-bold">
                                 {getTimeAgo(f.created_at)}
                               </p>
@@ -189,7 +186,7 @@ export default class Others {
                                   {f.mutual_friends.mutual_friends.map(
                                     (mmf) => {
                                       return (
-                                        <A href={`/${mmf.role}/${mmf.prof_id}`}>
+                                        <A state={{fromFriends: "/friends/requests"}} href={`/${mmf.role}/${mmf.prof_id}`}>
                                           <img
                                             width={18}
                                             height={18}
@@ -222,6 +219,7 @@ export default class Others {
                           f,
                         })}
                       </div>
+                      </A>
                     );
                   }}
                 </For>
@@ -334,7 +332,6 @@ export default class Others {
               );
               const data = await response.json();
               if (response.status === 200) {
-                console.log(data)
                 setAllFriends((prev) => {
                   return {
                     count: data.friend_count,
@@ -362,7 +359,7 @@ export default class Others {
                   {(f) => {
                     return (
                       <>
-                        <A href={`/${f.role}/${f.prof_id}`}>
+                        <A state={{ fromFriends: "/friends/all" }} href={`/${f.role}/${f.prof_id}`}>
                         <div class="hover:bg-gray-200 rounded-2xl mt-2 flex px-2 py-2 gap-y-2 items-start gap-x-2 w-full">
                             <img
                               width={50}
@@ -372,11 +369,9 @@ export default class Others {
                             ></img>
                           <div class="flex items-start justify-between w-full">
                             <div class="flex flex-col gap-y-1">
-                            <A href={`/${f.role}/${f.prof_id}`}>
-                              <p class="font-[normal-font] text-sm">
-                                {f.firstname} {f.lastname}
-                              </p>
-                            </A>
+                            <p class="font-[normal-font] text-sm">
+                              {f.firstname} {f.lastname}
+                            </p>
                             <Show
                               when={
                                 Number(f.mutual_friends_count) >
@@ -388,7 +383,7 @@ export default class Others {
                                   {f.mutual_friends.map(
                                     (mmf) => {
                                       return (
-                                        <A href={`/${mmf.role}/${mmf.prof_id}`}>
+                                        <A state={{ fromFriends: "/friends/all" }} href={`/${mmf.role}/${mmf.prof_id}`}>
                                           <img
                                             width={18}
                                             height={18}

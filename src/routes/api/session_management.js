@@ -1,5 +1,6 @@
 "use server"
-import { memcached_server_request } from "./utils/ext_requests/memcached_server_request"
+
+import { client } from "~/entry-server"
 
 export const verify_user = async (event) => {
     try {
@@ -11,17 +12,7 @@ export const verify_user = async (event) => {
             throw new Error(401)
         }
 
-        const user = await memcached_server_request(
-            "POST",
-            "user_session",
-            {
-                body: JSON.stringify({session}),
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            }
-        )
-
+        const user = await client.get(`session:${session}`)
 
         if (!user) {
             throw new Error(401)

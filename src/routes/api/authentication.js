@@ -3,8 +3,9 @@ import { json } from "@solidjs/router";
 import { HandleError } from "./utils/errors/handle_errors";
 import { CustomError } from "./utils/errors/custom_errors";
 import { postgresql_server_request } from "./utils/ext_requests/posgresql_server_request";
-import { memcached_server_request } from "./utils/ext_requests/memcached_server_request";
 import bcrypt from "bcrypt"
+import { client } from "~/entry-server";
+import { randomBytes } from "crypto";
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 const phoneRegex = /^\d{9}$/
@@ -21,7 +22,6 @@ export const LoginUser = async (formData) => {
             throw new CustomError("password", "პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს.")
         }
 
-        let user = null;
         let body = null 
         if (emailRegex.test(phoneEmail)) {
             body = {email: phoneEmail}
@@ -42,40 +42,31 @@ export const LoginUser = async (formData) => {
                 }
             }
         )
+        console.log(data)
         if (data.status !== 200) {
             throw new CustomError(data.field, data.message)
         }
 
-        user = data
-
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, data.password);
         if (!isMatch) {
             throw new CustomError("password", "პაროლი არასწორია.")
         }
 
-        const sessionId = await memcached_server_request(
-            "POST",
-            "session",
-            {
-                body: JSON.stringify({
-                    profId: user.prof_id, 
-                    userId: user.id,
-                    role: user.role
-                }),
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            }
-        )
+        const session_id = randomBytes(128).toString("hex")
+        await client.set(`session:${session_id}`, {
+            role: data.role,
+            profId: data.prof_id,
+            userId: data.userId
+        })
 
         return json({
             message: "წარმატებით შეხვედით.",
-            role: user.role,
-            profId: user.prof_id,
+            role: data.role,
+            profId: data.prof_id,
             status: 200
         },{
             headers: {
-                'Set-Cookie': `sessionId=${sessionId}; Path=/; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`,
+                'Set-Cookie': `sessionId=${session_id}; Path=/; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`,
                 'Content-Type': 'application/json'
             },
         })
