@@ -2,6 +2,7 @@ import { A } from "@solidjs/router"
 import { createEffect, createSignal, For, Match, Show, Switch } from "solid-js"
 import closeIcon from "../../../../svg-images/svgexport-12.svg";
 import { close_current_mutuals } from "./utils";
+import { get_mutual_friends } from "~/routes/api/friends/friends";
 
 export const MutualFriends = (props) => {
     const {index, setViewAllUserMutuals, target_mf} = props
@@ -10,21 +11,10 @@ export const MutualFriends = (props) => {
 
     createEffect(async () => {
         try {
-            const response = await fetch("http://localhost:4321/friends/get_mutual_friends", {
-                method: "POST",
-                credentials: "include",
-                body: JSON.stringify({
-                    target_user: target_mf,
-                    cursor: cursor()
-                }),
-                headers: {
-                    "Content-Type": 'application/json'
-                }
-            })
-            const data = await response.json()
-    
+            const response = await get_mutual_friends(target_mf, cursor())
+
             if (response.status === 200) {
-                setMutualFriends(prev => [...prev, ...data.mutual_friends])
+                setMutualFriends(prev => [...prev, ...response.mutual_friends])
             } else {
                 throw new Error("error while fetching mutual friends")
             }

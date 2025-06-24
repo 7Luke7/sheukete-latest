@@ -2,13 +2,12 @@ import { A } from "@solidjs/router"
 import checkGray from "../../svg-images/check-gray.svg";
 import extLink from "../../svg-images/external_link.svg";
 import { batch } from "solid-js";
+import { mark_all_as_read } from "~/routes/api/notifications/main";
 
 export const MainNotificationTools = (props) => {
     const mark_all_notifications_as_read = async () => {
         try {
-            const response = await fetch("http://localhost:4321/notification/mark_all_as_read", {
-                credentials: "include"
-            })
+            const response = await mark_all_as_read()
 
             if (response.status === 200) {
                 batch(() => {

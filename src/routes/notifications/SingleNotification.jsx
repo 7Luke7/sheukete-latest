@@ -1,7 +1,8 @@
 import { Show } from "solid-js";
 import { NotificationTools } from "~/Components/NotificationTools";
 import threeDotsSVG from "../../svg-images/three-dots.svg";
-import { accept_request, getTimeAgo, reject_request } from "./utils";
+import { getTimeAgo } from "./utils";
+import { accept_request, reject_request } from "../api/friends/friends";
 
 export const SingleNotification = (props) => {
   const { n, isLast, notificationTools, setNotificationTools, setNotifications } = props;

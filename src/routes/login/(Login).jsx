@@ -1,44 +1,32 @@
-import { createSignal } from 'solid-js';
-import { A, useNavigate } from '@solidjs/router';
+import { A, action, createAsync, useSubmission } from '@solidjs/router';
 import { SmallFooter } from '~/Components/SmallFooter';
 import { EmailPassword } from '~/Components/EmailPassword';
-import { LoginUser, LoginWithFacebook } from '../api/authentication';
+import { check_if_user_is_logged_in, LoginUser } from '../api/authentication';
 import { MetaProvider } from "@solidjs/meta";
 
-const Login = () => {
-    const [error, setError] = createSignal(null);
-    const navigate = useNavigate();
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-    const phoneRegex = /^\d{9}$/
-    
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        try {
-            setError(null);
-            const formData = new FormData(event.target)
-            if (!emailRegex.test(formData.get("phoneEmail")) && !phoneRegex.test(formData.get("phoneEmail"))) {
-                return setError([{
-                    field: "phoneEmail",
-                    message: "მეილი ან ტელეფონის ნომერი არასწორია."
-                }])
-            }
-            if (!formData.get("password").length) {
-                return setError([
-                    {
-                        field: "password",
-                        message: "პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს."
-                    }
-                ])
-            }
-            const result = await LoginUser(formData);
-            if (result.status === 400) {
-                return setError(result.errors);
-            }
-            if (result.status === 200) return navigate(`/${result.role}/${result.profId}`);
-        } catch (error) {
-            console.log(error);
+const handleSubmit = action(async (formData) => {
+    "use server"
+    try {
+        const result = await LoginUser(formData);
+        if (result.status === 400) {
+            return result.errors;
         }
-    };
+        const headers = new Headers();
+        Object.keys(result).forEach((v) => {
+            headers.set(v, result[v])
+        })
+        
+        return new Response(null, {
+            status: 303,
+            headers
+        });
+    } catch (error) {
+        console.log(error);
+    }
+}, "login")
+
+const Login = () => {
+    createAsync(() => check_if_user_is_logged_in(), {deferStream: true})
 
 //     onMount(() => {
 //
@@ -97,6 +85,8 @@ const Login = () => {
         }
     };
 
+    const action_result = useSubmission(handleSubmit)
+
     return (
         <MetaProvider>
         {/*<script async defer crossorigin="anonymous" src="https://connect.facebook.net/ka_GE/sdk.js#xfbml=1&version=v20.0&appId=798141012304233" nonce="aoYbrohF"></script>*/}
@@ -105,8 +95,8 @@ const Login = () => {
                 <div class="h-full justify-evenly flex flex-col">
                     <div class="border w-[500px] mx-auto p-5 mt-5 rounded border-slate-300 border-2 flex flex-col gap-y-2 items-center">
                         <h1 class="text-xl font-bold text-slate-900 font-[boldest-font]">შესვლა</h1>
-                        <form method="post" onSubmit={handleSubmit} class="w-full">
-                            <EmailPassword error={error} />
+                        <form method="post" action={handleSubmit} class="w-full">
+                            <EmailPassword error={() => action_result.result} />
                             <p class='mb-2 mt-5 font-[thin-font] text-xs font-bold text-gray-700'>
                                 დაგავიწყდა პაროლი?
                                 <A href="/resetpassword" class="pl-2 text-dark-green underline">პაროლის აღდგენა</A>

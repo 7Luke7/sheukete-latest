@@ -2,6 +2,7 @@ import { A } from "@solidjs/router"
 import hirer from "../../svg-images/hirer.svg"
 import worker from "../../svg-images/worker.svg"
 import { createSignal } from "solid-js"
+
 const Choose = () => {
     const [current, setCurrent] = createSignal(null)
 

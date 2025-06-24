@@ -3,7 +3,8 @@ import threeDotsSVG from "../../svg-images/three-dots.svg";
 import { NotificationTools } from "../NotificationTools";
 import { A } from "@solidjs/router";
 import { MainNotificationTools } from "./MainNotificationTools";
-import { accept_request, reject_request } from "~/routes/notifications/utils";
+import { reject_request, accept_request } from "~/routes/api/friends/friends";
+import { get_active_notification } from "~/routes/api/notifications/main";
 
 export const Notifications = () => {
     const [notificationTools, setNotificationTools] = createSignal();
@@ -14,18 +15,12 @@ export const Notifications = () => {
   createEffect(
         async () => {
           try {
-            const response = await fetch(
-              `http://localhost:4321/notifications/get/${active()}`,
-              {
-                method: "GET",
-                credentials: "include",
-              }
-            );
-            const data = await response.json();
+            const response = await get_active_notification(active())
+
             if (response.status === 200) {
-              setNotifications(data);
+              setNotifications(response.notifications);
             } else if (response.status === 400) {
-              setNotifications(data.message);
+              setNotifications(response.message);
             }
           } catch (error) {
             console.error(error);

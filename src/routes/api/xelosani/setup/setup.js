@@ -375,6 +375,7 @@ export const check_location = async () => {
       throw new Error(401);
     }
 
+    console.log(session)
     const user = await postgresql_server_request("GET", `${session.role}/check_location/${session.userId}`, {
       headers: {
         "Content-Type": "application/json",

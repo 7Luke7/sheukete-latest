@@ -1,8 +1,8 @@
 import { createEffect, createSignal, For, Match, Show, Switch } from "solid-js";
 import closeIcon from "../../../svg-images/svgexport-12.svg";
 import { A } from "@solidjs/router";
-import { reject_request } from "../../notifications/utils";
 import { MutualFriends } from "../friends/Components/MutualFriends";
+import { get_sent_requests, reject_request } from "~/routes/api/friends/friends";
 
 export const SentRequests = (props) => {
     const {setShowSentRequests} = props 
@@ -12,21 +12,10 @@ export const SentRequests = (props) => {
 
     createEffect(async () => {
         try {
-            const response = await fetch("http://localhost:4321/friends/get_sent_requests", {
-                method: "POST",
-                credentials: "include",
-                body: JSON.stringify({
-                    cursor: cursor()
-                }),
-                headers: {
-                    "Content-Type": 'application/json'
-                }
-            })
-            const data = await response.json()
+            const response = await get_sent_requests(cursor())
     
             if (response.status === 200) {
-                console.log(data)
-                setSentFriendRequests(prev => [...prev, ...data])
+              setSentFriendRequests(prev => [...prev, ...response.sent])
             } else {
                 throw new Error("error while fetching mutual friends")
             }

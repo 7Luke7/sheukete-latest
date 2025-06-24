@@ -140,7 +140,7 @@ const Skills = () => {
         setParentChecked((prev) => {
           const filteredCategories = currentCategoryList.map((a) => a['კატეგორია']);
           return prev.filter((category) => !filteredCategories.includes(category));
-        });
+        }); 
       
         setChildChecked((prev) => {
           const childCategories = currentCategoryList.flatMap((a) => a['სამუშაოები']);

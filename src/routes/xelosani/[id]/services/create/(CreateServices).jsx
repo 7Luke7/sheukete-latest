@@ -1,4 +1,3 @@
-import { Header } from "~/Components/Header";
 import {
   createSignal,
   Switch,
@@ -15,7 +14,6 @@ import closeIcon from "../../../../../svg-images/svgexport-12.svg";
 import uploadIcon from "../../../../../svg-images/uploadIcon.svg";
 import jobs from "../../../../../Components/header-comps/jobs_list.json";
 import dropdownSVG from "../../../../../svg-images/svgexport-8.svg";
-import { SmallFooter } from "~/Components/SmallFooter";
 import { ServicesModal } from "./ServicesModal";
 import { ServiceSchedule } from "./ServiceSchedule";
 import { makeAbortable } from "@solid-primitives/resource";
@@ -40,7 +38,6 @@ import { Link, MetaProvider } from "@solidjs/meta";
 */
 
 const CreateServices = (props) => {
-  console.log(props?.location?.search)
   const response = createAsync(
     () => get_user_service(props?.location?.search, props?.location?.pathname.split("/")[2]),
     { deferStream: true }
@@ -560,8 +557,7 @@ const CreateServices = (props) => {
         rel="stylesheet"
       />
       <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.0.1/maptiler-sdk.umd.min.js"></script>
-      <section class="bg-gray-50 min-h-screen">
-        <Header />
+      <section class="min-h-screen">
         <Switch>
           <Match when={response() && response() === 401}>
             <NotAuthorized />
@@ -574,7 +570,7 @@ const CreateServices = (props) => {
               />
             </Show>
 
-            <h1 class="text-center font-bold text-2xl my-5 text-gray-800">
+            <h1 class="text-center font-bold text-2xl text-gray-800">
               {isEditing() ? "გაანახლე სერვისი" : "დაამატე სერვისი"}
             </h1>
 
@@ -1054,10 +1050,6 @@ const CreateServices = (props) => {
             setIsExiting={setIsExiting}
           />
         </Show>
-
-        <div class="w-[80%] mx-auto my-4">
-          <SmallFooter />
-        </div>
       </section>
     </MetaProvider>
   );

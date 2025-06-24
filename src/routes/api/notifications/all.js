@@ -11,7 +11,11 @@ export const get_notifications_home = async () => {
         if (user === 401) {
             throw new Error("login first");
         }
-        const response = await postgresql_server_request("GET", `notifications/get_unread_users/${user.userId}`)
+        const response = await postgresql_server_request("GET", `notifications/get_unread_users/${user.userId}`, {
+             headers: {
+                "Content-Type": "application/json",
+            }
+        })
 
         if (response.status === 200) {
             return response.notifications  

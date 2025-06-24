@@ -1,16 +1,15 @@
-import { A } from "@solidjs/router";
-import { createEffect, createSignal, on, onMount, Show } from "solid-js";
+import { A, createAsync } from "@solidjs/router";
+import { createSignal, onMount, Show } from "solid-js";
 import { MutualFriends } from "../friends/Components/MutualFriends";
 import {
-  accept_request,
   getTimeAgo,
-  reject_request,
 } from "../../notifications/utils";
 import back from "../../../svg-images/back.svg";
 import searchIcon from "../../../svg-images/svgexport-5.svg";
 import clear from "../../../svg-images/svgexport-12.svg";
 import { SentRequests } from "./SentRequests";
 import threeDotsSVG from "../../../svg-images/three-dots.svg";
+import { reject_request, accept_request, get_received_requests, get_all_friends } from "~/routes/api/friends/friends";
 
 // the imports above might not be needed for some components
 // so we have to make fils for each components
@@ -120,19 +119,13 @@ export default class Others {
           onMount(async () => {
             setLoading(true);
             try {
-              const response = await fetch(
-                `http://localhost:4321/friends/${this.request_pathname}`,
-                {
-                  credentials: "include",
-                  method: "GET",
-                }
-              );
-              const data = await response.json();
+              const response = await get_received_requests(this.request_pathname)
+
               if (response.status === 200) {
                 setData((prev) => {
                   return {
-                    count: data.friend_requests_count,
-                    users: [...prev.users, ...data.users],
+                    count: response.friend_requests_count,
+                    users: [...prev.users, ...response.users],
                   };
                 });
               } else {
@@ -199,11 +192,15 @@ export default class Others {
                                   )}
                                 </div>
                                 <button
-                                  onClick={() =>
+                                  onClick={(e) =>
+                                  {
+                                    e.preventDefault()
+                                    e.stopPropagation()
                                     setViewAllUserMutuals((prev) => [
                                       ...prev,
                                       { role: f.role, prof_id: f.prof_id },
                                     ])
+                                  }
                                   }
                                   class="text-xs underline font-[thin-font] text-gr"
                                 >
@@ -312,48 +309,23 @@ export default class Others {
         },
 
         main_content() {
+          const allFriends = createAsync(async () => {
+            const response = await get_all_friends(this.request_pathname)
+            if (response.status === 200) {
+                return {
+                  count: response.friend_count,
+                  users: response.users,
+                };
+            }
+          }, {deferStream: true})
           const [value, setValue] = createSignal("");
-          const [allFriends, setAllFriends] = createSignal({
-            count: 0,
-            users: [],
-          });
           const [loading, setLoading] = createSignal();
           const [viewAllUserMutuals, setViewAllUserMutuals] = createSignal([]);
-
-          createEffect(async () => {
-            setLoading(true);
-            try {
-              const response = await fetch(
-                `http://localhost:4321/friends/${this.request_pathname}`,
-                {
-                  credentials: "include",
-                  method: "GET",
-                }
-              );
-              const data = await response.json();
-              if (response.status === 200) {
-                setAllFriends((prev) => {
-                  return {
-                    count: data.friend_count,
-                    users: [...prev.users, ...data.users],
-                  };
-                });
-              } else {
-                throw new Error(
-                  "Error occured while fetching friend requests."
-                );
-              }
-            } catch (error) {
-              console.log(error);
-            } finally {
-              setLoading(false);
-            }
-          });
 
           return (
             <>
               {this.above_content()}
-              <Show when={allFriends().count && !loading()}>
+              <Show when={allFriends()}>
                 {this.search_component({ value, setValue, count: allFriends().count })}
                 <For each={allFriends().users}>
                   {(f) => {
@@ -398,6 +370,7 @@ export default class Others {
                                 <button
                                   onClick={(e) => {
                                     e.preventDefault()
+                                    e.stopPropagation()
                                     setViewAllUserMutuals((prev) => [
                                       ...prev,
                                       { role: f.role, prof_id: f.prof_id },
@@ -448,15 +421,8 @@ export default class Others {
   }
 
   render() {
-    return (
-      <>
-        <Show
-          fallback={<div>დაფიქსირდა შეცდომა</div>}
-          when={this.relations[this.path]}
-        >
-          {this.relations[this.path].main_content()}
-        </Show>
-      </>
-    );
+    return <Show when={this.relations[this.path]}>
+      {this.relations[this.path].main_content()}
+    </Show>
   }
 }

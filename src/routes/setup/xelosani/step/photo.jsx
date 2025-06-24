@@ -3,7 +3,6 @@ import CameraSVG from "../../../../svg-images/camera.svg";
 import spinnerSVG from "../../../../svg-images/spinner.svg";
 import { Match, Suspense, Switch, batch, createSignal } from "solid-js";
 import { makeAbortable } from "@solid-primitives/resource";
-import { Buffer } from 'buffer';
 import { get_profile_photo } from "~/routes/api/xelosani/setup/step";
 
 const ProfilePictureStep = () => {
@@ -61,20 +60,11 @@ const ProfilePictureStep = () => {
   const handleFilePreview = async (file) => {
     setImageLoading(true);
     try {
-      const worker = new Worker(
-        new URL("../../../../Components/readImagesWorker.js", import.meta.url)
-      );
-
-      worker.onmessage = async (e) => {
-        const buffer = e.data;
-        const base64string = Buffer.from(buffer, "utf-8").toString("base64");
-        batch(() => {
-          setFile(file);
-          setImageLoading(false);
-          setImageUrl(`data:image/png;base64,${base64string}`);
-        });
-      };
-      worker.postMessage(file);
+      batch(() => {
+        setFile(URL.createObjectURL(file));
+        setImageLoading(false);
+        setImageUrl(URL.createObjectURL(file));
+      });
     } catch (error) {
       console.log(error);
     }

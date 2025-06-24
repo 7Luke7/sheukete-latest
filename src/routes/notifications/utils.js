@@ -26,53 +26,6 @@ export const getTimeAgo = (createdAt) => {
   }
 };
 
-export const accept_request = async (id, friend_request_id, role) => {
-  try {
-    const response = await fetch(`http://localhost:4321/accept/friend`, {
-      method: "POST",
-      body: JSON.stringify({
-        friend_request_id: friend_request_id,
-        notification_id: id,
-        sender_role: role,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
-
-    // we could return the status code straight up without eve
-    return response.status;
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-export const reject_request = async (friend_request_id, role, status = 'pending') => {
-  // we could make an animation of rejecting people friend requests later
-  console.log(friend_request_id, role, status)
-  try {
-    const response = await fetch(
-      `http://localhost:4321/friend/status/${status}`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          friend_request_id: friend_request_id,
-          sender_role: role,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      }
-    );
-
-    return response.status;
-  } catch (error) {
-    console.log(error);
-  }
-};
-
 export const mark_all_specials_as_read = async () => {
   // we could make an animation of rejecting people friend requests later
   try {

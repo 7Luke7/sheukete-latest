@@ -1,11 +1,10 @@
 import { A, createAsync } from "@solidjs/router";
-import { get_friends_home } from "../../api/friends/friends";
-import { accept_request, reject_request } from "../../notifications/utils";
+import { get_friends_home, accept_request, reject_request } from "../../api/friends/friends";
 import { createEffect, createMemo, createSignal, For, Show } from "solid-js";
 import { MutualFriends } from "./Components/MutualFriends";
 
 const Friends = () => {
-  const friends = createAsync(() => get_friends_home(), {deferStream: false});
+  const friends = createAsync(() => get_friends_home());
   const [viewAllUserMutuals, setViewAllUserMutuals] = createSignal([])
   const [optimisticFriendRequests, setOptimisticFriendRequests] = createSignal();
 

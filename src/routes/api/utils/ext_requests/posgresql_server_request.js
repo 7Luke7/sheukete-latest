@@ -1,7 +1,11 @@
 'use server'
 
+import { issue_token } from "./token"
+
 export const postgresql_server_request = async (method, params, headers) => {
     try {
+        const token = await issue_token("postgresql-server")
+        headers['headers']["x-private-key"] = token
         const response = await fetch(`${process.env.POSTGRES_SERVER_DOMAIN}:${process.env.POSTGRES_SERVER_PORT}/${params}`, {
             method: method, 
             ...headers

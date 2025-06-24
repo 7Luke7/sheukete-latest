@@ -1,3 +1,4 @@
+import { mark_notification_as_read, remove_notification } from "~/routes/api/notifications/main";
 import checkGray from "../svg-images/check-gray.svg";
 import trash from "../svg-images/trash.svg";
 
@@ -6,27 +7,19 @@ export const NotificationTools = (props) => {
         e.stopPropagation();
         e.preventDefault();
         try {
-            const response = await fetch("http://localhost:4321/notification/mark_as_read", {
-                method: "PUT",
-                body: JSON.stringify({
-                    notification_id: props.notificationTools().id,
-                    notification_type: props.notificationTools().type,
-                    seen: props.seen,
-                    role: props.role
-                }),
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: "include"
-            })
+            const response = await mark_notification_as_read(
+                props.notificationTools().id,
+                props.notificationTools().type,
+                props.seen,
+                props.role
+            )
 
             if (response.status === 200) {
                 props.setNotifications((prev) => {                    
                     return prev.map((n) =>
                         n.id === props.notificationTools().id ? { ...n, seen: !n.seen } : n
                     )
-                }
-                  );          
+                });          
             }
         } catch (error) {
             console.log(error)            
@@ -39,23 +32,15 @@ export const NotificationTools = (props) => {
         e.stopPropagation();
         e.preventDefault();
         try {
-            const response = await fetch("http://localhost:4321/notification/remove", {
-                method: "POST",
-                body: JSON.stringify({
-                    notification_id: props.notificationTools().id,
-                    notification_type: props.notificationTools().type,
-                    seen: props.seen,
-                    role: props.role
-                }),
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: "include"
-            })
+            const response = await remove_notification(
+                props.notificationTools().id,
+                props.notificationTools().type,
+                props.seen,
+                props.role
+            )
 
             if (response.status === 200) {
                 props.setNotifications((prev) => {
-                    console.log(prev, props.notificationTools())
                     return prev.filter(n => n.id !== props.notificationTools().id)
                 })
             }

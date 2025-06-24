@@ -22,6 +22,7 @@ import logoutSVG from "../svg-images/box-arrow-right.svg";
 import { logout_user } from "~/routes/api/user";
 import { header } from "~/routes/api/header";
 import { Notifications } from "./header_modals/Notifications";
+import { get_unseen_notifications } from "~/routes/api/notifications/main";
 
 export const Header = () => {
   const user = createAsync(() => header(), {deferStream: true});
@@ -36,17 +37,10 @@ export const Header = () => {
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:4321/notifications/unseen`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
+      const response = await get_unseen_notifications()
 
-      const data = await response.json();
       if (response.status === 200) {
-        setIsUnseenNotif(data.message);
+        setIsUnseenNotif(response.message);
       }
     } catch (error) {
       console.log(error);

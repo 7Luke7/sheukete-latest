@@ -1,88 +1,52 @@
 import { EmailPassword } from "~/Components/EmailPassword";
 import stepBack from "../../../svg-images/svgexport-25.svg";
-import { A, useNavigate } from "@solidjs/router";
-import { Show, createSignal } from "solid-js";
+import { A, action, useSubmission } from "@solidjs/router";
+import { Show } from "solid-js";
 import { RegisterUser } from "../../api/authentication";
 
-const Role = (props) => {
-  const [error, setError] = createSignal(null);
-  const navigate = useNavigate();
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-  const phoneRegex = /^\d{9}$/;
-  const role = props.location.pathname.split("/")[2] === "xelosani" ? "ხელოსანი" : "დამკვეთი"
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    try {
-      setError(null);
-      const formData = new FormData(event.target);
-      if (!formData.get("firstname").length) {
-        return setError([
-          {
-            field: "firstname",
-            message: "სახელი სავალდებულოა.",
-          },
-        ]);
-      }
-      if (!formData.get("lastname").length) {
-        return setError([
-          {
-            field: "lastname",
-            message: "გვარი სავალდებულოა.",
-          },
-        ]);
-      }
-      if (
-        !emailRegex.test(formData.get("phoneEmail")) &&
-        !phoneRegex.test(formData.get("phoneEmail"))
-      ) {
-        return setError([
-          {
-            field: "phoneEmail",
-            message: "მეილი ან ტელეფონის ნომერი არასწორია.",
-          },
-        ]);
-      }
-      if (!formData.get("password").length) {
-        return setError([
-          {
-            field: "password",
-            message: "პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს.",
-          },
-        ]);
-      }
-      if (!formData.get("rules-confirmation")) {
-        return setError([{
-            field: "rules",
-            message: "გთხოვთ დაეთანხმოთ სერვისის წესებსა და კონფიდენციალურობის პოლიტიკას."
-        }])
-      }
-      const result = await RegisterUser(formData, props.location.pathname.split("/")[2]);
-      if (result.status === 400) {
-        return setError(result.errors);
-      }
-      if (result.message === "success") {
-        navigate(`/${result.role}/${result.profId}`);
-      }
-    } catch (error) {
-      alert(error);
+const handleSubmit = action(async (formData) => {
+  "use server"
+  console.log("hi")
+  try {
+    const result = await RegisterUser(formData);
+    if (result.status === 400) {
+      return result.errors;
     }
-  };
+    const headers = new Headers();
+    Object.keys(result).forEach((v) => {
+      headers.set(v, result[v])
+    })
+    console.log(result)
 
+    return new Response(null, {
+      status: 303,
+      headers
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}, "register")
+
+const Role = (props) => {
+  const role = props.location.pathname.split("/")[2] === "xelosani" ? "ხელოსანი" : "დამკვეთი"
+  const action_result = useSubmission(handleSubmit)
+
+  const error = () => action_result.result
   return (
     <div class="flex-[10] border p-5 mt-5 rounded border-slate-300 border-2 flex flex-col gap-y-5 justify-center items-center">
       <div class="flex gap-x-5">
         <A href="/register">
-        <img
-          src={stepBack}
-          class="cursor-pointer"
-        ></img>
+          <img
+            src={stepBack}
+            class="cursor-pointer"
+          ></img>
         </A>
         <h1 class="text-xl font-bold text-slate-900 font-[boldest-font]">
           გაიარე რეგისტრაცია როგორც <span class="text-gr">{role}</span>
         </h1>
       </div>
-      <form method="post" onSubmit={handleSubmit} class="w-full max-w-lg">
+      <form method="post" action={handleSubmit} class="w-full max-w-lg">
+        <input type="hidden" name="role" value={props.location.pathname.split("/")[2]} />
         <div class="flex flex-wrap -mx-3 mb-2">
           <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
             <label
@@ -92,11 +56,10 @@ const Role = (props) => {
               სახელი
             </label>
             <input
-              class={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
-                error()?.some((a) => a.field === "firstname")
+              class={`appearance-none block w-full bg-gray-200 text-gray-700 border ${error()?.some((a) => a.field === "firstname")
                   ? "border-red-500"
                   : "border-gray-200"
-              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+                } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
               id="grid-first-name"
               name="firstname"
               type="text"
@@ -116,11 +79,10 @@ const Role = (props) => {
               გვარი
             </label>
             <input
-              class={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
-                error()?.some((a) => a.field === "lastname")
+              class={`appearance-none block w-full bg-gray-200 text-gray-700 border ${error()?.some((a) => a.field === "lastname")
                   ? "border-red-500"
                   : "border-gray-200"
-              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+                } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
               id="grid-last-name"
               type="text"
               name="lastname"
@@ -133,7 +95,7 @@ const Role = (props) => {
             </Show>
           </div>
         </div>
-        <EmailPassword error={error}></EmailPassword>
+        <EmailPassword error={() => action_result.result}></EmailPassword>
         <div class="flex gap-y-2 flex-col mt-4">
           <div class="flex items-center gap-x-2 justify-center">
             <input

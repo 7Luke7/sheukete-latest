@@ -1,7 +1,9 @@
-import { A } from "@solidjs/router"
+import { A, createAsync } from "@solidjs/router"
 import { SmallFooter } from "~/Components/SmallFooter"
+import { check_if_user_is_logged_in } from "./api/authentication"
 
 const Register = (props) => {
+    createAsync(() => check_if_user_is_logged_in(), {deferStream: true})
     return <div class="h-screen overflow-y-hidden mx-12 pt-6">
     <header class="flex items-center justify-between">
             <A href="/" class="text-xl leading-[25px] text-dark-green font-bold font-[thin-font]">შეუკეთე</A>

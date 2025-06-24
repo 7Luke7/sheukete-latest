@@ -8,10 +8,10 @@ import cake from "../../../svg-images/cake.svg";
 import spinnerSVG from "../../../svg-images/spinner.svg";
 import { A } from "@solidjs/router";
 import { makeAbortable } from "@solid-primitives/resource";
-import {Buffer} from "buffer"
-import { accept_request, reject_request } from "../../notifications/utils";
 import { startConversation } from "./utils";
- 
+import { upload_image } from "~/routes/api/upload/images";
+import { reject_request, accept_request } from "~/routes/api/friends/friends";
+
 export const ProfileLeft = (props) => {
   const [imageLoading, setImageLoading] = createSignal(false);
   const [imageUrl, setImageUrl] = createSignal();
@@ -30,19 +30,9 @@ export const ProfileLeft = (props) => {
     formData.append("profile_image", file());
 
     try {
-      const response = await fetch(
-        `http://localhost:5555/profile_picture/${props.user().profId}`,
-        {
-          method: "POST",
-          body: formData,
-          signal: signal(),
-          credentials: "include"
-        }
-      );
+      const data = await upload_image(formData)
 
-      const data = await response.json()
-
-      if (!response.ok) {
+      if (data.status !== 200) {
         return props.setToast({
           type: false,
           message: data.message
@@ -73,29 +63,18 @@ export const ProfileLeft = (props) => {
 
   const handleFilePreview = async (file) => {
     if (file.size > 2 * 1024 * 1024) {
-      return batch(() => {
-        props.setToast({
-          type: false,
-          message: "ფაილის ზომა აღემატება 2მბ ლიმიტს."
-        })
+      return props.setToast({
+        type: false,
+        message: "ფაილის ზომა აღემატება 2მბ ლიმიტს."
       })
     }
     setImageLoading(true)
     try {
-      const worker = new Worker(
-        new URL("../../Components/readImagesWorker.js", import.meta.url)
-      );
-
-      worker.onmessage = async (e) => {
-        const buffer = e.data;
-        const base64string = Buffer.from(buffer, "utf-8").toString("base64");
-        batch(() => {
-          setFile(file);
-          setImageLoading(false);
-          setImageUrl(`data:image/png;base64,${base64string}`);
-        });
-      };
-      worker.postMessage(file);
+      batch(() => {
+        setFile(file);
+        setImageLoading(false);
+        setImageUrl(URL.createObjectURL(file));
+      });
     } catch (error) {
       console.log(error);
     }
@@ -104,8 +83,12 @@ export const ProfileLeft = (props) => {
   const sendFriendRequest = async () => {
     setSendingFriendRequest(true)
     try {
-        const response = await fetch(`http://localhost:4321/xelosani/friend/send/${props.user().profId}`, {
-        method: "GET",
+        const response = await fetch("/api/friends/main", {
+        method: "POST",
+        body: JSON.stringify({"targetId": props.user().profId, "role": props.user().role}),
+        headers: {
+          "Content-Type": "application/json"
+        },
         credentials: "include",
         signal: signal()
       })
