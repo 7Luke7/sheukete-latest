@@ -1,3 +1,4 @@
+import { Header } from "~/Components/Header";
 import {
   createSignal,
   Switch,
@@ -71,8 +72,8 @@ const CreateServices = (props) => {
 
   const navigate = useNavigate();
 
-  const MAX_SINGLE_FILE_SIZE = 2 * 1024 * 1024;
-  const MAX_TOTAL_SIZE = 15 * 1024 * 1024;
+  const MAX_SINGLE_FILE_SIZE = 5 * 1024 * 1024;
+  const MAX_TOTAL_SIZE = 25 * 1024 * 1024;
 
   onMount(() => {
     if (response() && response()?.status === 200 && response().isEditing) {
@@ -127,19 +128,10 @@ const CreateServices = (props) => {
         });
       }
 
-      const file_existence =
-        image() && image().some((a) => a.name === file.name);
-      if (file_existence && currentStep() !== "thumbnail") {
-        return setToast({
-          type: false,
-          message: `${file.name} უკვე დამატებული გაქვთ.`,
-        });
-      }
-
       if (file.size > MAX_SINGLE_FILE_SIZE) {
         return setToast({
           type: false,
-          message: `${file.name}, ფაილის ზომა აჭარბებს 2მბ ლიმიტს.`,
+          message: `${file.name}, ფაილის ზომა აჭარბებს 5მბ ლიმიტს.`,
         });
       } else {
         setTotalSize((a) => (a += file.size));
@@ -150,7 +142,7 @@ const CreateServices = (props) => {
     if (totalSize() > MAX_TOTAL_SIZE) {
       return setToast({
         type: false,
-        message: "ფაილების ჯამური ზომა აჭარბებს 15მბ ერთობლივ ლიმიტს.",
+        message: "ფაილების ჯამური ზომა აჭარბებს 25მბ ერთობლივ ლიმიტს.",
       });
     }
 
@@ -312,13 +304,16 @@ const CreateServices = (props) => {
         return;
       }
 
-      fd.append("location", JSON.stringify(markedLocation()));
       fd.append("thumbnail", thumbNail());
       fd.append("mainCategory", mainChecked());
       fd.append("parentCategory", parentChecked());
       fd.append("childCategory", JSON.stringify(childChecked()));
       fd.append("service", JSON.stringify(service()));
       fd.append("galleryLength", image().length);
+
+      if (markedLocation()) {
+        fd.append("location", JSON.stringify(markedLocation()));
+      }
 
       if (schedule()) {
         fd.append("schedule", JSON.stringify(schedule()));
@@ -333,8 +328,8 @@ const CreateServices = (props) => {
       }
       setIsSendingRequest(true);
       const url = isEditing()
-        ? "/api/xelosani/service/edit_service"
-        : "/api/xelosani/service/add_service";
+        ? `/api/xelosani/service/edit_service?profId=${props?.location?.pathname.split("/")[2]}`
+        : `/api/xelosani/service/add_service?profId=${props?.location?.pathname.split("/")[2]}`;
       const response = await fetch(url, {
         method: "POST",
         body: fd,
@@ -557,7 +552,8 @@ const CreateServices = (props) => {
         rel="stylesheet"
       />
       <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.0.1/maptiler-sdk.umd.min.js"></script>
-      <section class="min-h-screen">
+      <section class="bg-gray-50 min-h-screen">
+        <Header />
         <Switch>
           <Match when={response() && response() === 401}>
             <NotAuthorized />
@@ -570,7 +566,7 @@ const CreateServices = (props) => {
               />
             </Show>
 
-            <h1 class="text-center font-bold text-2xl text-gray-800">
+            <h1 class="text-center font-bold text-2xl my-5 text-gray-800">
               {isEditing() ? "გაანახლე სერვისი" : "დაამატე სერვისი"}
             </h1>
 

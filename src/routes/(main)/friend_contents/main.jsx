@@ -37,16 +37,6 @@ export const MainFriends = () => {
         </button>
       </div>
     </A>
-    <A href="/mayknow" class="bg-white hover:bg-gray-100 rounded-lg shadow">
-      <div class="flex justify-between items-center px-4 py-3 border-b border-gray-200">
-        <span class="text-lg font-[normal-font] text-gray-700">
-          შესაძლოა იცნობდეთ
-        </span>
-        <button>
-            <img width={26} src={dropdownGreenSVG} alt="More options"></img>
-        </button>
-      </div>
-    </A>
   </div>
   </>
 }

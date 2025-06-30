@@ -7,7 +7,7 @@ export const client = createClient({
     url: "redis://127.0.0.1:6379",
 })
 
-await client.connect().then(() => console.log("successfuly connect")).catch((err) => {
+await client.connect().then(() => console.log("redis connected")).catch((err) => {
     console.log("REDIS_ERR: ", err)
 })  
 

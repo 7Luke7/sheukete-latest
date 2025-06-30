@@ -4,6 +4,7 @@ import spinnerSVG from "../../../../svg-images/spinner.svg";
 import { Match, Suspense, Switch, batch, createSignal } from "solid-js";
 import { makeAbortable } from "@solid-primitives/resource";
 import { get_profile_photo } from "~/routes/api/xelosani/setup/step";
+import { Toast } from "~/Components/ToastComponent";
 
 const ProfilePictureStep = () => {
   const userImage = createAsync(get_profile_photo)
@@ -15,6 +16,7 @@ const ProfilePictureStep = () => {
     timeout: 0,
     noAutoAbort: true,
   });
+  const [toast, setToast] = createSignal(null)
   const navigate = useNavigate();
 
   const handleProfileImageChange = async () => {
@@ -58,6 +60,12 @@ const ProfilePictureStep = () => {
   };
 
   const handleFilePreview = async (file) => {
+    if (file.size > 5 * 1024 * 1024) {
+      return setToast({
+        type: false,
+        message: "ფაილის ზომა აღემატება 5მბ ლიმიტს."
+      })
+    }
     setImageLoading(true);
     try {
       batch(() => {
@@ -74,6 +82,7 @@ const ProfilePictureStep = () => {
     <Switch>
       <Match when={!userImage()?.url && !submitted()}>
         <div class="flex p-10 flex-col items-center mb-4">
+          <Toast toast={toast} setToast={setToast}></Toast>
           <Switch>
             <Match when={!imageLoading()}>
               <label

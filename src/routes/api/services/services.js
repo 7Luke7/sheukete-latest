@@ -173,7 +173,6 @@ export async function GET({ request }) {
   const url = "get_browse_initial_services";
   const finalUrl = `${url}${search}`;
 
-  console.log(finalUrl)
   try {
     const postgresql_response = await postgresql_server_request(
       "GET",

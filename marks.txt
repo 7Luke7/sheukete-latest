@@ -245,3 +245,16 @@ For non premium users when they create service/job put 10 map load limit
 		}))
 		subscribe("typing")
 	}, {defer: true}))
+
+--- messaging --- 
+
+so on component mount itself let's let user subscribe to the room that notifies
+user that there is some message
+
+if they go to /message then we will subscribe to all the conversations
+based on the retreived convos we will have limit on the retreived convos
+on initial load
+
+    --- auth
+
+	on initial request lets make JSON Web Token auth instead of cookies

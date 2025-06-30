@@ -8,9 +8,9 @@ import cake from "../../../svg-images/cake.svg";
 import spinnerSVG from "../../../svg-images/spinner.svg";
 import { A } from "@solidjs/router";
 import { makeAbortable } from "@solid-primitives/resource";
-import { startConversation } from "./utils";
 import { upload_image } from "~/routes/api/upload/images";
 import { reject_request, accept_request } from "~/routes/api/friends/friends";
+import { create_user_convos } from "~/routes/api/messages/conversations";
 
 export const ProfileLeft = (props) => {
   const [imageLoading, setImageLoading] = createSignal(false);
@@ -62,10 +62,10 @@ export const ProfileLeft = (props) => {
   };
 
   const handleFilePreview = async (file) => {
-    if (file.size > 2 * 1024 * 1024) {
+    if (file.size > 5 * 1024 * 1024) {
       return props.setToast({
         type: false,
-        message: "ფაილის ზომა აღემატება 2მბ ლიმიტს."
+        message: "ფაილის ზომა აღემატება 5მბ ლიმიტს."
       })
     }
     setImageLoading(true)
@@ -197,6 +197,22 @@ export const ProfileLeft = (props) => {
     }
     return object
   })
+
+  const startConversation = async (prof_id, role) => {
+    try {
+        if (!prof_id) {
+            throw new Error("პროფილის id სავალდებულოა.")
+        }
+        const response = await create_user_convos(prof_id, role)
+
+        if (response.status === 200 ) { 
+            window.location.href = response.redirect_url
+            return
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
 
   return (
     <div class="flex sticky top-[50px] gap-y-3 flex-col">

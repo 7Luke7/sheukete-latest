@@ -1,11 +1,11 @@
 import { createSignal, Match, Switch } from "solid-js";
-import { Availability } from "./attributes/Availability";
+import { Schedule } from "./attributes/Schedule";
 import { ExtraServices } from "./attributes/ExtraServices";
 import { ServiceReviews } from "./attributes/ServiceReviews";
 
 const TAB = {
   EXTRAS: 0,
-  AVAILABILITY: 1,
+  SCHEDULE: 1,
   REVIEWS: 2,
 };
 export const AdditionalAttributes = (props) => {
@@ -26,11 +26,11 @@ export const AdditionalAttributes = (props) => {
         </button>
         <button
           class={`pb-2 ${
-            activeTab() === TAB.AVAILABILITY
+            activeTab() === TAB.SCHEDULE
               ? "border-b-2 border-green-600 text-green-700"
               : "text-gray-600"
           }`}
-          onClick={() => setActiveTab(TAB.AVAILABILITY)}
+          onClick={() => setActiveTab(TAB.SCHEDULE)}
         >
           ხელმისაწვდომობა
         </button>
@@ -50,8 +50,8 @@ export const AdditionalAttributes = (props) => {
         <Match when={activeTab() === TAB.EXTRAS}>
           <ExtraServices child_services={props.child_services}></ExtraServices>
         </Match>
-        <Match when={activeTab() === TAB.AVAILABILITY}>
-          <Availability availability={props.availability}></Availability>
+        <Match when={activeTab() === TAB.SCHEDULE}>
+          <Schedule schedule={props.schedule}></Schedule>
         </Match>
         <Match when={activeTab() === TAB.REVIEWS}>
           <ServiceReviews></ServiceReviews>

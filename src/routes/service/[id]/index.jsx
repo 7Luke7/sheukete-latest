@@ -6,35 +6,33 @@ import ChevronLeftBlack from "../../../svg-images/ChevronLeftBlack.svg";
 import ChevronRightBlack from "../../../svg-images/ChevronRightBlack.svg";
 import Swiper from "swiper";
 import { Navigation, Pagination } from "swiper/modules";
-import { register } from "swiper/element/bundle";
-import 'swiper/css/bundle';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 import { Base, Meta, MetaProvider, Title } from "@solidjs/meta";
-import { Footer } from "~/Components/Footer";
-import { SmallFooter } from "~/Components/SmallFooter";
 import { AdditionalAttributes } from "./Сomponents/AdditionalAttributes";
-
-register()
 
 const Service = (props) => {
   const service = createAsync(() => get_service(props.params.id), {
     deferStream: true,
   });
   const [currentImageView, setCurrentImageView] = createSignal(null);
+  const [showCarousel, setShowCarousel] = createSignal(false)
   let swiperGalleryEl, navigateRightGallery, navigateLeftGallery;
-
-  // Once mounted, initialize Swiper (client-only).
+  
   onMount(() => {
-    if (service() && service()) {
-      new Swiper(swiperGalleryEl, {
-        modules: [Navigation, Pagination],
-        spaceBetween: 10,
-        slidesPerView: 4,
-        navigation: {
-          nextEl: navigateRightGallery,
-          prevEl: navigateLeftGallery,
-        },
-      });
-    }
+    new Swiper(swiperGalleryEl, {
+      modules: [Navigation, Pagination],
+      spaceBetween: 10,
+      slidesPerView: 5,
+      navigation: {
+        nextEl: navigateRightGallery,
+        prevEl: navigateLeftGallery,
+      },
+      on: {
+        init: () => setShowCarousel(true),
+      }
+    });
   });
 
   return (
@@ -49,7 +47,7 @@ const Service = (props) => {
       <Show when={service()} fallback={<div>Loading...</div>}>
         <div class="container mx-auto mt-[50px] max-w-[90%]">
           <div class="flex flex-col md:flex-row gap-6">
-            <div class="w-full md:w-[460px] flex flex-col items-center">
+            <div class="w-full md:w-[460px] flex flex-col">
               <div class="relative h-[460px] w-[460px] flex mx-auto">
                 <img
                   src={
@@ -62,34 +60,34 @@ const Service = (props) => {
                         }/thumbnail/medium/thumbnail.webp`
                   }
                   alt={service().main_title}
-                  class=" h-[460px] w-[460px] rounded-lg border"
+                  class="h-[460px] w-[460px] rounded-lg border"
                   fetchpriority="high"
+                  width={460}
+                  height={460}
                 />
-           
               </div>
 
-              {/* Thumbnail Gallery with Swiper */}
-              <section class="relative mt-4 max-w-[460px] mx-auto">
+              <section class="relative mt-4 max-w-[460px]">
                 <div
                   ref={(el) => (swiperGalleryEl = el)}
-                  class="swiper h-[60px] max-w-[460px]"
+                  class="swiper h-[60px] flex max-w-[460px]"
+                    classList={{ invisible: !showCarousel() }}
+
                 >
                   <div
                     class="swiper-wrapper max-w-[460px]"
                     style={{ display: "flex", flexWrap: "wrap" }}
                   >
                     <img
-                      class={`swiper-slide border ${
-                        currentImageView() &&
-                        currentImageView().index === 0 &&
-                        "border-dark-green-hover"
-                      }  w-[60px] h-[60px] rounded-lg`}
+                      class={`swiper-slide border ${!currentImageView() || currentImageView().index === 0 && 'border-dark-green-hover'} rounded-lg`}
                       src={`http://localhost:5555/static/images/xelosani/${
                         service().prof_id
                       }/services/${
                         service().public_id
                       }/thumbnail/small/thumbnail.webp`}
                       loading="lazy"
+                      width={60}
+                      height={60}
                       alt={service().main_title}
                       onClick={() =>
                         setCurrentImageView({
@@ -115,8 +113,10 @@ const Service = (props) => {
                             currentImageView() &&
                             currentImageView().index === i() + 1 &&
                             "border-dark-green-hover"
-                          }   rounded-lg w-[60px] h-[60px]`}
+                          }   rounded-lg`}
                           loading="lazy"
+                          width={60}
+                          height={60}
                           onClick={() =>
                             setCurrentImageView({
                               index: i() + 1,
@@ -133,8 +133,8 @@ const Service = (props) => {
                   </div>
                 </div>
 
-                {/* Swiper Navigation Buttons */}
-                <div class="absolute top-1/2 left-2 -translate-y-1/2 z-[10]">
+                <Show when={service().gallery_count > 6}>
+                  <div class="absolute top-1/2 left-2 -translate-y-1/2 z-[10]">
                   <button
                     ref={(el) => (navigateLeftGallery = el)}
                     class="cursor-pointer bg-white rounded-full shadow hover:bg-gray-200 transition"
@@ -160,12 +160,13 @@ const Service = (props) => {
                     />
                   </button>
                 </div>
+                </Show>
               </section>
 
               {/* Professional Info */}
               <div class="mt-8 w-full">
                 <h2 class="text-lg font-bold mb-2">
-                  პროფესიონალური ინფორმაცია
+                  მომხმარებლის პროფილი
                 </h2>
                 <A
                   href={`/xelosani/${service().prof_id}`}
@@ -193,7 +194,7 @@ const Service = (props) => {
             <div class="w-full">
               {/* Title, Date, Short Description */}
               <div class="flex flex-col gap-2">
-                <div class="flex items-center justify-between">
+                <div class="flex items-start justify-between">
                   <h1 class="text-2xl md:text-3xl font-[normal-font] font-bold text-gray-800">
                     {service().main_title}
                   </h1>
@@ -255,13 +256,10 @@ const Service = (props) => {
           {/* SECOND SECTION: TABBED CONTENT for Detailed Info */}
           <AdditionalAttributes
             child_services={service().child_services}
-            availability={service().availability}
+            schedule={service().schedule}
           ></AdditionalAttributes>
         </div>
       </Show>
-      <div class="my-5 w-[80%] mx-auto">
-      <SmallFooter></SmallFooter>
-      </div>
     </MetaProvider>
   );
 };

@@ -2,10 +2,10 @@
 
 import { issue_token } from "./token"
 
-export const fileserver_request = async (method, params, headers) => {
+export const fileserver_request = async (method, params, headers = {}) => {
     try {
         const token = await issue_token("file-server")
-        headers["X-Private-Key"] = token
+        headers["x-private-key"] = token
         const response = await fetch(`${process.env.FILESERVER_SERVER_DOMAIN}:${process.env.FILESERVER_SERVER_PORT}/${params}`, {
             method: method,
             ...headers

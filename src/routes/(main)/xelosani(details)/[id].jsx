@@ -26,9 +26,7 @@ import Friends from "../friends";
 import { isServer } from "solid-js/web";
 
 const Xelosani = (props) => {
-  const user = createAsync(() => get_xelosani(props.params.id), {
-    deferStream: true,
-  });
+  const user = createAsync(() => get_xelosani(props.params.id));
   const navigate = useNavigate();
   const [modal, setModal] = createSignal(null);
   const [toast, setToast] = createSignal();

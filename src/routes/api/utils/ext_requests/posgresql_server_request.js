@@ -2,7 +2,7 @@
 
 import { issue_token } from "./token"
 
-export const postgresql_server_request = async (method, params, headers) => {
+export const postgresql_server_request = async (method, params, headers = {}) => {
     try {
         const token = await issue_token("postgresql-server")
         headers['headers']["x-private-key"] = token

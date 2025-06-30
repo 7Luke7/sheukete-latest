@@ -104,7 +104,7 @@ export const SignleServiceRenderer = (props) => {
                 <p class="text-xs">
                   სამუშაოები: {s.completed_jobs}
                 </p>
-                <p class="text-xs">საშუალო: {s.avgrating}</p>
+                <p class="text-xs">შეფასება: {s.avgrating}</p>
               </div>
             </A>
           </div>

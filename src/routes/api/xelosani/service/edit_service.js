@@ -5,8 +5,8 @@ import { HandleError } from "../../utils/errors/handle_errors";
 import { postgresql_server_request } from "../../utils/ext_requests/posgresql_server_request";
 import { fileserver_request } from "../../utils/ext_requests/fileserver_request";
 
-const MAX_SINGLE_FILE_SIZE = 2 * 1024 * 1024;
-const MAX_TOTAL_SIZE = 15 * 1024 * 1024;
+const MAX_SINGLE_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_TOTAL_SIZE = 25 * 1024 * 1024;
 
 export async function POST({request}) {
     try {
@@ -150,18 +150,18 @@ export async function POST({request}) {
 
         if (response.status === 200) {
           if (thumbNail.size > MAX_SINGLE_FILE_SIZE) {
-            throw Error(`${current_image.name}, ფაილის ზომა აჭარბებს 2მბ ლიმიტს.`);
+            throw Error(`${current_image.name}, ფაილის ზომა აჭარბებს 5მბ ლიმიტს.`);
           } 
 
           for (let i = 0; i < imageLength; i++) {
             const current_image = formData.get(`service-${i}-gallery-image`)
             console.log(current_image)
             if (current_image.size > MAX_SINGLE_FILE_SIZE) {
-              throw Error(`${current_image.name}, ფაილის ზომა აჭარბებს 2მბ ლიმიტს.`);
+              throw Error(`${current_image.name}, ფაილის ზომა აჭარბებს 5მბ ლიმიტს.`);
             }
             count += current_image.size;
             if (count > MAX_TOTAL_SIZE) {
-              throw Error("ფაილების ჯამური ზომა აჭარბებს 15მბ ერთობლივ ლიმიტს.");
+              throw Error("ფაილების ჯამური ზომა აჭარბებს 25მბ ერთობლივ ლიმიტს.");
             }
           }
 

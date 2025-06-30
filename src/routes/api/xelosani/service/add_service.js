@@ -13,7 +13,7 @@ export async function POST({request}) {
         const user = await verify_user({request});
         const req_url = new URL(request.url);
 
-        const prof_id = req_url.pathname.split("/")[2]
+        const prof_id = req_url.searchParams.get("profId")
 
         if (user === 401 || user.profId !== prof_id || user.role === "damkveti") {
           return 401;

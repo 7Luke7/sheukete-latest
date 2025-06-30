@@ -92,12 +92,6 @@ const Friends = () => {
         </For>  
       </div>
       </section>
-      <section>
-        <div class="flex justify-between items-end">
-          <h2 class="font-[normal-font] text-lg">შესაძლოა იცნობდეთ</h2>
-          <A href="requests" class="underline text-blue-500 font-[thin-font] font-bold text-xs">ნახე ყველა</A>
-        </div>
-      </section>
       <Show when={viewAllUserMutuals().length}>
         <For each={viewAllUserMutuals()}>
           {(target_mf, i) => {
