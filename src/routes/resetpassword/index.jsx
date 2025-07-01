@@ -43,7 +43,7 @@ const FindUser = () => {
                 }])
             }
 
-            const url = `http://localhost:5555/static/images/${data.role}/profile/${data.prof_id}.webp`
+            const url = `http://localhost:5555/static/${data.role}/profile/${data.prof_id}.webp`
             setIsSendingRequest(false)
             setUser({...data, profImage: url}) 
         } catch (error) {

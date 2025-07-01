@@ -35,7 +35,7 @@ const Friends = () => {
           {(f) => {
             return <div class="border rounded-b-lg">
               <A href={`/${f.role}/${f.prof_id}`}>
-                <img src={`http://localhost:5555/static/images/${f.role}/profile/medium/${f.prof_id}.webp`} width={340} height={340} class="w-[340px] h-[340px]" alt={`${f.firstname}-ს პროფილის ფოტო`}></img>
+                <img src={`http://localhost:5555/static/${f.role}/profile/medium/${f.prof_id}.webp`} width={340} height={340} class="w-[340px] h-[340px]" alt={`${f.firstname}-ს პროფილის ფოტო`}></img>
               </A>
               <div class="px-2 pb-2">
               <div class="flex flex-col border-b py-2">
@@ -45,7 +45,7 @@ const Friends = () => {
                     <div class="flex items-center">
                     {f.mutual_friends.friends.map((fm) => {
                       return <A href={`/${fm.role}/${fm.prof_id}`}>
-                        <img src={`http://localhost:5555/static/images/${fm.role}/profile/small/${fm.prof_id}.webp`} class="w-[18px] h-[18px] rounded-full"></img>
+                        <img src={`http://localhost:5555/static/${fm.role}/profile/small/${fm.prof_id}.webp`} class="w-[18px] h-[18px] rounded-full"></img>
                       </A> 
                     })}
                     </div>

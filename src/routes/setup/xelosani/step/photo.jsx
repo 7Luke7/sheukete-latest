@@ -97,7 +97,7 @@ const ProfilePictureStep = () => {
                   >
                     <img
                       id="setup_image"
-                      src={imageUrl() ? imageUrl() : `http://localhost:5555/static/images/xelosani/profile/${userImage()?.profId}.webp`}
+                      src={imageUrl() ? imageUrl() : `http://localhost:5555/static/xelosani/profile/${userImage()?.profId}.webp`}
                       alt="Profile"
                       class="w-[180px] border-2 h-[180px] rounded-full mb-4"
                     />

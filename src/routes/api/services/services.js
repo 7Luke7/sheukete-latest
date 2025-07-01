@@ -194,10 +194,10 @@ export async function GET({ request }) {
       ).toLocaleDateString();
       postgresql_response.services[i][
         "thumbnail_src"
-      ] = `${process.env.FILESERVER_SERVER_DOMAIN}:${process.env.FILESERVER_SERVER_PORT}/static/images/xelosani/${postgresql_response.services[i].profId}/services/${postgresql_response.services[i].publicId}/thumbnail/browse/thumbnail.webp`;
+      ] = `${process.env.FILESERVER_SERVER_DOMAIN}:${process.env.FILESERVER_SERVER_PORT}/static/xelosani/${postgresql_response.services[i].profId}/services/${postgresql_response.services[i].publicId}/thumbnail/browse/thumbnail.webp`;
       postgresql_response.services[i][
         "prof_pic_src"
-      ] = `${process.env.FILESERVER_SERVER_DOMAIN}:${process.env.FILESERVER_SERVER_PORT}/static/images/xelosani/profile/browse/${postgresql_response.services[i].profId}.webp`;
+      ] = `${process.env.FILESERVER_SERVER_DOMAIN}:${process.env.FILESERVER_SERVER_PORT}/static/xelosani/profile/browse/${postgresql_response.services[i].profId}.webp`;
     }
 
     let pageCount;

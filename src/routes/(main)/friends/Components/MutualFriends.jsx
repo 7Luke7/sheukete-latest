@@ -39,7 +39,7 @@ export const MutualFriends = (props) => {
                             <div class="flex justify-between items-center px-6 py-2">
                                 <div class="flex items-center gap-x-2">
                                     <A href={`/${mf.role}/${mf.prof_id}`}>
-                                        <img width={50} height={50} src={`http://localhost:5555/static/images/${mf.role}/profile/small/${mf.prof_id}.webp`}  class="rounded-full w-[50px] h-[50px]"></img>
+                                        <img width={50} height={50} src={`http://localhost:5555/static/${mf.role}/profile/small/${mf.prof_id}.webp`}  class="rounded-full w-[50px] h-[50px]"></img>
                                     </A>
                                     <div class="flex flex-col gap-y-1">
                                     <A href={`/${mf.role}/${mf.prof_id}`}>
@@ -50,7 +50,7 @@ export const MutualFriends = (props) => {
                                             <div class="flex items-center">
                                             {mf.mutual_friends.mutual_friends.map((mmf) => {
                                                 return <A href={`/${mmf.role}/${mmf.prof_id}`}>
-                                                <img width={18} height={18} src={`http://localhost:5555/static/images/${mmf.role}/profile/small/${mmf.prof_id}.webp`}  class="rounded-full w-[18px] h-[18px]"></img>
+                                                <img width={18} height={18} src={`http://localhost:5555/static/${mmf.role}/profile/small/${mmf.prof_id}.webp`}  class="rounded-full w-[18px] h-[18px]"></img>
                                             </A>
                                             })}
                                             </div>

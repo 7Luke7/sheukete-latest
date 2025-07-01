@@ -15,7 +15,7 @@ import RightArrow from "../../../svg-images/ChevronRightBlack.svg";
 import { Image } from "../Components/Image";
 import { Text } from "../Components/Text";
 import loader from "../../../svg-images/loader.svg";
-import "./index.css"
+import { createVirtualizer } from "@tanstack/solid-virtual";
 
 /* 
   image loading later pushes text's above while they 
@@ -47,9 +47,16 @@ const Message = (props) => {
 
   let ws
   let root
+  let rowVirtualizer 
 
   createEffect(on(lastMessage, () => {
     if (!lastMessage() && messagesStore.messages.length < 20) return;
+    rowVirtualizer = createVirtualizer({
+      count: messagesStore.messages.length, // The total number of items to virtualize.
+      estimateSize: () => 35,
+      getScrollElement: () => root
+    })
+    console.log(rowVirtualizer)
 
     const last_message_in_view = async (entries, observer) => {
       const [entry] = entries;

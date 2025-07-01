@@ -876,7 +876,7 @@ const CreateServices = (props) => {
                                 type="button"
                                 onClick={() =>
                                   setImageToPreviewUrl(
-                                    `http://localhost:5555/static/images/xelosani/${
+                                    `http://localhost:5555/static/xelosani/${
                                       response().profId
                                     }/services/${
                                       response().serviceId
@@ -931,7 +931,7 @@ const CreateServices = (props) => {
                                     type="button"
                                     onClick={() =>
                                       setImageToPreviewUrl(
-                                        `http://localhost:5555/static/images/xelosani/${
+                                        `http://localhost:5555/static/xelosani/${
                                           response().profId
                                         }/services/${
                                           response().serviceId

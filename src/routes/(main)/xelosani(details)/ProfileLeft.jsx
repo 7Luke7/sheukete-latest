@@ -242,7 +242,7 @@ export const ProfileLeft = (props) => {
                     src={
                       imageUrl()
                         ? imageUrl()
-                        : `http://localhost:5555/static/images/xelosani/profile/medium/${props.user().profId}.webp`
+                        : `http://localhost:5555/static/xelosani/profile/medium/${props.user().profId}.webp`
                     }
                     alt="profilis foto"
                     class="border-2 border-indigo-100 h-[180px] w-[180px] rounded-full my-2"
@@ -295,7 +295,7 @@ export const ProfileLeft = (props) => {
             loading="lazy"
             id="prof_pic"
             class="border-2 border-indigo-100 h-[180px] w-[180px] rounded-full my-2"
-            src={`http://localhost:5555/static/images/xelosani/profile/medium/${props.user()?.profId}.webp`}
+            src={`http://localhost:5555/static/xelosani/profile/medium/${props.user()?.profId}.webp`}
             alt="profilis foto"
           />
           <span class="absolute bottom-4 right-6 w-5 h-5 bg-[#14a800] border-2 border-indigo-100 rounded-full"></span>

@@ -166,7 +166,7 @@ export const Header = () => {
                     <img
                       class="rounded-[50%] border-2 w-[25px] h-[25px]"
                       alt="პროფილის ფოტო სათავე"
-                      src={`http://localhost:5555/static/images/${
+                      src={`http://localhost:5555/static/${
                         user()?.role
                       }/profile/small/${user()?.profId}.webp`}
                     ></img>

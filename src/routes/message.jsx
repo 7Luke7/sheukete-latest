@@ -69,7 +69,7 @@ const Message = (props) => {
                         {(p, i) => {
                             return <A href={props.location.pathname.split("/")[2] === p.conversation_id ? "/message" : p.conversation_id} class={`${props.location.pathname.split("/")[2] === p.conversation_id && "bg-gray-200"} flex px-2 py-2 rounded-lg hover:bg-gray-100 justify-between`}>
                                 <div class="flex">
-                                    <img width={50} height={50} class="w-[50px] h-[50px] rounded-full" src={`http://localhost:5555/static/images/${p.user_role}/profile/small/${p.user_prof_id}.webp`}></img>
+                                    <img width={50} height={50} class="w-[50px] h-[50px] rounded-full" src={`http://localhost:5555/static/${p.user_role}/profile/small/${p.user_prof_id}.webp`}></img>
                                     <div class="flex px-2 flex-col">
                                         <h1 class="font-bold text-md font-[thin-font]">{p.firstname + " " + p.lastname}</h1>
                                         <div class="flex gap-x-1 items-center">

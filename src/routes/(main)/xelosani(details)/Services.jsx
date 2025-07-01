@@ -23,7 +23,7 @@ export const Services = (props) => {
             <div class="flex flex-col w-[340px] bg-white shadow-md rounded-lg overflow-hidden">
               <A href={`/service/${a.publicId}`} class="relative">
                 <img
-                  src={`http://localhost:5555/static/images/xelosani/${props.profId}/services/${a.publicId}/thumbnail/browse/thumbnail.webp`} 
+                  src={`http://localhost:5555/static/xelosani/${props.profId}/services/${a.publicId}/thumbnail/browse/thumbnail.webp`} 
                   fetchpriority="high"
                   height={300}
                   width={300}

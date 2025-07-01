@@ -156,7 +156,7 @@ export default class Others {
                             <img
                               width={50}
                               height={50}
-                              src={`http://localhost:5555/static/images/${f.role}/profile/small/${f.prof_id}.webp`}
+                              src={`http://localhost:5555/static/${f.role}/profile/small/${f.prof_id}.webp`}
                               class="rounded-full border w-[50px] h-[50px]"
                             ></img>
                           <div class="flex flex-col gap-y-1 w-full">
@@ -183,7 +183,7 @@ export default class Others {
                                           <img
                                             width={18}
                                             height={18}
-                                            src={`http://localhost:5555/static/images/${mmf.role}/profile/small/${mmf.prof_id}.webp`}
+                                            src={`http://localhost:5555/static/${mmf.role}/profile/small/${mmf.prof_id}.webp`}
                                             class="rounded-full w-[18px] h-[18px]"
                                           ></img>
                                         </A>
@@ -336,7 +336,7 @@ export default class Others {
                             <img
                               width={50}
                               height={50}
-                              src={`http://localhost:5555/static/images/${f.role}/profile/small/${f.prof_id}.webp`}
+                              src={`http://localhost:5555/static/${f.role}/profile/small/${f.prof_id}.webp`}
                               class="rounded-full border w-[50px] h-[50px]"
                             ></img>
                           <div class="flex items-start justify-between w-full">
@@ -359,7 +359,7 @@ export default class Others {
                                           <img
                                             width={18}
                                             height={18}
-                                            src={`http://localhost:5555/static/images/${mmf.role}/profile/small/${mmf.prof_id}.webp`}
+                                            src={`http://localhost:5555/static/${mmf.role}/profile/small/${mmf.prof_id}.webp`}
                                             class="rounded-full w-[18px] h-[18px]"
                                           ></img>
                                         </A>
