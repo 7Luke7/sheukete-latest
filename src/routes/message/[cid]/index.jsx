@@ -14,6 +14,8 @@ import LeftArrow from "../../../svg-images/ChevronLeftBlack.svg";
 import RightArrow from "../../../svg-images/ChevronRightBlack.svg";
 import { Image } from "../Components/Image";
 import { Text } from "../Components/Text";
+import loader from "../../../svg-images/loader.svg";
+import "./index.css"
 
 /* 
   image loading later pushes text's above while they 
@@ -37,6 +39,7 @@ const Message = (props) => {
   const [toast, setToast] = createSignal(null);
   const [carouselImages, setCarouselImages] = createSignal()
   const [lastMessage, setLastMessage] = createSignal()
+  const [loading, setLoading] = createSignal(true)
 
   const MAX_TOTAL_SIZE = 200 * 1024 * 1024;
 
@@ -46,15 +49,12 @@ const Message = (props) => {
   let root
 
   createEffect(on(lastMessage, () => {
-    const options = {
-      root: root,
-      rootMargin: "50px 0px 0px 0px",
-      threshold: 1,
-    };
+    if (!lastMessage() && messagesStore.messages.length < 20) return;
 
-    const last_message_in_view = async (entries) => {
+    const last_message_in_view = async (entries, observer) => {
       const [entry] = entries;
       if (entry.isIntersecting) {
+        setLoading(true)
         const last = messagesStore.messages[messagesStore.messages.length - 1];
 
         const messages = await get_messages(props.params.cid, {
@@ -64,13 +64,21 @@ const Message = (props) => {
 
         if (messages.status === 200 && messages.convos.length) {
           setMessageStore("messages", (prev) => [...prev, ...messages.convos]);
+          setLoading(false)
           observer.unobserve(lastMessage());
+        } else {
+          setLoading(false)
         }
       }
     }
-    const observer = new IntersectionObserver(last_message_in_view, options);
-    observer.observe(lastMessage())
 
+    const observer = new IntersectionObserver(last_message_in_view, {
+      root: root,
+      rootMargin: "0px",
+      threshold: 0.1,
+    })
+
+    observer.observe(lastMessage())
     onCleanup(() => {
       observer.disconnect();
     });
@@ -80,6 +88,7 @@ const Message = (props) => {
     if (ctx()) ws = ctx().ws
     if (response()) {
       setMessageStore("messages", response().convos || []);
+      setLoading(false)
     }
     const retreive_message = (event) => {
       const { channel, ...rest } = JSON.parse(event.data);
@@ -327,7 +336,8 @@ const Message = (props) => {
           lastname={response().lastname}
           role={response().role}
         ></ConvoHeader>
-        <div ref={el => root = el} class={`bg-gray-200 h-full ${!response().convos.length && !messagesStore.messages.length && "justify-center"} overflow-y-auto`}>
+
+        <div ref={el => root = el} id="outer-div" class={`bg-gray-200 flex flex-col flex-col-reverse h-full ${!response().convos.length && !messagesStore.messages.length && "justify-center"} overflow-y-auto`}>
           <div class="w-[65%] py-5 pb-20 mx-auto">
             <Show when={modal()}>
               <div class="absolute top-1/2 z-[80] -translate-y-1/2 -translate-x-1/2 left-1/2 w-[460px] rounded-2xl bg-white">
@@ -407,25 +417,25 @@ const Message = (props) => {
               }
               when={messagesStore.messages.length || response().convos.length}
             >
-              <div>
+              <div id="inner-div" class="flex flex-col flex-col-reverse">
                 <For each={messagesStore.messages}>
                   {(message, index) => {
                     return <div
                       ref={el => index() === messagesStore.messages.length - 1 && (setLastMessage(el))}
-                      onMouseOver={() => {
-                        if (message.is_echo || response().my_id === message.sender_id) {
-                          document.getElementById(`echo-message-actions-${message.message_id}`).classList.replace("hidden", "flex")
-                        } else {
-                          document.getElementById(`other-message-actions-${message.message_id}`).classList.replace("hidden", "flex")
-                        }
-                      }}
-                      onMouseLeave={() => {
-                        if (message.is_echo || response().my_id === message.sender_id) {
-                          document.getElementById(`echo-message-actions-${message.message_id}`).classList.replace("flex", "hidden")
-                        } else {
-                          document.getElementById(`other-message-actions-${message.message_id}`).classList.replace("flex", "hidden")
-                        }
-                      }}
+                      // onMouseOver={() => {
+                      //   if (message.is_echo || response().my_id === message.sender_id) {
+                      //     document.getElementById(`echo-message-actions-${message.message_id}`).classList.replace("hidden", "flex")
+                      //   } else {
+                      //     document.getElementById(`other-message-actions-${message.message_id}`).classList.replace("hidden", "flex")
+                      //   }
+                      // }}
+                      // onMouseLeave={() => {
+                      //   if (message.is_echo || response().my_id === message.sender_id) {
+                      //     document.getElementById(`echo-message-actions-${message.message_id}`).classList.replace("flex", "hidden")
+                      //   } else {
+                      //     document.getElementById(`other-message-actions-${message.message_id}`).classList.replace("flex", "hidden")
+                      //   }
+                      // }}
                       class={`flex py-2 items-center ${message.is_echo || response().my_id === message.sender_id ? "justify-end" : "justify-start"
                         }`}
                     >
@@ -453,7 +463,7 @@ const Message = (props) => {
                             <Text message={message}></Text>
                           </Match>
                           <Match when={message.type[0] === 'file'}>
-                            <div class="flex flex-wrap w-full">
+                            <div class="flex inner-div flex-wrap w-full">
                               <For each={message.file_metadata}>
                                 {(fm, i) => (
                                   <Switch>
@@ -486,6 +496,11 @@ const Message = (props) => {
                     </div>
                   }}
                 </For>
+                <Show when={loading()}>
+                  <div class="flex justify-center pt-2">
+                    <img src={loader} width={24} height={24} class="animate-spin"></img>
+                  </div>
+                </Show>
               </div>
             </Show>
             <MessageForm
