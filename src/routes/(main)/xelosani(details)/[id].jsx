@@ -26,7 +26,7 @@ import Friends from "../friends";
 import { isServer } from "solid-js/web";
 
 const Xelosani = (props) => {
-  const user = createAsync(() => get_xelosani(props.params.id));
+  const user = createAsync(() => get_xelosani(props.params.id), {deferStream: true});
   const navigate = useNavigate();
   const [modal, setModal] = createSignal(null);
   const [toast, setToast] = createSignal();
@@ -99,7 +99,7 @@ const Xelosani = (props) => {
       ></Meta>
       <Base
         target="_blank"
-        href={`http://localhost:3000/service/${user()?.profId}`}
+        href={`http://localhost:3000/${user()?.role}/${user()?.profId}`}
       />
         <Show when={!isServer && showFriendsLayout()}>
           <Friends>
