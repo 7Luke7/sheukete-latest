@@ -44,16 +44,16 @@ gray;
 
 @font-face {
   font-family: "normal-font";
-  src: url("../../public/fonts/TBCXMedium.ttf");
+  src: url("/fonts/TBCXMedium.ttf");
 }
 @font-face {
   font-family: "bolder-font";
-  src: url("../../public/fonts/TBCXBold.ttf");
+  src: url("/fonts/TBCXBold.ttf");
 }
 
 @font-face {
   font-family: "thin-font";
-  src: url("../../public/fonts/TBCXRegular.ttf");
+  src: url("/fonts/TBCXRegular.ttf");
 }
 
 @keyframes fadeIn {

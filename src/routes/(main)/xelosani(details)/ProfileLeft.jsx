@@ -1,4 +1,4 @@
-import { Index, Match, createSignal, Show, Switch, batch, startTransition, createMemo } from "solid-js";
+import { Index, Match, createSignal, Show, Switch, batch, startTransition, createMemo, onMount, useContext, onCleanup, createEffect } from "solid-js";
 import location from "../../../svg-images/location.svg";
 import telephone from "../../../svg-images/telephone.svg";
 import envelope from "../../../svg-images/envelope.svg";
@@ -11,6 +11,7 @@ import { makeAbortable } from "@solid-primitives/resource";
 import { upload_image } from "~/routes/api/upload/images";
 import { reject_request, accept_request } from "~/routes/api/friends/friends";
 import { create_user_convos } from "~/routes/api/messages/conversations";
+import { WSContext } from "~/wscontext";
 
 export const ProfileLeft = (props) => {
   const [imageLoading, setImageLoading] = createSignal(false);
@@ -21,9 +22,12 @@ export const ProfileLeft = (props) => {
   const [friendRequest, setFriendRequest] = createSignal({
     friend_request_id: props.user().friend_request_id,
     friend_request_status: props.user().friend_request_status,
-    is_sender: props.user().is_request_sender
+    is_sender: props.user().is_request_sender,
+    notification_id: null
   })
+  const [status, setStatus] = createSignal()
 
+  const ctx = useContext(WSContext)
   const handleProfileImageChange = async () => {
     setImageLoading(true);
     const formData = new FormData();
@@ -102,9 +106,20 @@ export const ProfileLeft = (props) => {
         })
         setFriendRequest(() => {
           return {
-            friend_request_id: data.friend_request_id, friend_request_status: "pending", is_sender: true
+            friend_request_id: data.friend_request_id, friend_request_status: "pending", is_sender: true, notification_id: data.notification.id
           }
         })
+        const ws = ctx()?.ws
+        ws.send(JSON.stringify({
+          type: "unseen-notification",
+          action: "add",
+          profId: props.user().profId,
+          notification: {
+            ...data.notification,
+            friend_request_id: data.friend_request_id,
+            friend_request_status: "pending",
+          }
+        }))
       } else {
         props.setToast({
           type: false,
@@ -116,86 +131,134 @@ export const ProfileLeft = (props) => {
       if (error.name === "AbortError") {
         filterErrors(error);
       }
-      console.log(error)
     } finally {
       setSendingFriendRequest(false)
     }
   }
 
   const friend = createMemo(() => {
-    const object = { executable: sendFriendRequest, content: "მეგობრობის გაგზავნა" }
     if (sendingFriendRequest()) {
-      object.executable = () => {
-        abort()
-        setIsRequestSender(false)
-      }
-      object.content = "გაუქმება"
-      return object
+      return [{
+        content: "გაუქმება",
+        executable: () => abort()
+      }]
     } else if (friendRequest().is_sender && friendRequest().friend_request_status === "pending") {
-      object.executable = async () => {
-        try {
-          const response = await reject_request(friendRequest().friend_request_id, props.user().viewer_role, friendRequest().friend_request_status)
-          if (response === 200) {
-            setFriendRequest((prev) => {
-              return {
-                ...prev,
-                friend_request_status: null,
-                is_sender: false
+      return [
+        {
+          content: "მოთხოვნის გაუქმება",
+          executable: async () => {
+            try {
+              const response = await reject_request(friendRequest().friend_request_id, props.user().viewer_role, friendRequest().friend_request_status)
+              if (response === 200) {
+                const ws = ctx().ws
+                ws?.send(JSON.stringify({
+                  type: "unseen-notification",
+                  profId: props.user().profId,
+                  action: "delete",
+                  id: friendRequest().notification_id
+                }))
+                setFriendRequest((prev) => {
+                  return {
+                    ...prev,
+                    notification_id: null,
+                    friend_request_status: null,
+                    is_sender: false
+                  }
+                })
+              } else {
+                throw new Error("მეგობრის დამატება ვერ მოხერხდა")
               }
-            })
-          } else {
-            throw new Error("მეგობრის დამატება ვერ მოხერხდა")
+            } catch (error) {
+              console.log(error)
+            }
           }
-        } catch (error) {
-          console.log(error)
         }
-      }
-      object.content = "მოთხოვნის გაუქმება"
-      return object
+      ]
     } else if (!friendRequest().is_sender && friendRequest().friend_request_status === "pending") {
-      object.executable = async () => {
-        try {
-          const response = await accept_request(props.user().notification_id, friendRequest().friend_request_id, "xelosani")
-          if (response === 200) {
-            setFriendRequest((prev) => {
-              return {
-                ...prev,
-                friend_request_status: "accepted",
-                is_sender: false
-              }
-            })
-          } else {
-            throw new Error("მეგობრის დამატება ვერ მოხერხდა")
+      return [{
+        executable: async () => {
+          try {
+            const response = await accept_request(props.user().notification_id, friendRequest().friend_request_id, friendRequest().friend_request_status)
+            if (response === 200) {
+              const ws = ctx().ws
+              setFriendRequest((prev) => {
+                return {
+                  ...prev,
+                  friend_request_status: "accepted",
+                  is_sender: false
+                }
+              })
+              ws?.send(JSON.stringify({
+                type: "unseen-notification",
+                profId: props.user().profId,
+                action: "delete",
+                id: friendRequest().notification_id
+              }))
+            } else {
+              throw new Error("მეგობრის დამატება ვერ მოხერხდა")
+            }
+          } catch (error) {
+            console.log(error)
           }
-        } catch (error) {
-          console.log(error)
-        }
-      }
-      object.content = "მეგობრობის დადასტურება"
-      return object
+        },
+        content: "მეგობრობის დადასტურება"
+      }, {
+        executable: async () => {
+          try {
+            const response = await reject_request(props.user().notification_id, friendRequest().friend_request_id, friendRequest().friend_request_status)
+            if (response === 200) {
+              const ws = ctx().ws
+
+              setFriendRequest((prev) => {
+                return {
+                  ...prev,
+                  friend_request_status: "accepted",
+                  is_sender: false
+                }
+              })
+              ws?.send(JSON.stringify({
+                type: "unseen-notification",
+                action: "delete",
+                id: n.id,
+                target_prof_id: n.prof_id,
+              }))
+            } else {
+              throw new Error("მეგობრის დამატება ვერ მოხერხდა")
+            }
+          } catch (error) {
+            console.log(error)
+          }
+        },
+        content: "მეგობრობის უარყოფა"
+
+      }]
     } else if (friendRequest().friend_request_status === "accepted") {
-      object.content = "მეგობრობიდან წაშლა"
-      object.executable = async () => {
-        try {
-          const response = await reject_request(friendRequest().friend_request_id, props.user().viewer_role, friendRequest().friend_request_status)
-          if (response === 200) {
-            setFriendRequest((prev) => {
-              return {
-                ...prev,
-                friend_request_status: null,
-                is_sender: false
-              }
-            })
-          } else {
-            throw new Error("მეგობრის დამატება ვერ მოხერხდა")
+      // should remove notifcation from header *send Websocket message*
+      return [{
+        content: "მეგობრობიდან წაშლა",
+        executable: async () => {
+          try {
+            const response = await reject_request(friendRequest().friend_request_id, props.user().viewer_role, friendRequest().friend_request_status)
+            if (response === 200) {
+              const ws = ctx().ws
+              setFriendRequest((prev) => {
+                return {
+                  ...prev,
+                  friend_request_status: null,
+                  is_sender: false
+                }
+              })
+            } else {
+              throw new Error("მეგობრის დამატება ვერ მოხერხდა")
+            }
+          } catch (error) {
+            console.log(error)
           }
-        } catch (error) {
-          console.log(error)
         }
-      }
-      return object
+      }]
+    } else {
+      return [{ executable: sendFriendRequest, content: "მეგობრობის გაგზავნა" }]
     }
-    return object
   })
 
   const startConversation = async (prof_id, role) => {
@@ -214,9 +277,65 @@ export const ProfileLeft = (props) => {
     }
   }
 
+  onMount(() => {
+    if (!ctx()) return
+    console.log(props.user().status)
+    if (props.user().status !== 401) return
+    const ws = ctx().ws
+    ws.send(JSON.stringify({
+      type: "check_others",
+      profId: props.user().profId
+    }))
+
+    const check_status = (event) => {
+      const data = JSON.parse(event.data)
+      if (data.channel === "ping") return
+
+      if (data.channel === "status") {
+        setStatus({
+          content: data.content
+        })
+      }
+      /* TODO: 
+      real time syncing users profile page friend state updates 
+      it could be done later its not necessity for now
+      */
+      if (data.channel === "unseen-notification") {
+          switch (data.notification?.type) {
+            case "FRIEND_REQUEST_ACCEPTED":
+              setFriendRequest((prev) => ({
+                ...prev,
+                friend_request_status: 'accepted',
+              }))
+              break;
+            case "FRIEND_REQUEST_DECLINED":
+              setFriendRequest(() => ({
+                friend_request_id: null,
+                friend_request_status: null,
+                is_sender: null,
+                notification_id: null
+              }))
+              break;
+            case "FRIEND_REQUEST":
+              setFriendRequest((prev) => ({
+                ...prev,
+                friend_request_id: data.notification.friend_request_id,
+                friend_request_status: data.notification.friend_request_status,
+                notification_id: data.notification.id
+              }))
+          }
+      }
+    }
+
+    ws.addEventListener("message", check_status)
+
+    onCleanup(() => {
+      ws.removeEventListener("message", check_status)
+    })
+  })
+
   return (
     <div class="flex sticky top-[50px] gap-y-3 flex-col">
-      {/* Profile Section */}
       <div class="relative flex flex-col min-w-[262px] items-center flex-[2] bg-white shadow-md rounded-lg p-6">
         <Switch>
           <Match when={props.user().status !== 401}>
@@ -296,11 +415,15 @@ export const ProfileLeft = (props) => {
               <img
                 loading="lazy"
                 id="prof_pic"
-                class="border-2 border-indigo-100 h-[180px] w-[180px] rounded-full my-2"
+                class="object-cover border-2 border-indigo-100 h-[180px] w-[180px] rounded-full my-2"
                 src={`http://localhost:5555/static/xelosani/profile/medium/${props.user()?.profId}.webp`}
                 alt="profilis foto"
+                width={180}
+                height={180}
               />
-              <span class="absolute bottom-4 right-6 w-5 h-5 bg-[#14a800] border-2 border-indigo-100 rounded-full"></span>
+              <Show when={status()?.content === "online"}>
+                <span class="absolute bottom-4 right-6 w-5 h-5 bg-[#14a800] border-2 border-indigo-100 rounded-full"></span>
+              </Show>
             </div>
           </Match>
         </Switch>
@@ -458,36 +581,34 @@ export const ProfileLeft = (props) => {
               </Match>
             </Switch>
           </div>
-          <Show when={props.user().status === 401}>
+          <Show when={props.user().status === 401 && props.user().viewer_prof_id && props.user().viewer_prof_id !== props.url_prof_id}>
             <div class="flex flex-col gap-y-1 pb-1 px-2 items-center">
-              <button
-                onClick={friend().executable}
-                class="bg-dark-green w-full py-1 px-2 font-[thin-font] text-sm font-bold hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
-              >
-                {friend().content}
-              </button>
               <button
                 onClick={() => startConversation(props.url_prof_id, props.user().role)}
                 class="bg-dark-green w-full py-1 px-2 font-[thin-font] text-sm font-bold hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
               >
                 მიწერა
               </button>
+              <Show when={friend()?.length > 1} fallback={<button
+                onClick={friend()[0].executable}
+                class="bg-dark-green w-full py-1 px-2 font-[thin-font] text-sm font-bold hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
+              >
+                {friend()[0].content}
+              </button>
+              }>
+                <For each={friend()}>
+                  {(f) => (
+                    <button
+                      onClick={f.executable}
+                      class="bg-dark-green w-full py-1 px-2 font-[thin-font] text-sm font-bold hover:bg-dark-green-hover transition ease-in delay-20 text-white text-center rounded-[16px]"
+                    >
+                      {f.content}
+                    </button>
+                  )}
+                </For>
+              </Show>
             </div>
           </Show>
-          {props.user().avgrating && (
-            <div class="flex space-x-1">
-              <Index each={new Array(3)}>
-                {() => (
-                  <img loading="lazy" src={fullStar} alt="full star" />
-                )}
-              </Index>
-              <Index each={new Array(5 - 3)}>
-                {() => (
-                  <img loading="lazy" src={emptyStar} alt="empty star" />
-                )}
-              </Index>
-            </div>
-          )}
         </div>
       </div>
 
@@ -541,7 +662,20 @@ export const ProfileLeft = (props) => {
         <h2 class="text-lg font-[bolder-font]">საშუალო შეფასება</h2>
         <Switch>
           <Match when={false}>
-            {/* Optionally include detailed rating bars here */}
+            {props.user().avgrating && (
+              <div class="flex space-x-1">
+                <Index each={new Array(3)}>
+                  {() => (
+                    <img loading="lazy" src={fullStar} alt="full star" />
+                  )}
+                </Index>
+                <Index each={new Array(5 - 3)}>
+                  {() => (
+                    <img loading="lazy" src={emptyStar} alt="empty star" />
+                  )}
+                </Index>
+              </div>
+            )}
           </Match>
           <Match when={true}>
             <p class="text-xs text-gr mt-2 font-[thin-font] font-bold">

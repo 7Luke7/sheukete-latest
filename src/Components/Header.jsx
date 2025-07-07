@@ -9,6 +9,7 @@ import {
   createSignal,
   onCleanup,
   onMount,
+  useContext,
 } from "solid-js";
 import peopleIcon from "../svg-images/svgexport-9.svg";
 import jobsIcon from "../svg-images/svgexport-11.svg";
@@ -23,13 +24,16 @@ import { logout_user } from "~/routes/api/user";
 import { header } from "~/routes/api/header";
 import { Notifications } from "./header_modals/Notifications";
 import { get_unseen_notifications } from "~/routes/api/notifications/main";
+import { WSContext } from "~/wscontext";
 
 export const Header = () => {
-  const user = createAsync(() => header(), {deferStream: true});
+  const user = createAsync(header, { deferStream: true });
   const [chosenQuery, setChosenQuery] = createSignal("ხელოსანი");
   const [display, setDisplay] = createSignal(null);
   const [isUnseenNotif, setIsUnseenNotif] = createSignal();
   const [isUnseenMessage, setIsUnseenMessage] = createSignal();
+  const [displayDropdown, setDisplayDropDown] = createSignal()
+  const ctx = useContext(WSContext)
 
   onMount(async () => {
     if (user() === 401) {
@@ -45,6 +49,23 @@ export const Header = () => {
     } catch (error) {
       console.log(error);
     }
+    if (!ctx().ws) return
+
+
+    const ws = ctx().ws
+    const message = (event) => {
+      const { channel, notification } = JSON.parse(event.data)
+      switch (channel) {
+        case "unseen-notification":
+          setIsUnseenNotif(notification || null)
+          break;
+      }
+    }
+
+    ws.addEventListener("message", message)
+    onCleanup(() => {
+      ws.removeEventListener("message", message)
+    })
   });
 
   const switch_query_options = (query) => {
@@ -96,7 +117,7 @@ export const Header = () => {
             <A href="/" class="text-dark-green text-xl">
               შეუკეთე
             </A>
-            <div class="relative group">
+            <div onMouseEnter={() => setDisplayDropDown("სერვისი")} class="relative group">
               <div class="cursor-pointer flex">
                 <p>მოძებნე სერვისი</p>
                 <img
@@ -105,9 +126,11 @@ export const Header = () => {
                   alt="dropdown icon"
                 ></img>
               </div>
-              <WorkDropdown></WorkDropdown>
+              <Show when={displayDropdown() === "სერვისი"}>
+                <WorkDropdown></WorkDropdown>
+              </Show>
             </div>
-            <div class="group relative">
+            <div class="group relative" onMouseEnter={() => setDisplayDropDown("სამუშაო")}>
               <div class=" cursor-pointer flex">
                 <p href="#">მოძებნე სამუშაო</p>
                 <img
@@ -115,11 +138,13 @@ export const Header = () => {
                   src={dropdownSVG}
                 ></img>
               </div>
-              <WorkDropdown></WorkDropdown>
+              <Show when={displayDropdown() === "სამუშაო"}>
+                <WorkDropdown></WorkDropdown>
+              </Show>
             </div>
           </nav>
           <div class="flex-1 px-5">
-          <Search
+            <Search
               chosenQuery={chosenQuery}
               setDisplay={setDisplay}
             ></Search>
@@ -166,9 +191,8 @@ export const Header = () => {
                     <img
                       class="rounded-[50%] border-2 w-[25px] h-[25px]"
                       alt="პროფილის ფოტო სათავე"
-                      src={`http://localhost:5555/static/${
-                        user()?.role
-                      }/profile/small/${user()?.profId}.webp`}
+                      src={`http://localhost:5555/static/${user()?.role
+                        }/profile/small/${user()?.profId}.webp`}
                     ></img>
                   </button>
                 </div>
@@ -189,9 +213,8 @@ export const Header = () => {
       {display() === "searchops" && (
         <div
           id="options-menu"
-          class={`shadow-2xl rounded-b-lg p-3 absolute border-t border-slate-300 ${
-            user() !== 401 ? "right-[18%]" : "right-[14%]"
-          } z-50 bg-white opacity-100 w-[230px]`}
+          class={`shadow-2xl rounded-b-lg p-3 absolute border-t border-slate-300 ${user() !== 401 ? "right-[18%]" : "right-[14%]"
+            } z-50 bg-white opacity-100 w-[230px]`}
         >
           <button
             id="options-menu"
@@ -357,7 +380,9 @@ export const Header = () => {
         </div>
       )}
       {display() === "notif" && (
-        <Notifications></Notifications>
+        <Notifications
+          recentNotification={isUnseenNotif} ws={ctx()?.ws} setIsUnseenNotif={setIsUnseenNotif}
+        ></Notifications>
       )}
     </header>
   );

@@ -60,7 +60,7 @@ const Service = (props) => {
                         }/thumbnail/medium/thumbnail.webp`
                   }
                   alt={service().main_title}
-                  class="h-[460px] w-[460px] rounded-lg border"
+                  class="h-full w-full object-contain rounded-lg border"
                   fetchpriority="high"
                   width={460}
                   height={460}

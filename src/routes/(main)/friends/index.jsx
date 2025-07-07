@@ -1,12 +1,16 @@
 import { A, createAsync } from "@solidjs/router";
 import { get_friends_home, accept_request, reject_request } from "../../api/friends/friends";
-import { createEffect, createMemo, createSignal, For, Show } from "solid-js";
+import { createEffect, createMemo, createSignal, For, Show, useContext } from "solid-js";
 import { MutualFriends } from "./Components/MutualFriends";
+import { WSContext } from "~/wscontext";
+import { Toast } from "~/Components/ToastComponent";
 
 const Friends = () => {
-  const friends = createAsync(() => get_friends_home());
+  const friends = createAsync(get_friends_home);
   const [viewAllUserMutuals, setViewAllUserMutuals] = createSignal([])
   const [optimisticFriendRequests, setOptimisticFriendRequests] = createSignal();
+  const [toast, setToast] = createSignal()
+  const ctx = useContext(WSContext)
 
   createEffect(() => {
     if (friends()?.status === 200) {
@@ -62,16 +66,26 @@ const Friends = () => {
                 <button onClick={async (e) => {
                   e.preventDefault()
                   const response = await accept_request(
-                    undefined,
+                    f.notification_id,
                     f.friend_request_id,
                     f.role
                   )
-                  if (response === 200) {
+                  console.log(response)
+                  if (response.status === 200) {
                     setOptimisticFriendRequests((prev) => {
                       return prev.filter((p) => p.id !== f.id)
                     })
-                  } else {
-                    alert("got an error!")
+                    const ws = ctx()?.ws
+                    ws.send(JSON.stringify({
+                      type: "unseen-notification",
+                      action: "delete",
+                      is_echo: true,
+                      id: f.notification_id
+                    }))
+                    setToast({
+                      type: true,
+                      message: `${f.firstname} დაემატა მეგობრების სიაში.`
+                    })
                   }
                 }} class="w-1/2 px-2 py-1 bg-dark-green-hover text-white rounded font-[normal-font]">დადასტურება</button>
                 <button onClick={async (e) => {
@@ -81,10 +95,19 @@ const Friends = () => {
                     setOptimisticFriendRequests((prev) => {
                       return prev.filter((p) => p.id !== f.id)
                     });
-                  } else {
-                    alert("Got an error.")
-                  }
-                }} class="w-1/2 px-2 py-1 bg-gray-500 text-white rounded font-[normal-font]">გაუქმება</button>
+                    const ws = ctx()?.ws
+                    ws.send(JSON.stringify({
+                      type: "unseen-notification",
+                      action: "delete",
+                      is_echo: true,
+                      id: f.notification_id
+                    }))
+                    setToast({
+                      type: true,
+                      message: "მეგობრობის მოთხოვნა უარყოფილია."
+                    })
+                  } 
+                }} class="w-1/2 px-2 py-1 bg-gray-500 text-white rounded font-[normal-font]">უარყოფა</button>
               </div>
               </div>
             </div>
@@ -98,6 +121,9 @@ const Friends = () => {
             return <MutualFriends index={i} target_mf={target_mf} viewAllUserMutuals={viewAllUserMutuals} setViewAllUserMutuals={setViewAllUserMutuals}></MutualFriends>
           }}
         </For>
+      </Show>
+      <Show when={toast()}>
+          <Toast toast={toast} setToast={setToast}></Toast>
       </Show>
     </section>
   );

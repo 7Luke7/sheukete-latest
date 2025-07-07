@@ -1,42 +1,102 @@
-import { createSignal, For, Match, createEffect, Switch, createMemo } from "solid-js";
+import { createSignal, For, Match, createEffect, Switch, createMemo, on } from "solid-js";
 import threeDotsSVG from "../../svg-images/three-dots.svg";
 import { NotificationTools } from "../NotificationTools";
 import { A } from "@solidjs/router";
 import { MainNotificationTools } from "./MainNotificationTools";
 import { reject_request, accept_request } from "~/routes/api/friends/friends";
 import { get_active_notification } from "~/routes/api/notifications/main";
+import { getTimeAgo } from "~/routes/notifications/utils";
 
-export const Notifications = () => {
-    const [notificationTools, setNotificationTools] = createSignal();
-    const [active, setActive] = createSignal("all");
-    const [notifications, setNotifications] = createSignal()
-    const [mainNotificationTools, setMainNotificationTools] = createSignal(false)
+export const Notifications = (props) => {
+  const [notificationTools, setNotificationTools] = createSignal();
+  const [active, setActive] = createSignal("all");
+  const [notifications, setNotifications] = createSignal()
+  const [mainNotificationTools, setMainNotificationTools] = createSignal(false)
 
-  createEffect(
-        async () => {
-          try {
-            const response = await get_active_notification(active())
+  const { recentNotification, setIsUnseenNotif, ws } = props
 
-            if (response.status === 200) {
-              setNotifications(response.notifications);
-            } else if (response.status === 400) {
-              setNotifications(response.message);
-            }
-          } catch (error) {
-            console.error(error);
-          }
-        },
-    );
-
-    const memoizedNotifications = createMemo(() => {
-      if (notifications() && notifications().length > 0 && (active() === "unread" && !notifications().some(n => n.seen)) || active() === "all") {
-        return notifications()
+  createEffect(on(recentNotification, () => {
+    if (!recentNotification() || !recentNotification().action) return
+    setNotifications((prev) => {
+      if (recentNotification().action === "add") {
+        return [recentNotification(), ...(prev ?? [])]
       } else {
-        return []
+        return prev.filter((n) => n.id !== recentNotification().id)
       }
     })
+  }, { defer: true }))
+  createEffect(
+    async () => {
+      try {
+        const response = await get_active_notification(active())
 
-    return <div
+        if (response.status === 200) {
+          setNotifications(response.notifications);
+        } else if (response.status === 400) {
+          setNotifications(response.message);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    },
+  );
+
+  const memoizedNotifications = createMemo(() => {
+    if (notifications() && notifications().length > 0 && (active() === "unread" && !notifications().some(n => n.seen)) || active() === "all") {
+      return notifications()
+    } else {
+      return []
+    }
+  })
+
+  const confirm_request = async (n) => {
+    const response = await accept_request(
+      n.id,
+      n.friend_request_id,
+      n.role,
+    )
+    if (response.status === 200) {
+      setNotifications((prev) => {
+        const updated_notifs = prev.filter((p) => p.id !== n.id);
+        if (!updated_notifs.length) setIsUnseenNotif(false)
+        return updated_notifs
+      });
+      ws?.send(JSON.stringify({
+        type: "unseen-notification",
+        action: "delete",
+        notification: {
+          ...response.notification,
+          created_at: getTimeAgo(response.notification.created_at)    
+        },
+        target_prof_id: n.prof_id,
+        is_echo: true
+      }))
+    } else {
+      alert("got an error!")
+    }
+  }
+  const decline_request = async (n) => {
+    const response = await reject_request(n.friend_request_id, n.role);
+    if (response === 200) {
+      setNotifications((prev) => {
+        const updated_notifs = prev.filter((p) => p.id !== n.id)
+        if (!updated_notifs.length) setIsUnseenNotif(false)
+        return updated_notifs
+      });
+      ws?.send(JSON.stringify({
+        type: "unseen-notification",
+        action: "delete",
+        id: n.id,    
+        notification_type: "FRIEND_REQUEST_DECLINED",
+        target_prof_id: n.prof_id,      
+        is_echo: true
+      }))
+    } else {
+      alert("Got an error.")
+    }
+  }
+
+  return <div
     id="notification-menu"
     class="absolute shadow-2xl flex flex-col gap-y-2 rounded-b-3xl px-4 py-3 border-t border-slate-300 right-[1%] z-50 bg-white opacity-100 w-[490px]"
   >
@@ -62,36 +122,34 @@ export const Notifications = () => {
         />
       </button>
       <Show when={mainNotificationTools()}>
-        <MainNotificationTools setMainNotificationTools={setMainNotificationTools} setNotifications={setNotifications}></MainNotificationTools>
+        <MainNotificationTools ws={ws} setMainNotificationTools={setMainNotificationTools} setNotifications={setNotifications}></MainNotificationTools>
       </Show>
     </div>
     <div id="notification-menu" class="flex items-center gap-x-2">
       <button
         id="notification-menu"
         onClick={() => setActive("all")}
-        className={`transition-all duration-300 w-1/2 text-gray-800 text-sm font-[normal-font] py-1 rounded-3xl shadow-md ${
-          active() === "all"
-            ? "bg-gray-200"
-            : "border border-gray-300"
-        }`}
+        className={`transition-all duration-300 w-1/2 text-gray-800 text-sm font-[normal-font] py-1 rounded-3xl shadow-md ${active() === "all"
+          ? "bg-gray-200"
+          : "border border-gray-300"
+          }`}
       >
         ყველა
       </button>
       <button
         id="notification-menu"
         onClick={() => setActive("unread")}
-        className={`transition-all duration-300 w-1/2 text-gray-800 text-sm font-[normal-font] py-1 rounded-3xl shadow-md ${
-          active() === "unread"
-            ? "bg-gray-200"
-            : "border border-gray-300"
-        }`}
+        className={`transition-all duration-300 w-1/2 text-gray-800 text-sm font-[normal-font] py-1 rounded-3xl shadow-md ${active() === "unread"
+          ? "bg-gray-200"
+          : "border border-gray-300"
+          }`}
       >
         წაუკითხავი
       </button>
     </div>
     <div id="notification-menu" class="flex items-center justify-between">
-        <p id="notification-menu" class="font-[normal-font] text-base text-gray-800">უახლესი</p>
-        <A href="/notifications" id="notification-menu" class="font-[thin-font] font-bold text-xs text-blue-500 underline">ყველას ნახვა</A>
+      <p id="notification-menu" class="font-[normal-font] text-base text-gray-800">უახლესი</p>
+      <A href="/notifications" id="notification-menu" class="font-[thin-font] font-bold text-xs text-blue-500 underline">ყველას ნახვა</A>
     </div>
     <Switch>
       <Match when={memoizedNotifications() && memoizedNotifications().length}>
@@ -125,7 +183,7 @@ export const Notifications = () => {
                           src={
                             n.role === "admin"
                               ? "https://img.freepik.com/free-vector/red-product-sale-tag_78370-1271.jpg"
-                              : n.image_url
+                              : `http://localhost:5555/static/${n.role}/profile/browse/${n.prof_id}.webp`
                           }
                           class="w-16 flex-2 object-cover h-16 rounded-full border border-indigo-100"
                           alt="profile"
@@ -153,20 +211,9 @@ export const Notifications = () => {
                               class="flex gap-x-2 mt-2 items-center"
                             >
                               <button
-                                onClick={async (e) => {
+                                onClick={(e) => {
                                   e.preventDefault()
-                                  const response = await accept_request(
-                                    n.id,
-                                    n.friend_request_id,
-                                    n.role
-                                  )
-                                  if (response === 200) {
-                                    setNotifications((prev) => {
-                                      return prev.filter((p) => p.id !== n.id);
-                                    });
-                                  } else {
-                                    alert("got an error!")
-                                  }
+                                  confirm_request(n)
                                 }}
                                 id="notification-menu"
                                 class="font-bold px-2 py-1 rounded bg-gray-200 cursor-default text-gr text-xs font-[thin-font]"
@@ -175,16 +222,9 @@ export const Notifications = () => {
                               </button>
                               <button
                                 id="notification-menu"
-                                onClick={async (e) => {
+                                onClick={(e) => {
                                   e.preventDefault()
-                                  const response = await reject_request(n.friend_request_id, n.role);
-                                  if (response === 200){
-                                    setNotifications((prev) => {
-                                      return prev.filter((p) => p.id !== n.id)
-                                    });
-                                  } else {
-                                    alert("Got an error.")
-                                  }
+                                  decline_request(n)
                                 }}
                                 class="font-bold px-2 py-1 rounded bg-gray-200 cursor-default text-gr text-xs font-[thin-font]"
                               >
@@ -209,11 +249,10 @@ export const Notifications = () => {
                           }}
                         >
                           <img
-                            class={`${
-                              notificationTools()?.id === n.id
-                                ? "block"
-                                : "hidden group-hover:block"
-                            } bg-gray-200 p-1 rounded-full`}
+                            class={`${notificationTools()?.id === n.id
+                              ? "block"
+                              : "hidden group-hover:block"
+                              } bg-gray-200 p-1 rounded-full`}
                             src={threeDotsSVG}
                             width={30}
                             id="notification-menu"
@@ -230,9 +269,9 @@ export const Notifications = () => {
                         <Show when={notificationTools()?.id === n.id}>
                           <NotificationTools
                             setNotifications={setNotifications}
-                            seen={n.seen}
-                            role={n.role}
-                            notificationTools={notificationTools}
+                            ws={ws}
+                            setIsUnseenNotif={setIsUnseenNotif}
+                            notification={n}
                             setNotificationTools={setNotificationTools}
                           />
                         </Show>

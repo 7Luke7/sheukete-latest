@@ -10,6 +10,10 @@ export const MainNotificationTools = (props) => {
             const response = await mark_all_as_read()
 
             if (response.status === 200) {
+                props.ws?.send(JSON.stringify({
+                    type: "unseen-notification",
+                    action: "clear",
+                }))
                 batch(() => {
                     props.setNotifications((prev) => {
                         return prev.map((p) => {

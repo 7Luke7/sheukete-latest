@@ -16,7 +16,7 @@ const ProfilePictureStep = () => {
     timeout: 0,
     noAutoAbort: true,
   });
-  const [toast, setToast] = createSignal(null)
+  const [toast, setToast] = createSignal()
   const navigate = useNavigate();
 
   const handleProfileImageChange = async () => {
@@ -82,7 +82,9 @@ const ProfilePictureStep = () => {
     <Switch>
       <Match when={!userImage()?.url && !submitted()}>
         <div class="flex p-10 flex-col items-center mb-4">
-          <Toast toast={toast} setToast={setToast}></Toast>
+          <Show when={toast()}>
+            <Toast toast={toast} setToast={setToast}></Toast>
+          </Show>
           <Switch>
             <Match when={!imageLoading()}>
               <label
