@@ -2,15 +2,19 @@ import { Image } from "../Components/Image";
 import { Text } from "../Components/Text";
 import filePreview from "../../../svg-images/file-preview.svg";
 import loader from "../../../svg-images/loader.svg";
-import { formatFileSize } from "../Components/utils";
+import { formatFileSize, send_message_to_server, validateFile } from "../Components/utils";
 import { MessageForm } from "../Components/MessageForm";
-import { createEffect, For, Show, createSignal, Match, on, onCleanup, Switch, useContext } from "solid-js";
+import { createEffect, For, Show, createSignal, Match, on, onCleanup, Switch, useContext, onMount } from "solid-js";
 import { WSContext } from "~/wscontext";
 import { Toast } from "~/Components/ToastComponent";
 import closeIcon from "../../../svg-images/svgexport-12.svg";
 import { get_image_based_on_size } from "~/Components/utils";
 import LeftArrow from "../../../svg-images/ChevronLeftBlack.svg";
 import RightArrow from "../../../svg-images/ChevronRightBlack.svg";
+import { createVirtualizer } from "~/Components/virtualizer/vr";
+import { isServer } from "solid-js/web";
+import { createStore } from "solid-js/store";
+import { send_text } from "~/routes/api/messages/main";
 
 export const Chat = (props) => {
     const { response } = props;
@@ -21,23 +25,32 @@ export const Chat = (props) => {
     const [modal, setModal] = createSignal(false)
     const [toast, setToast] = createSignal(null);
     const [carouselImages, setCarouselImages] = createSignal()
+    const [virtualMessagesStore, setVirtualMessagesStore] = createStore({
+        messages: []
+    })
 
     const ctx = useContext(WSContext);
     const MAX_TOTAL_SIZE = 200 * 1024 * 1024;
     let ws
     let parentRef = null
+    let chatWrapper = null
 
-    createEffect(() => {
+    onMount(() => {
+        requestAnimationFrame(() => {
+            parentRef.scrollTop = parentRef.scrollHeight
+        })
+        if (!virtualMessagesStore.messages.length) {
+            setVirtualMessagesStore("messages", response().convos)
+            new createVirtualizer(parentRef, virtualMessagesStore, setLoading, setVirtualMessagesStore, chatWrapper, response().conversation_id).render()
+        }
         if (ctx()) ws = ctx().ws
         const retreive_message = (event) => {
             const { channel, ...rest } = JSON.parse(event.data);
             if (channel === `convo:${response()?.conversation_id}`) {
-                setMessageStore("messages", messagesStore.messages.length, { ...rest });
-                console.log(messagesStore.messages.length)
-                virtualizer?.setOptions((prev) => ({
-                    ...prev,
-                    count: messagesStore.messages.length,
-                }))
+                setVirtualMessagesStore("messages", virtualMessagesStore.messages.length, { ...rest })
+                requestAnimationFrame(() => {
+                    parentRef.scrollTop = parentRef.scrollHeight
+                })
             }
         }
         ws.addEventListener("message", retreive_message)
@@ -167,7 +180,11 @@ export const Chat = (props) => {
                     setModal(false)
                     setModalValue("")
                 }
+                break;
         }
+        requestAnimationFrame(() => {
+            parentRef.scrollTop = parentRef.scrollHeight
+        })
     };
 
     let summedSize = 0
@@ -224,7 +241,6 @@ export const Chat = (props) => {
         const blur = document.getElementById("blur-overlay")
         document.body.removeChild(blur)
     }
-
     createEffect(on(modal, () => {
         if (modal()) {
             add_overlay("modal")
@@ -233,6 +249,7 @@ export const Chat = (props) => {
         }
     }, { defer: true }))
 
+    console.log(response())
     return (
         <>
             <Show when={modal()}>
@@ -341,125 +358,124 @@ export const Chat = (props) => {
             </Show>
             <div
                 ref={(el) => (parentRef = el)}
-                class="bg-gray-200 relative overflow-y-auto"
+                class="bg-gray-200 flex flex-col overflow-y-auto"
                 style={{ height: "calc(94vh - 55px)" }}
             >
-                <div
-                    class="relative bg-gray-200 w-[65%] mx-auto"
+                <Show
+                    when={response().convos.length}
+                    fallback={
+                        <div class="flex items-center justify-center" style={{ height: "calc(94vh - 55px)" }}>
+                            <p class="text-lg text-gray-800 font-[normal-font]">
+                                თქვენს და {response().firstname}-ს შორის მიმოწერები არ არის.
+                            </p>
+                        </div>
+                    }
                 >
-                    <Show
-                        when={response().convos.length}
-                        fallback={
-                            <div class="flex items-center justify-center" style={{ height: "calc(94vh - 55px)" }}>
-                                <p class="text-lg text-gray-800 font-[normal-font]">
-                                    თქვენს და {response().firstname}-ს შორის მიმოწერები არ არის.
-                                </p>
-                            </div>
-                        }
-                    >
-                        <div class="absolute w-full">
-                            <For each={response().convos}>
-                                {(message) => {
-                                    return (
-                                        <div
-                                            class={`flex w-full py-2 items-center ${message.is_echo || response().my_id === message.sender_id
-                                                ? "justify-end"
-                                                : "justify-start"
-                                                }`}
-                                        >
-                                            <div
-                                                id={`echo-message-actions-${message.message_id}`}
-                                                class="hidden items-center gap-x-2 pr-2"
-                                            ></div>
-                                            <div class="overflow-hidden max-w-[45%] rounded-r-xl min-w-[120px] bg-white relative rounded-bl-lg rounded-tl-3xl">
-                                                <Switch>
-                                                    <Match when={message.type.length > 1}>
-                                                        <div class="flex flex-col">
-                                                            <div class="flex flex-wrap w-full">
-                                                                <For each={message.file_metadata}>
-                                                                    {(fm, i) => (
-                                                                        <Switch>
-                                                                            <Match when={fm.content_type === "image"}>
-                                                                                <Image
-                                                                                    setCarouselImages={setCarouselImages}
-                                                                                    add_overlay={add_overlay}
-                                                                                    message={message}
-                                                                                    i={i}
-                                                                                    fm={fm}
-                                                                                />
-                                                                            </Match>
-                                                                        </Switch>
-                                                                    )}
-                                                                </For>
-                                                            </div>
-                                                            <Text message={message} />
-                                                        </div>
-                                                    </Match>
-                                                    <Match when={message.type[0] === "text"}>
-                                                        <Text message={message} />
-                                                    </Match>
-                                                    <Match when={message.type[0] === "file"}>
-                                                        <div class="flex inner-div flex-wrap w-full">
-                                                            <For each={message.file_metadata}>
-                                                                {(fm, i) => (
-                                                                    <Switch>
-                                                                        <Match when={fm.content_type === "image"}>
-                                                                            <Image
-                                                                                setCarouselImages={setCarouselImages}
-                                                                                add_overlay={add_overlay}
-                                                                                message={message}
-                                                                                i={i}
-                                                                                fm={fm}
-                                                                            />
-                                                                        </Match>
-                                                                        <Match when={fm.content_type === "document"}>
-                                                                            <div class="flex bg-gray-200 rounded w-full my-1 mx-2">
-                                                                                <img
-                                                                                    src={filePreview}
-                                                                                    width={36}
-                                                                                    height={36}
-                                                                                />
-                                                                                <div class="flex flex-col gap-x-2">
-                                                                                    <p class="font-bold font-[thin-font] text-sm text-gray-800">
-                                                                                        {fm.name.slice(0, 35)}...
-                                                                                    </p>
-                                                                                    <p class="font-bold font-[thin-font] text-xs text-gray-500">
-                                                                                        {formatFileSize(fm.size)}
-                                                                                    </p>
-                                                                                </div>
-                                                                            </div>
-                                                                        </Match>
-                                                                    </Switch>
-                                                                )}
-                                                            </For>
-                                                        </div>
-                                                    </Match>
-                                                </Switch>
-                                                <p class="text-xs absolute bottom-1 right-2 font-[thin-font] font-bold text-gr">
-                                                    {new Date(message.created_at).toLocaleTimeString([], {
-                                                        hour: "2-digit",
-                                                        minute: "2-digit",
-                                                        hour12: true,
-                                                    })}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    );
-                                }}
-                            </For>
-                            <Show when={loading()}>
-                                <div class="flex justify-center pt-2">
-                                    <img
-                                        src={loader}
-                                        width={24}
-                                        height={24}
-                                        class="animate-spin"
-                                    />
-                                </div>
-                            </Show>
+                    <Show when={loading()}>
+                        <div class="flex justify-center pt-2">
+                            <img
+                                src={loader}
+                                width={24}
+                                height={24}
+                                class="animate-spin"
+                            />
                         </div>
                     </Show>
-                </div>
+                    <div
+                        class="flex w-[65%] flex-col mx-auto" ref={el => (chatWrapper = el)}>
+                        <For each={isServer ? response().convos : virtualMessagesStore.messages}>
+                            {(message, i) => (
+                                <div
+                                    index={i()}
+                                    last-message-id={
+                                        virtualMessagesStore.messages.length - i() < 20 ? message.message_id
+                                        : ((virtualMessagesStore.messages.length - i()) % 20) === 0 ? message.message_id : undefined
+                                    }
+                                    class={`flex w-full py-2 items-center ${message.is_echo || response().my_id === message.sender_id
+                                        ? "justify-end"
+                                        : "justify-start"
+                                        }`}
+                                >
+                                    <div class="overflow-hidden max-w-[45%] rounded-r-xl min-w-[120px] bg-white relative rounded-bl-lg rounded-tl-3xl">
+                                        <Switch>
+                                            <Match when={message.type.length > 1}>
+                                                <div class="flex flex-col">
+                                                    <div class="flex flex-wrap w-full">
+                                                        <For each={message.file_metadata}>
+                                                            {(fm, i) => (
+                                                                <Switch>
+                                                                    <Match when={fm.content_type === "image"}>
+                                                                        <Image
+                                                                            setCarouselImages={setCarouselImages}
+                                                                            add_overlay={add_overlay}
+                                                                            message={message}
+                                                                            i={i}
+                                                                            fm={fm}
+                                                                        />
+                                                                    </Match>
+                                                                </Switch>
+                                                            )}
+                                                        </For>
+                                                    </div>
+                                                    <Text message={message} />
+                                                </div>
+                                            </Match>
+                                            <Match when={message.type[0] === "text"}>
+                                                <Text message={message} />
+                                            </Match>
+                                            <Match when={message.type[0] === "file"}>
+                                                <div class="flex inner-div flex-wrap w-full">
+                                                    <For each={message.file_metadata}>
+                                                        {(fm, i) => (
+                                                            <Switch>
+                                                                <Match when={fm.content_type === "image"}>
+                                                                    <Image
+                                                                        setCarouselImages={setCarouselImages}
+                                                                        add_overlay={add_overlay}
+                                                                        message={message}
+                                                                        i={i}
+                                                                        fm={fm}
+                                                                    />
+                                                                </Match>
+                                                                <Match when={fm.content_type === "document"}>
+                                                                    <div class="flex bg-gray-200 rounded w-full my-1 mx-2">
+                                                                        <img
+                                                                            src={filePreview}
+                                                                            width={36}
+                                                                            height={36}
+                                                                        />
+                                                                        <div class="flex flex-col gap-x-2">
+                                                                            <p class="font-bold font-[thin-font] text-sm text-gray-800">
+                                                                                {fm.name.slice(0, 35)}...
+                                                                            </p>
+                                                                            <p class="font-bold font-[thin-font] text-xs text-gray-500">
+                                                                                {formatFileSize(fm.size)}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                </Match>
+                                                                <Match when={fm.content_type === "video"}>
+                                                                    <div class="h-[200px] w-full">video placeholder</div>
+                                                                </Match>
+                                                            </Switch>
+                                                        )}
+                                                    </For>
+                                                </div>
+                                            </Match>
+                                        </Switch>
+                                        <p class="text-xs absolute bottom-1 right-2 font-[thin-font] font-bold text-gr">
+                                            {new Date(message.created_at).toLocaleTimeString([], {
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: true,
+                                            })}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </For>
+                    </div>
+                </Show>
             </div>
             <div class="flex items-center h-[60px] justify-center">
                 <MessageForm

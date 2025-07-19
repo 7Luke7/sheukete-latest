@@ -1,4 +1,4 @@
-import { Index, Match, createSignal, Show, Switch, batch, startTransition, createMemo, onMount, useContext, onCleanup, createEffect } from "solid-js";
+import { Index, Match, createSignal, Show, Switch, batch, startTransition, createMemo, onMount, useContext, onCleanup } from "solid-js";
 import location from "../../../svg-images/location.svg";
 import telephone from "../../../svg-images/telephone.svg";
 import envelope from "../../../svg-images/envelope.svg";

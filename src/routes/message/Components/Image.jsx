@@ -10,11 +10,12 @@ export const Image = (props) => {
             return { ...file, on_display: file.id === fm.id ? true : false }
         }))
         add_overlay("carousel")
-    }} type="button" class={`relative ${getFlexBasisClass(message.file_metadata?.length, i())}`}>
+    }} type="button" class={`p-[10px] relative ${getFlexBasisClass(message.file_metadata?.length, i())}`}>
         <img
             data-message-image
             height={200}
-            class="object-cover w-full h-[200px]"
+            loading="lazy"
+            class="object-cover rounded-md w-full h-[200px]"
             src={`http://localhost:5555${get_image_based_on_size(fm.url, "medium")}`}
         />
     </button>
