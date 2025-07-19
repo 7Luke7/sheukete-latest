@@ -14,7 +14,7 @@ export async function GET({request}) {
     const user = JSON.parse(await get_key(`session:${session}`))
 
     return json({
-        profId: user.profId ?? null
+      profId: user.profId ?? null
     })
   } catch (error) {
     console.log(error)

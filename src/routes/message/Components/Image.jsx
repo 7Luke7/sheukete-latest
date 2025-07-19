@@ -2,7 +2,6 @@ import { get_image_based_on_size } from "~/Components/utils"
 import { getFlexBasisClass } from "./utils"
 
 export const Image = (props) => {
-
     const {setCarouselImages, add_overlay, message, i, fm} = props
     return <button onClick={() => {
         setCarouselImages(message.file_metadata.filter((file) => {
@@ -11,9 +10,12 @@ export const Image = (props) => {
             return { ...file, on_display: file.id === fm.id ? true : false }
         }))
         add_overlay("carousel")
-    }} type="button" width={460} height={460} class={`relative ${getFlexBasisClass(message.file_metadata?.length, i())}`}>
+    }} type="button" class={`p-[10px] relative ${getFlexBasisClass(message.file_metadata?.length, i())}`}>
         <img
-            class="object-cover w-full h-full"
+            data-message-image
+            height={200}
+            loading="lazy"
+            class="object-cover rounded-md w-full h-[200px]"
             src={`http://localhost:5555${get_image_based_on_size(fm.url, "medium")}`}
         />
     </button>

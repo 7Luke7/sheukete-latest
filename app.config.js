@@ -3,10 +3,18 @@ import solid from "vite-plugin-solid";
 
 export default defineConfig({
   server: {
+    prerender: {
+      routes: ["/"] 
+    },
     experimental: {
       websocket: true
+    },
+    esbuild: {
+        options: {
+            target: 'es2022'
+        }
     }
-  },
+  },  
   plugins: [
     solid({
       ssr: true,

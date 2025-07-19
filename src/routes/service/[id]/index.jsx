@@ -53,14 +53,14 @@ const Service = (props) => {
                   src={
                     currentImageView()
                       ? currentImageView().src
-                      : `http://localhost:5555/static/images/xelosani/${
+                      : `http://localhost:5555/static/xelosani/${
                           service().prof_id
                         }/services/${
                           service().public_id
                         }/thumbnail/medium/thumbnail.webp`
                   }
                   alt={service().main_title}
-                  class="h-[460px] w-[460px] rounded-lg border"
+                  class="h-full w-full object-contain rounded-lg border"
                   fetchpriority="high"
                   width={460}
                   height={460}
@@ -80,7 +80,7 @@ const Service = (props) => {
                   >
                     <img
                       class={`swiper-slide border ${!currentImageView() || currentImageView().index === 0 && 'border-dark-green-hover'} rounded-lg`}
-                      src={`http://localhost:5555/static/images/xelosani/${
+                      src={`http://localhost:5555/static/xelosani/${
                         service().prof_id
                       }/services/${
                         service().public_id
@@ -92,7 +92,7 @@ const Service = (props) => {
                       onClick={() =>
                         setCurrentImageView({
                           index: 0,
-                          src: `http://localhost:5555/static/images/xelosani/${
+                          src: `http://localhost:5555/static/xelosani/${
                             service().prof_id
                           }/services/${
                             service().public_id
@@ -103,7 +103,7 @@ const Service = (props) => {
                     <For each={new Array(service().gallery_count)}>
                       {(_, i) => (
                         <img
-                          src={`http://localhost:5555/static/images/xelosani/${
+                          src={`http://localhost:5555/static/xelosani/${
                             service().prof_id
                           }/services/${
                             service().public_id
@@ -120,7 +120,7 @@ const Service = (props) => {
                           onClick={() =>
                             setCurrentImageView({
                               index: i() + 1,
-                              src: `http://localhost:5555/static/images/xelosani/${
+                              src: `http://localhost:5555/static/xelosani/${
                                 service().prof_id
                               }/services/${
                                 service().public_id
@@ -173,7 +173,7 @@ const Service = (props) => {
                   class="flex items-center bg-green-500 hover:bg-green-600 transition-colors text-white px-4 py-2 rounded shadow"
                 >
                   <img
-                    src={`http://localhost:5555/static/images/xelosani/profile/browse/${
+                    src={`http://localhost:5555/static/xelosani/profile/browse/${
                       service().prof_id
                     }.webp`}
                     alt={`${service().firstname} ${service().lastname}`}

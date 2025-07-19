@@ -78,7 +78,7 @@ export function getFlexBasisClass(count, index) {
     }
     return "basis-1/2"
   }
-  if (count === 6) {
+  if (count >= 6) {
     if (index === 0) {
       return "basis-full"
     } else if (index < 3) {
@@ -87,30 +87,7 @@ export function getFlexBasisClass(count, index) {
       return "basis-1/3"
     }
   }
-  if (count === 7) {
-    if (index === 0) {
-      return "basis-full"
-    }
-    return "basis-1/3"
-  }
-  if (count === 8) {
-    if (index === 0 || index === 1) {
-      return "basis-1/2"
-    }
-    return "basis-1/3"
-  }
-  if (count === 9) return "basis-1/3";
-  if (index === 0) {
-    return "basis-full"
-  } else if (index === 1 || index === 2) {
-    return "basis-1/2"
-  } else if (index > 2 && index < 6) {
-    return "basis-1/3"
-  } else {
-    return "basis-1/4"
-  }
 }
-
 export const send_message_to_server = async (formData, response, ws) => {
   try {
     const file_message_response = await fetch("/api/messages/main", {

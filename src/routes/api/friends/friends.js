@@ -67,14 +67,14 @@ export const accept_request = async (id, friend_request_id, role) => {
                 friend_request_id: friend_request_id,
                 notification_id: id,
                 sender_role: role,
-                user
+                user,
             }),
             headers: {
                 "Content-Type": "application/json",
             },
         })
 
-        return response.status;
+        return response;
     } catch (error) {
         console.log(error);
     }
@@ -136,6 +136,8 @@ export const get_all_friends = async (path) => {
                 "Content-Type": "application/json",
             },
         })
+
+        console.log(response)
 
         return response;
     } catch (error) {

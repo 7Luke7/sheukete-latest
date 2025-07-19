@@ -27,7 +27,7 @@ export const get_messages = async (conversation_id, last = null) => {
       }
     );
 
-    posgresqlserver_response["my_id"] = user.userId
+    if (!last) posgresqlserver_response["my_id"] = user.userId
     if (posgresqlserver_response.status === 200) {
       return posgresqlserver_response;
     }

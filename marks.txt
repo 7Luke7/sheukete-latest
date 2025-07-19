@@ -258,3 +258,5 @@ on initial load
     --- auth
 
 	on initial request lets make JSON Web Token auth instead of cookies
+
+Look into REVERSE PROXY

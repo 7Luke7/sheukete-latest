@@ -47,7 +47,7 @@ export const SentRequests = (props) => {
                       <img
                         width={50}
                         height={50}
-                        src={`http://localhost:5555/static/images/${mf.role}/profile/small/${mf.prof_id}.webp`}
+                        src={`http://localhost:5555/static/${mf.role}/profile/small/${mf.prof_id}.webp`}
                         class="rounded-full w-[50px] h-[50px]"
                       ></img>
                     </A>
@@ -70,7 +70,7 @@ export const SentRequests = (props) => {
                                   <img
                                     width={18}
                                     height={18}
-                                    src={`http://localhost:5555/static/images/${mmf.role}/profile/small/${mmf.prof_id}.webp`}
+                                    src={`http://localhost:5555/static/${mmf.role}/profile/small/${mmf.prof_id}.webp`}
                                     class="rounded-full w-[18px] h-[18px]"
                                   ></img>
                                 </A>

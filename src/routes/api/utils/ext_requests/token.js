@@ -7,7 +7,6 @@ import { fileURLToPath } from "url";
 export const issue_token = async (audience) => {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
-
     const privateKey = fs.readFileSync(path.join(__dirname, "private.key"), 'utf8');
 
     try {

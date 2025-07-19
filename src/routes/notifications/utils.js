@@ -22,7 +22,7 @@ export const getTimeAgo = (createdAt) => {
   } else if (diffInMinutes > 0) {
     return `${diffInMinutes} წუთის უკან`;
   } else {
-    return `${diffInSeconds} წამის უკან`;
+    return `ახლახანს`;
   }
 };
 

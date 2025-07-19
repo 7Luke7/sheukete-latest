@@ -1,5 +1,5 @@
-import { A, createAsync } from "@solidjs/router";
-import { createSignal, onMount, Show } from "solid-js";
+import { A, createAsync, useNavigate } from "@solidjs/router";
+import { createEffect, createSignal, onMount, Show } from "solid-js";
 import { MutualFriends } from "../friends/Components/MutualFriends";
 import {
   getTimeAgo,
@@ -10,13 +10,10 @@ import clear from "../../../svg-images/svgexport-12.svg";
 import { SentRequests } from "./SentRequests";
 import threeDotsSVG from "../../../svg-images/three-dots.svg";
 import { reject_request, accept_request, get_received_requests, get_all_friends } from "~/routes/api/friends/friends";
+import dropdownGreenSVG from "../../../svg-images/svgexport-13.svg"
 
-// the imports above might not be needed for some components
-// so we have to make fils for each components
-
-export default class Others {
-  constructor(pathname) {
-    this.path = pathname;
+export default class Sidebar {
+  constructor() {
     this.relations = {
       "/friends/requests": {
         title: "მეგობრობის მოთხოვნები",
@@ -34,7 +31,7 @@ export default class Others {
                     f.friend_request_id,
                     f.role
                   );
-                  if (response === 200) {
+                  if (response.status === 200) {
                     setOptimisticFriendRequests((prev) => {
                       return prev.filter((p) => p.id !== f.id);
                     });
@@ -107,6 +104,7 @@ export default class Others {
         },
 
         main_content() {
+          const response = createAsync(() => get_received_requests(this.request_pathname))
           const [viewAllUserMutuals, setViewAllUserMutuals] = createSignal([]);
           const [optimisticFriendRequests, setOptimisticFriendRequests] =
             createSignal([]);
@@ -114,108 +112,91 @@ export default class Others {
             count: 0,
             users: [],
           });
-          const [loading, setLoading] = createSignal();
 
-          onMount(async () => {
-            setLoading(true);
-            try {
-              const response = await get_received_requests(this.request_pathname)
-
-              if (response.status === 200) {
-                setData((prev) => {
-                  return {
-                    count: response.friend_requests_count,
-                    users: [...prev.users, ...response.users],
-                  };
-                });
-              } else {
-                throw new Error(
-                  "Error occured while fetching friend requests."
-                );
-              }
-            } catch (error) {
-              console.log(error);
-            } finally {
-              setLoading(false);
-            }
-          });
+          createEffect(() => {
+            if (!response()) return
+            setData((prev) => {
+              return {
+                count: response().friend_requests_count,
+                users: [...prev.users, ...response().users],
+              };
+            });
+          })
 
           return (
             <>
               {this.above_content({ count: data().count })}
               <Show
-                fallback={"loading..."}
-                when={!loading() && data().users.length && Number(data().count)}
+                when={data().users.length && Number(data().count)}
               >
                 <For each={data().users}>
                   {(f) => {
                     return (
-                      <A state={{ fromFriends: "/friends/requests" }} href={`/${f.role}/${f.prof_id}`}>
-                      <div class="flex border-t py-2 w-full gap-y-2 flex-col">
-                        <div class="flex items-start gap-x-2 w-full">
+                      <A state={{ fromFriends: true }} href={`/${f.role}/${f.prof_id}`}>
+                        <div class="flex border-t py-2 w-full gap-y-2 flex-col">
+                          <div class="flex items-start gap-x-2 w-full">
                             <img
                               width={50}
                               height={50}
-                              src={`http://localhost:5555/static/images/${f.role}/profile/small/${f.prof_id}.webp`}
+                              src={`http://localhost:5555/static/${f.role}/profile/small/${f.prof_id}.webp`}
                               class="rounded-full border w-[50px] h-[50px]"
                             ></img>
-                          <div class="flex flex-col gap-y-1 w-full">
-                            <div class="flex items-center justify-between">
-                              <p class="font-[normal-font] text-sm">
-                                {f.firstname} {f.lastname}
-                              </p>
-                              <p class="text-gr text-xs font-[thin-font] font-bold">
-                                {getTimeAgo(f.created_at)}
-                              </p>
-                            </div>
-                            <Show
-                              when={
-                                Number(f.mutual_friends?.mutual_friends_count) >
-                                0
-                              }
-                            >
-                              <div class="flex items-center gap-x-1">
-                                <div class="flex items-center">
-                                  {f.mutual_friends.mutual_friends.map(
-                                    (mmf) => {
-                                      return (
-                                        <A state={{fromFriends: "/friends/requests"}} href={`/${mmf.role}/${mmf.prof_id}`}>
-                                          <img
-                                            width={18}
-                                            height={18}
-                                            src={`http://localhost:5555/static/images/${mmf.role}/profile/small/${mmf.prof_id}.webp`}
-                                            class="rounded-full w-[18px] h-[18px]"
-                                          ></img>
-                                        </A>
-                                      );
-                                    }
-                                  )}
-                                </div>
-                                <button
-                                  onClick={(e) =>
-                                  {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    setViewAllUserMutuals((prev) => [
-                                      ...prev,
-                                      { role: f.role, prof_id: f.prof_id },
-                                    ])
-                                  }
-                                  }
-                                  class="text-xs underline font-[thin-font] text-gr"
-                                >
-                                  {f.mutual_friends.mutual_friends_count} საერთო
-                                  მეგობარი
-                                </button>
+                            <div class="flex flex-col gap-y-1 w-full">
+                              <div class="flex items-center justify-between">
+                                <p class="font-[normal-font] text-sm">
+                                  {f.firstname} {f.lastname}
+                                </p>
+                                <p class="text-gr text-xs font-[thin-font] font-bold">
+                                  {getTimeAgo(f.created_at)}
+                                </p>
                               </div>
-                            </Show>
+                              <Show
+                                when={
+                                  Number(f.mutual_friends?.mutual_friends_count) >
+                                  0
+                                }
+                              >
+                                <div class="flex items-center gap-x-1">
+                                  <div class="flex items-center">
+                                    {f.mutual_friends.mutual_friends.map(
+                                      (mmf) => {
+                                        return (
+                                          <A state={{ fromFriends: true }} href={`/${mmf.role}/${mmf.prof_id}`}>
+                                            <img
+                                              width={18}
+                                              height={18}
+                                              src={`http://localhost:5555/static/${mmf.role}/profile/small/${mmf.prof_id}.webp`}
+                                              class="rounded-full w-[18px] h-[18px]"
+                                            ></img>
+                                          </A>
+                                        );
+                                      }
+                                    )}
+                                  </div>
+                                  <button
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                      setViewAllUserMutuals((prev) => [
+                                        ...prev,
+                                        { role: f.role, prof_id: f.prof_id },
+                                      ])
+                                    }
+                                    }
+                                    class="text-xs underline font-[thin-font] text-gr"
+                                  >
+                                    {f.mutual_friends.mutual_friends_count} საერთო
+                                    მეგობარი
+                                  </button>
+                                </div>
+                              </Show>
+                            </div>
                           </div>
+                          {this.action_buttons({
+                            setOptimisticFriendRequests,
+                            f,
+                          })}
                         </div>
-                        {this.action_buttons({
-                          setOptimisticFriendRequests,
-                          f,
-                        })}
-                      </div>
                       </A>
                     );
                   }}
@@ -312,16 +293,17 @@ export default class Others {
           const allFriends = createAsync(async () => {
             const response = await get_all_friends(this.request_pathname)
             if (response.status === 200) {
-                return {
-                  count: response.friend_count,
-                  users: response.users,
-                };
+              return {
+                count: response.friend_count,
+                users: response.users,
+              };
             }
-          }, {deferStream: true})
+          }, { deferStream: true })
           const [value, setValue] = createSignal("");
-          const [loading, setLoading] = createSignal();
           const [viewAllUserMutuals, setViewAllUserMutuals] = createSignal([]);
+          const navigate = useNavigate();
 
+          console.log("hello")
           return (
             <>
               {this.above_content()}
@@ -331,70 +313,70 @@ export default class Others {
                   {(f) => {
                     return (
                       <>
-                        <A state={{ fromFriends: "/friends/all" }} href={`/${f.role}/${f.prof_id}`}>
-                        <div class="hover:bg-gray-200 rounded-2xl mt-2 flex px-2 py-2 gap-y-2 items-start gap-x-2 w-full">
+                        <button onClick={() => navigate(`/${f.role}/${f.prof_id}?fromFriends=true`)}>
+                          <div class="hover:bg-gray-200 rounded-2xl mt-2 flex px-2 py-2 gap-y-2 items-start gap-x-2 w-full">
                             <img
                               width={50}
                               height={50}
-                              src={`http://localhost:5555/static/images/${f.role}/profile/small/${f.prof_id}.webp`}
+                              src={`http://localhost:5555/static/${f.role}/profile/small/${f.prof_id}.webp`}
                               class="rounded-full border w-[50px] h-[50px]"
                             ></img>
-                          <div class="flex items-start justify-between w-full">
-                            <div class="flex flex-col gap-y-1">
-                            <p class="font-[normal-font] text-sm">
-                              {f.firstname} {f.lastname}
-                            </p>
-                            <Show
-                              when={
-                                Number(f.mutual_friends_count) >
-                                0
-                              }
-                            >
-                              <div class="flex items-center gap-x-1">
-                                <div class="flex items-center">
-                                  {f.mutual_friends.map(
-                                    (mmf) => {
-                                      return (
-                                        <A state={{ fromFriends: "/friends/all" }} href={`/${mmf.role}/${mmf.prof_id}`}>
-                                          <img
-                                            width={18}
-                                            height={18}
-                                            src={`http://localhost:5555/static/images/${mmf.role}/profile/small/${mmf.prof_id}.webp`}
-                                            class="rounded-full w-[18px] h-[18px]"
-                                          ></img>
-                                        </A>
-                                      );
-                                    }
-                                  )}
-                                </div>
-                                <button
-                                  onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    setViewAllUserMutuals((prev) => [
-                                      ...prev,
-                                      { role: f.role, prof_id: f.prof_id },
-                                    ])
+                            <div class="flex items-start justify-between w-full">
+                              <div class="flex flex-col gap-y-1">
+                                <p class="font-[normal-font] text-sm">
+                                  {f.firstname} {f.lastname}
+                                </p>
+                                <Show
+                                  when={
+                                    Number(f.mutual_friends_count) >
+                                    0
                                   }
-                                  }
-                                  class="text-xs underline font-[thin-font] text-gr"
                                 >
-                                  {f.mutual_friends_count} საერთო
-                                  მეგობარი
-                                </button>
+                                  <div class="flex items-center gap-x-1">
+                                    <div class="flex items-center">
+                                      {f.mutual_friends.map(
+                                        (mmf) => {
+                                          return (
+                                            <button button onClick={() => navigate(`/${f.role}/${f.prof_id}?fromFriends=true`)}>
+                                              <img
+                                                width={18}
+                                                height={18}
+                                                src={`http://localhost:5555/static/${mmf.role}/profile/small/${mmf.prof_id}.webp`}
+                                                class="rounded-full w-[18px] h-[18px]"
+                                              ></img>
+                                            </button>
+                                          );
+                                        }
+                                      )}
+                                    </div>
+                                    <button
+                                      onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        setViewAllUserMutuals((prev) => [
+                                          ...prev,
+                                          { role: f.role, prof_id: f.prof_id },
+                                        ])
+                                      }
+                                      }
+                                      class="text-xs underline font-[thin-font] text-gr"
+                                    >
+                                      {f.mutual_friends_count} საერთო
+                                      მეგობარი
+                                    </button>
+                                  </div>
+                                </Show>
                               </div>
-                            </Show>
-                            </div>
-                            <div class="flex flex-col items-end gap-y-2">
-                            <p class="text-gr text-xs font-[thin-font] font-bold">
-                              {getTimeAgo(f.created_at)}
-                            </p>
-                            {this.action_buttons()}
+                              <div class="flex flex-col items-end gap-y-2">
+                                <p class="text-gr text-xs font-[thin-font] font-bold">
+                                  {getTimeAgo(f.created_at)}
+                                </p>
+                                {this.action_buttons()}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        </A>
-                        </>
+                        </button>
+                      </>
                     );
                   }}
                 </For>
@@ -417,12 +399,53 @@ export default class Others {
           );
         },
       },
+
+      "/friends": {
+        main_content() {
+          return <>
+            <h1 class="text-2xl font-semibold text-gray-800 mb-6">
+              მეგობრები
+            </h1>
+            <div class="flex flex-col gap-y-3">
+              <A href="/friends" class="bg-white hover:bg-gray-100 rounded-lg shadow">
+                <div class="flex justify-between items-center px-4 py-3 border-b border-gray-200">
+                  <span class="text-lg font-[normal-font] text-gray-700">
+                    მთავარი
+                  </span>
+                  <button>
+                    <img width={26} src={dropdownGreenSVG} alt="More options"></img>
+                  </button>
+                </div>
+              </A>
+              <A href="requests" class="bg-white rounded-lg hover:bg-gray-100 shadow">
+                <div class="flex justify-between items-center px-4 py-3 border-b border-gray-200">
+                  <span class="text-lg font-[normal-font] text-gray-700">
+                    მეგობრობის მოთხოვნები
+                  </span>
+                  <button>
+                    <img width={26} src={dropdownGreenSVG} alt="More options"></img>
+                  </button>
+                </div>
+              </A>
+              <A href="all" class="bg-white rounded-lg hover:bg-gray-100 shadow">
+                <div class="flex justify-between items-center px-4 py-3 border-b border-gray-200">
+                  <span class="text-lg font-[normal-font] text-gray-700">
+                    ყველა მეგობრები
+                  </span>
+                  <button>
+                    <img width={26} src={dropdownGreenSVG} alt="More options"></img>
+                  </button>
+                </div>
+              </A>
+            </div>
+          </>
+        }
+      }
     };
   }
 
-  render() {
-    return <Show when={this.relations[this.path]}>
-      {this.relations[this.path].main_content()}
-    </Show>
+  render(pathname) {
+    console.log(pathname)
+    return this.relations[pathname].main_content()
   }
 }

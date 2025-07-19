@@ -13,16 +13,6 @@ export const upload_image = async (formData) => {
             throw new Error("Login first!")
         }
 
-        // const response = await fetch(
-        //     `http://localhost:5555`,
-        //     {
-        //       method: "POST",
-        //       body: formData,
-        //       signal: signal(),
-        //       credentials: "include"
-        //     }
-        //   );
-
         const response = await fileserver_request("POST", `profile_picture/${session.role}/${session.profId}`, {
             body: formData,
         })

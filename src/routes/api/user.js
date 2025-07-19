@@ -48,7 +48,7 @@ export const get_xelosani = async (prof_id) => {
     const event = getRequestEvent();
     const session = await verify_user(event);
     if (session.profId !== prof_id) {
-      throw new Error(`401%${session.userId}%${session.role}`); // temporary
+      throw new Error(`401%${session.userId}%${session.role}%${session.profId}`); // temporary
     }
 
     const user = await postgresql_server_request("GET", `xelosani/${session.profId}`, {
@@ -69,6 +69,9 @@ export const get_xelosani = async (prof_id) => {
 
     const creationDateDisplayable = getTimeAgo(user.created_at);
 
+    // we could make postgresql trigger function
+    // which will trigger after user updates their privacy
+    // and automatically make changes to these to not have to do it manually
     const keys = Object.keys(user.privacy);
     for (let i = 0; i < keys.length; i++) {
       if (user.privacy[keys[i]] === "ნახევრად დამალვა") {
@@ -90,10 +93,10 @@ export const get_xelosani = async (prof_id) => {
       status: 200,
     };
   } catch (error) {
-    console.log(error)
     if (error.message.split("%")[0] === "401") {
       const viewer_id = error.message.split("%")[1]
       const role = error.message.split("%")[2]
+      const viewer_prof_id = error.message.split("%")[3]
       const user = await postgresql_server_request("GET", `xelosani/not_authorized/${prof_id}?viewer_id=${viewer_id || undefined}`, {
         headers: {
           "Content-Type": "application/json",
@@ -126,6 +129,7 @@ export const get_xelosani = async (prof_id) => {
   
       return {
         ...user,
+        viewer_prof_id: viewer_prof_id === "undefined" ? null : viewer_prof_id,
         viewer_role: role,
         skillset: user.skillset[0],
         is_request_sender: user.request_sender_id === viewer_id ? true : null,
@@ -161,7 +165,7 @@ export const getTimeAgo = (createdAt) => {
   } else if (diffInMinutes > 0) {
     return `${diffInMinutes} წუთის უკან`;
   } else {
-    return `${diffInSeconds} წამის უკან`;
+    return `${diffInSeconds} ახლახანს`;
   }
 };
 
